@@ -1,3 +1,10 @@
+# Processed data
+data/national/ceds/processed
+data/national/gfed/data_raw
+
+# CEDS data
+data/national/ceds/data_raw
+
 # pixi stuff
 .pixi
 
