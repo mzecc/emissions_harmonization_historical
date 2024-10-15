@@ -19,6 +19,8 @@ from pathlib import Path
 import pandas as pd
 import ptolemy
 import xarray as xr
+from pandas_indexing import set_openscm_registry_as_default
+
 from emissions_harmonization_historical.gfed import (
     add_global,
     read_cell_area,
@@ -29,7 +31,6 @@ from emissions_harmonization_historical.gfed import (
     # month_to_cftime,
     read_year,
 )
-from pandas_indexing import set_openscm_registry_as_default
 
 # set unit registry
 ur = set_openscm_registry_as_default()

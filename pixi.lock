@@ -5254,7 +5254,7 @@ packages:
   name: emissions-harmonization-historical
   version: 0.1.0
   path: .
-  sha256: b25a9aef7ffed86c0305ee48a95e8ed7f1c2e1cefe9e1024d44e635d808e8009
+  sha256: c4b998b9dc8d62453394bf9e1bf32e71e1212cf0be9e6a971dd714d32a3c0909
   requires_dist:
   - pre-commit==3.3.1
   requires_python: ==3.11

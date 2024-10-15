@@ -18,8 +18,9 @@ from pathlib import Path
 
 import pandas as pd
 import pandas_indexing as pix
-from emissions_harmonization_historical.ceds import add_global, get_map, read_CEDS
 from pandas_indexing.core import isna
+
+from emissions_harmonization_historical.ceds import add_global, get_map, read_CEDS
 
 # set unit registry
 ur = pix.units.set_openscm_registry_as_default()
