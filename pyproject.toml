@@ -73,6 +73,8 @@ select = [
 ]
 unfixable = [ ]
 ignore = [
+    "S101",
+    "D100",
     "D200",
     "D400",
     "UP007",
