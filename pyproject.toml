@@ -6,7 +6,7 @@ authors = [
 ]
 requires-python = "==3.11"
 dependencies = [
-    "pre-commit==3.3.1",
+    "pre-commit==3.3.1", "ptolemy-iamc @ git+https://github.com/gidden/ptolemy", "aneris-iamc @ git+https://github.com/gidden/aneris",
 ]
 name = "emissions-harmonization-historical"
 version = "0.1.0"
