@@ -38,9 +38,6 @@ To create the virtual environment, run
 ```sh
 pixi install
 pixi run pre-commit install
-# Install some specific dependencies which seem unhappy in the rest of the workflow
-pixi run pip install "git+https://github.com/gidden/ptolemy.git#egg=ptolemy-iamc" --no-deps
-pixi run pip install "git+https://github.com/iiasa/aneris.git@workflow#egg=aneris-iamc" --no-deps
 ```
 
 These steps are also captured in the `Makefile` so if you want a single
@@ -71,10 +68,37 @@ perhaps replacing the other instructions above as they may become redundant.
 
 ## Data
 
+Some of our data is managed using [git lfs](https://git-lfs.com/).
+To install it, please follow [the instructions here](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
+
+Then, before doing anything else, run
+
+```sh
+git lfs install
+```
+
+Once you have `git lfs` installed, you can grab all the files we track with
+
+```sh
+git lfs fetch --all
+```
+
+To grab a specific file, use
+
+```sh
+git lfs pull --include="path/to/file"
+# e.g.
+git lfs pull --include="data/national/gfed/data_aux/iso_mask.nc"
+```
+
+For more info, see, for example, [here](https://graphite.dev/guides/how-to-use-git-lfs-pull).
+
 ### Input data
 Note that this repository focuses on processing data, and does not currently also (re)host input data files.
 
-Files that need to be downloaded to make sure you can run the notebooks are specified in the relevant `data` subfolders, in README files, such as in `\data\national\ceds\data_raw\README.txt` for the CEDS data download, and in `\data\national\gfed\data_raw\README.txt` for the GFED data download.
+Files that need to be downloaded to make sure you can run the notebooks are specified in the relevant `data` subfolders,
+in README files, such as in `\data\national\ceds\data_raw\README.txt` for the CEDS data download,
+and in `\data\national\gfed\data_raw\README.txt` for the GFED data download.
 
 ### Processed data
 Data is processed by the jupyter notebooks (saved as .py scripts using jupytext, under the `notebooks` folder).
@@ -90,6 +114,30 @@ it all in the README is fine. -->
 
 Install and run instructions are the same as the above (this is a simple
 repository, without tests etc. so there are no development-only dependencies).
+
+### Adding new dependencies
+
+If there is a dependency missing, you can add it with pixi.
+Please only add dependencies with pixi,
+as this ensures that all the other developers will get the same dependencies as you
+(if you add dependencies directly with conda or pip,
+then they are not added to the `pixi.lock` file
+so other developers will not realise they are needed!).
+
+To add a conda dependency,
+
+```sh
+pixi add <dependency-name>
+```
+
+To add a PyPI/pip dependency,
+
+```sh
+pixi add --pypi <dependency-name>
+```
+
+The full documentation can be found [here](https://pixi.sh/v0.24.1/reference/cli/#add)
+in case you have a more exotic use case.
 
 ### Repository structure
 
