@@ -53,9 +53,8 @@ nc-time-axis = ">=1.4.1,<2"
 pint-xarray = ">=0.4,<0.5"
 seaborn = ">=0.13.2,<0.14"
 
-# Next MR
-# [tool.pixi.pypi-dependencies]
-# emissions_harmonization_historical = { path = ".", editable = true }
+[tool.pixi.pypi-dependencies]
+emissions_harmonization_historical = { path = ".", editable = true }
 
 [tool.jupytext]
 formats = "ipynb,py:percent"
