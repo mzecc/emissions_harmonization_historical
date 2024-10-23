@@ -3,76 +3,81 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.16.4
 #   kernelspec:
-#     display_name: .venv
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-# +
+# %%
 # import external packages and functions
 from pathlib import Path
+
 import pandas as pd
 import ptolemy
 import xarray as xr
-import pandas_indexing as pix
-from pandas_indexing import isin, set_openscm_registry_as_default
+from pandas_indexing import set_openscm_registry_as_default
 
-# import internal functions
-import os
-import sys
-repo_root = os.path.abspath(os.path.join(os.getcwd(), '..')) # the notebook is in a 'notebooks' folder, so we want to go up one level to the root
-sys.path.append(repo_root) # Append the repository root to sys.path
+from emissions_harmonization_historical.constants import DATA_ROOT
 from emissions_harmonization_historical.gfed import (
+    add_global,
+    read_cell_area,
     # read_var,
     # read_coords,
     # concat_group,
     # read_monthly,
     # month_to_cftime,
     read_year,
-    read_cell_area,
-    add_global
 )
 
 # set unit registry
 ur = set_openscm_registry_as_default()
 
-# -
 
+# %% [markdown]
 # Set paths
 
-# +
+# %%
 gfed_release = "GFED4.1s"
 
-gfed_data_folder = Path("..", "data", "national", "gfed", "data_raw")
+gfed_data_folder = DATA_ROOT / Path("national", "gfed", "data_raw")
 
-gfed_data_aux_folder = Path("..", "data", "national", "gfed", "data_aux")
-gfed_emission_factors = Path(gfed_data_aux_folder, "GFED4_Emission_Factors.txt") # emission factors of burning of different biomes
-gfed_nmvoc_aux_conversion = Path(gfed_data_aux_folder, "NMVOC-species.xlsx") # for unit conversion of volatile organic compounds
-voc_unit = "kg VOC" # or kg C
-gfed_isomask = Path(gfed_data_aux_folder, "iso_mask.nc") # for aggregating to countries
-gfed_grid_template = Path(gfed_data_aux_folder, "BC-em-openburning_input4MIPs_emissions_CMIP_REMIND-MAGPIE-SSP5-34-OS-V1_gn_201501-210012.nc") # for country-level grid emissions reporting template
+gfed_data_aux_folder = DATA_ROOT / Path("national", "gfed", "data_aux")
+gfed_emission_factors = Path(
+    gfed_data_aux_folder, "GFED4_Emission_Factors.txt"
+)  # emission factors of burning of different biomes
+gfed_nmvoc_aux_conversion = Path(
+    gfed_data_aux_folder, "NMVOC-species.xlsx"
+)  # for unit conversion of volatile organic compounds
+voc_unit = "kg VOC"  # or kg C
+gfed_isomask = Path(gfed_data_aux_folder, "iso_mask.nc")  # for aggregating to countries
+gfed_grid_template = Path(
+    gfed_data_aux_folder, "BC-em-openburning_input4MIPs_emissions_CMIP_REMIND-MAGPIE-SSP5-34-OS-V1_gn_201501-210012.nc"
+)  # for country-level grid emissions reporting template
 
-gfed_processed_output_file = Path("..", "data", "national", "gfed", "processed", "gfed_cmip7_national_alpha.csv")
-gfed_temp_file = Path("..", "data", "national", "gfed", "processed", "gfed_temporaryfile.csv")
-# -
+gfed_processed_output_file = DATA_ROOT / Path("national", "gfed", "processed", "gfed_cmip7_national_alpha.csv")
+gfed_temp_file = DATA_ROOT / Path("national", "gfed", "processed", "gfed_temporaryfile.csv")
 
+# %% [markdown]
 # Specify gases to processes
 
+# %%
 # use all gases covered in CEDS
-gases = ["BC",
-         "CH4",
-         "CO",
-         "CO2",
-         "N2O", # new, to have regional, was global in CMIP6
-         "NH3",
-         "NMVOC", # assumed to be equivalent to IAMC-style reported VOC
-         "NOx",
-         "OC",
-         "SO2"]
+gases = [
+    "BC",
+    "CH4",
+    "CO",
+    "CO2",
+    "N2O",  # new, to have regional, was global in CMIP6
+    "NH3",
+    "NMVOC",  # assumed to be equivalent to IAMC-style reported VOC
+    "NOx",
+    "OC",
+    "SO2",
+]
 # renaming GFED variables to longer IAMC-style naming (renaming happens only at the end of this script)
 sector_mapping = {
     "AGRI": "Agricultural Waste Burning",
@@ -80,17 +85,16 @@ sector_mapping = {
     "DEFO": "Forest Burning",
     "PEAT": "Peat Burning",
     "SAVA": "Grassland Burning",
-    "TEMF": "Forest Burning"
+    "TEMF": "Forest Burning",
 }
 
+# %% [markdown]
 # Load raw emissions data
 
+# %%
 # load raw emissions data
 emissions = xr.concat(
-    [
-        read_year(filename)
-        for filename in sorted(gfed_data_folder.glob("*.hdf5"), key=lambda p: p.stem)
-    ],
+    [read_year(filename) for filename in sorted(gfed_data_folder.glob("*.hdf5"), key=lambda p: p.stem)],
     dim="time",
 )
 # add the cell_area data variable
@@ -101,17 +105,14 @@ emissions["C"].attrs.update(dict(unit="g C m-2 / month"))
 # show xarray
 emissions
 
+# %% [markdown]
 # Get emissions factor for different species
 
-# +
-_, marker, *sectors = pd.read_csv(
-    gfed_emission_factors, sep="\s+", skiprows=15, nrows=1, header=None
-).iloc[0]
-assert (
-    marker == "SPECIE"
-), f"header in {gfed_emission_factors} is not in line 16 anymore or looks different"
+# %%
+_, marker, *sectors = pd.read_csv(gfed_emission_factors, sep=r"\s+", skiprows=15, nrows=1, header=None).iloc[0]
+assert marker == "SPECIE", f"header in {gfed_emission_factors} is not in line 16 anymore or looks different"
 
-ef = pd.read_csv(gfed_emission_factors, sep="\s+", header=None, names=sectors, comment="#").rename_axis(
+ef = pd.read_csv(gfed_emission_factors, sep=r"\s+", header=None, names=sectors, comment="#").rename_axis(
     index="em", columns="sector"
 )
 
@@ -124,34 +125,31 @@ nmvoc_species = nmvoc_species.set_axis(
 # Whether to convert to kgC
 if voc_unit == "kg C":
     nmvoc_factors = (
-        nmvoc_species.loc[nmvoc_species["NMVOC"].isin(["y"])] # thomas gasser confirmed, so can be cleaned up without "?"
+        nmvoc_species.loc[
+            nmvoc_species["NMVOC"].isin(["y"])
+        ]  # thomas gasser confirmed, so can be cleaned up without "?"
         .pipe(lambda df: df["Carbon weight"] / df["Molecular weight"])
         .astype(float)
     )
 elif voc_unit == "kg VOC":
-    nmvoc_factors = pd.Series(
-        1, nmvoc_species.index[nmvoc_species["NMVOC"].isin(["y"])]
-    )
+    nmvoc_factors = pd.Series(1, nmvoc_species.index[nmvoc_species["NMVOC"].isin(["y"])])
 else:
     raise NotImplementedError(f"voc_unit must be 'kg VOC' or 'kg C', not: '{voc_unit}'")
 
 ef.loc["NMVOC"] = ef.multiply(nmvoc_factors, axis=0).sum()
 
-ef_per_DM = (
-    ef.loc[gases]
-    / ef.loc["DM"]
-)
+ef_per_DM = ef.loc[gases] / ef.loc["DM"]
 # in kg {species} / kg DM
 ef_per_DM
-# -
 
+# %% [markdown]
 # Aggregate to countries
 
-# +
+# %%
 # Step 1: Load the country (ISO) NetCDF mask with 0.5-degree resolution.
 # This mask assigns each grid cell an ISO country code, allowing emissions to be aggregated by country.
 # 'chunks={"iso": 1}' uses Dask to enable chunking for memory efficiency, loading one ISO code at a time.
-idxr = xr.open_dataarray(gfed_isomask, chunks={'iso': 1})
+idxr = xr.open_dataarray(gfed_isomask, chunks={"iso": 1})
 
 # Step 2: Open a NetCDF file to use as a grid template for latitude and longitude coordinates.
 # The template file provides the lat/lon grid for regridding the emissions data.
@@ -165,23 +163,24 @@ with xr.open_dataset(gfed_grid_template) as template:
 # The resulting cell areas are stored in an xarray DataArray, with units of square meters ("m2").
 cell_area = xr.DataArray(ptolemy.cell_area(lats=dm_regrid.lat, lons=dm_regrid.lon), attrs=dict(unit="m2"))
 
-# calculate emissions by country by: taking the country cell IDs (idxr), multiplying it by the area (cell_area), and by the regridded lat/lon grid resummed to per year (dm_regrid.groupby("time.year").sum())
+# calculate emissions by country by:
+# taking the country cell IDs (idxr), multiplying it by the area (cell_area),
+# and by the regridded lat/lon grid resummed to per year (dm_regrid.groupby("time.year").sum())
 # Step 4: Calculate emissions by country.
 # This is done by multiplying the regridded Dry Matter (DM) emissions data by the grid cell areas (cell_area)
 # and by the ISO country cell IDs (idxr).
 # The emissions are then summed over the lat/lon grid for each year (grouping by "time.year").
 # Finally, we get the emissions (in unit kg DM / a) by multiplying by the emissions factor (ef_per_DM).
 country_emissions = (
-    (dm_regrid.groupby("time.year").sum() * cell_area * idxr)
-    .sum(["lat", "lon"])
-    .assign_attrs(dict(unit="kg DM / a"))
+    (dm_regrid.groupby("time.year").sum() * cell_area * idxr).sum(["lat", "lon"]).assign_attrs(dict(unit="kg DM / a"))
     * xr.DataArray(ef_per_DM)
 ).compute()
 country_emissions
-# -
 
+# %% [markdown]
 # Convert units from Dry Matter to emissions
 
+# %%
 units = pd.MultiIndex.from_tuples(
     [
         ("BC", "kg C"),
@@ -205,17 +204,17 @@ emissions_df = (
     .pix.convert_unit(lambda u: u.replace("kg", "kt"))
 )
 
+# %% [markdown]
 # Intermediary save before reformatting
 
+# %%
 # intermediary save
-(
-    emissions_df
-    .to_csv(gfed_temp_file)
-)
+(emissions_df.to_csv(gfed_temp_file))
 
+# %% [markdown]
 # Reformat, including updated variable naming
 
-# +
+# %%
 burningCMIP7 = (
     pd.read_csv(
         gfed_temp_file,
@@ -226,8 +225,8 @@ burningCMIP7 = (
 )
 
 # burningCMIP7.pix
-# -
 
+# %%
 # set units
 unit = pd.MultiIndex.from_tuples(
     [
@@ -245,14 +244,14 @@ unit = pd.MultiIndex.from_tuples(
     names=["em", "unit"],
 )
 
-# +
-# TODO: update unit conversions as necessary, e.g. by following IAMC units. Could also be done in a IAMC-preprocessing script.
+# %%
+# TODO: update unit conversions as necessary, e.g. by following IAMC units.
+# Could also be done in a IAMC-preprocessing script.
 
-# +
+# %%
 # reformat
 burningCMIP7_ref = (
-    burningCMIP7
-    .pix.convert_unit(lambda u: u.replace("kt", "Mt"))
+    burningCMIP7.pix.convert_unit(lambda u: u.replace("kt", "Mt"))
     .rename(index=sector_mapping, level="sector")
     .groupby(["em", "sector", "country", "unit"])
     .sum()
@@ -261,23 +260,22 @@ burningCMIP7_ref = (
 
 # rename to IAMC-style variable names
 burningCMIP7_ref = (
-    burningCMIP7_ref
-    .rename(index={"SO2": "Sulfur", "NMVOC": "VOC"}, level="em")
+    burningCMIP7_ref.rename(index={"SO2": "Sulfur", "NMVOC": "VOC"}, level="em")
     .pix.format(variable="CMIP7 History|Emissions|{em}|{sector}", drop=True)
     .pix.assign(model="History", scenario=gfed_release)
 )
 
 # add global level aggregation ("World")
 burningCMIP7_ref = add_global(burningCMIP7_ref, groups=["model", "scenario", "variable", "unit"])
-# -
 
+# %%
 burningCMIP7.pix
 
+# %%
 burningCMIP7_ref.pix
 
+# %% [markdown]
 # Save formatted GFED data
 
-(
-    burningCMIP7_ref
-    .to_csv(gfed_processed_output_file)
-)
+# %%
+(burningCMIP7_ref.to_csv(gfed_processed_output_file))
