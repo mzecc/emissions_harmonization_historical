@@ -34,8 +34,11 @@ ur = pix.units.set_openscm_registry_as_default()
 ceds_release = "2024_07_08"
 ceds_data_folder = DATA_ROOT / Path("national", "ceds", "data_raw")
 ceds_sector_mapping_file = DATA_ROOT / Path("national", "ceds", "data_aux", "sector_mapping.xlsx")
-ceds_processed_output_file = DATA_ROOT / Path(
+ceds_processed_output_file_national = DATA_ROOT / Path(
     "national", "ceds", "processed", f"ceds_cmip7_national_{CEDS_PROCESSING_ID}.csv"
+)
+ceds_processed_output_file_global = DATA_ROOT / Path(
+    "national", "ceds", "processed", f"ceds_cmip7_global_{CEDS_PROCESSING_ID}.csv"
 )
 
 # %% [markdown]
@@ -140,5 +143,19 @@ ceds.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
 # Save formatted CEDS data
 
 # %%
-ceds_reformatted_iamc.to_csv(ceds_processed_output_file)
-ceds_processed_output_file
+ceds_reformatted_iamc_global = ceds_reformatted_iamc.loc[pix.isin(region="World")]
+ceds_reformatted_iamc_national = ceds_reformatted_iamc.loc[~pix.isin(region="World")]
+ceds_reformatted_iamc_global
+
+# %%
+assert ceds_reformatted_iamc_national.shape[0] + ceds_reformatted_iamc_global.shape[0] == ceds_reformatted_iamc.shape[0]
+
+# %%
+ceds_processed_output_file_national.parent.mkdir(exist_ok=True, parents=True)
+ceds_reformatted_iamc_national.to_csv(ceds_processed_output_file_national)
+ceds_processed_output_file_national
+
+# %%
+ceds_processed_output_file_global.parent.mkdir(exist_ok=True, parents=True)
+ceds_reformatted_iamc_global.to_csv(ceds_processed_output_file_global)
+ceds_processed_output_file_global
