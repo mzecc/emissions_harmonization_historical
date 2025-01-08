@@ -21,7 +21,7 @@ import pandas_indexing as pix
 from pandas_indexing.core import isna
 
 from emissions_harmonization_historical.ceds import add_global, get_map, read_CEDS
-from emissions_harmonization_historical.constants import DATA_ROOT
+from emissions_harmonization_historical.constants import CEDS_PROCESSING_ID, DATA_ROOT
 
 # set unit registry
 ur = pix.units.set_openscm_registry_as_default()
@@ -34,14 +34,16 @@ ur = pix.units.set_openscm_registry_as_default()
 ceds_release = "2024_07_08"
 ceds_data_folder = DATA_ROOT / Path("national", "ceds", "data_raw")
 ceds_sector_mapping_file = DATA_ROOT / Path("national", "ceds", "data_aux", "sector_mapping.xlsx")
-ceds_processed_output_file = DATA_ROOT / Path("national", "ceds", "processed", "ceds_cmip7_national_alpha.csv")
+ceds_processed_output_file = DATA_ROOT / Path(
+    "national", "ceds", "processed", f"ceds_cmip7_national_{CEDS_PROCESSING_ID}.csv"
+)
 
 # %% [markdown]
-# Specify gases to processes
+# Specify species to processes
 
 # %%
-# use all gases covered in CEDS
-gases = [
+# use all species covered in CEDS
+species = [
     "BC",
     "CH4",
     "CO",
@@ -67,7 +69,7 @@ ceds_map.to_frame(index=False)
 
 # %%
 ceds = pd.concat(
-    read_CEDS(Path(ceds_data_folder) / f"{gas}_CEDS_emissions_by_country_sector_v{ceds_release}.csv") for gas in gases
+    read_CEDS(Path(ceds_data_folder) / f"{s}_CEDS_emissions_by_country_sector_v{ceds_release}.csv") for s in species
 ).rename_axis(index={"region": "country"})
 ceds.attrs["name"] = "CEDS21"
 ceds = ceds.pix.semijoin(ceds_map, how="outer")
@@ -95,11 +97,14 @@ unit_wishes = pd.MultiIndex.from_tuples(
     [
         ("BC", "Mt BC/yr"),
         ("CH4", "Mt CH4/yr"),
+        ("N2O", "Mt N2O/yr"),
         ("CO", "Mt CO/yr"),
         ("CO2", "Mt CO2/yr"),
         ("NH3", "Mt NH3/yr"),
         ("NMVOC", "Mt NMVOC/yr"),
-        ("NOx", "Mt NOx/yr"),
+        # NOx is NO2 in openscm-units, have to check iam-units.
+        # To remove doubt, use NO2 units here.
+        ("NOx", "Mt NO2/yr"),
         ("OC", "Mt OC/yr"),
         ("SO2", "Mt SO2/yr"),
     ],
@@ -110,14 +115,30 @@ unit_wishes = pd.MultiIndex.from_tuples(
 ceds.pix.unique(unit_wishes.names)
 
 # %%
+# CEDS reformatted
+ceds_reformatted = (
+    ceds.droplevel("unit")
+    .pix.semijoin(unit_wishes, how="left")
+    .rename_axis(index={"em": "variable", "country": "region"})
+)
+ceds_reformatted
+
+# %%
+# rename to IAMC-style variable names including standard index order
+ceds_reformatted_iamc = (
+    ceds_reformatted.rename(index={"SO2": "Sulfur"}, level="variable")
+    .pix.format(variable="Emissions|{variable}|{sector}", drop=True)
+    .pix.assign(model="History", scenario=f"CEDSv{ceds_release}")
+    .reorder_levels(["model", "scenario", "region", "variable", "unit"])
+).sort_values(by=["region", "variable"])
+ceds_reformatted_iamc
+
+# %%
 ceds.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
 
 # %% [markdown]
 # Save formatted CEDS data
 
 # %%
-# reformat
-ceds_ref = ceds.droplevel("unit").pix.semijoin(unit_wishes, how="left").rename_axis(index={"em": "gas"})
-
-# %%
-(ceds_ref.to_csv(ceds_processed_output_file))
+ceds_reformatted_iamc.to_csv(ceds_processed_output_file)
+ceds_processed_output_file
