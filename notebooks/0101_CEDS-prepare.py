@@ -106,7 +106,7 @@ unit_wishes = pd.MultiIndex.from_tuples(
         ("NMVOC", "Mt NMVOC/yr"),
         # NOx is NO2 in openscm-units, have to check iam-units.
         # To remove doubt, use NO2 units here.
-        ("NOx", "Mt NO2/yr"),
+        ("NOx", "kt NO2/yr"),
         ("OC", "Mt OC/yr"),
         ("SO2", "Mt SO2/yr"),
     ],
@@ -115,6 +115,9 @@ unit_wishes = pd.MultiIndex.from_tuples(
 
 # %%
 ceds.pix.unique(unit_wishes.names)
+
+# %%
+ceds.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
 
 # %%
 # CEDS reformatted
@@ -134,9 +137,6 @@ ceds_reformatted_iamc = (
     .reorder_levels(["model", "scenario", "region", "variable", "unit"])
 ).sort_values(by=["region", "variable"])
 ceds_reformatted_iamc
-
-# %%
-ceds.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
 
 # %% [markdown]
 # Save formatted CEDS data
