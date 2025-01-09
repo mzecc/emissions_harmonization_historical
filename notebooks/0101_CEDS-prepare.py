@@ -27,6 +27,7 @@ from emissions_harmonization_historical.constants import (
     CEDS_PROCESSING_ID,
     DATA_ROOT,
 )
+from emissions_harmonization_historical.units import convert_to_desired_units
 
 # set unit registry
 pix.units.set_openscm_registry_as_default()
@@ -190,6 +191,12 @@ ceds_reformatted_iamc = (
     .reorder_levels(["model", "scenario", "region", "variable", "unit"])
 ).sort_values(by=["region", "variable"])
 ceds_reformatted_iamc
+
+# %%
+ceds_reformatted_iamc
+
+# %%
+ceds_reformatted_iamc_desired_units = convert_to_desired_units(ceds_reformatted_iamc)
 
 # %% [markdown]
 # Save formatted CEDS data

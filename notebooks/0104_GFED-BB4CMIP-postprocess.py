@@ -21,6 +21,7 @@ import pandas as pd
 import pandas_indexing as pix
 
 from emissions_harmonization_historical.constants import DATA_ROOT, GFED_PROCESSING_ID
+from emissions_harmonization_historical.units import convert_to_desired_units
 
 # %%
 data_path = DATA_ROOT / "national/gfed-bb4cmip/processed"
@@ -72,23 +73,29 @@ df_sorted
 df_reordered = df_sorted.set_index(["model", "scenario", "region", "variable", "unit"])
 
 # %%
-df_reordered
+df_renamed = df_reordered.rename(
+    index={"Emissions|SO2|Biomass Burning": "Emissions|Sulfur|Biomass Burning"}, level="variable"
+)
+df_renamed
 
 # %%
-df_reordered_global = df_reordered.loc[pix.ismatch(region="World")]
-df_reordered_global
+df_renamed_desired_units = convert_to_desired_units(df_renamed)
 
 # %%
-df_reordered_national = df_reordered.loc[~pix.ismatch(region="World")]
-df_reordered_national
+out_global = df_renamed_desired_units.loc[pix.ismatch(region="World")]
+out_global
 
 # %%
-assert df_reordered_national.shape[0] + df_reordered_global.shape[0] == df_reordered.shape[0]
+out_national = df_reordered.loc[~pix.ismatch(region="World")]
+out_national
 
 # %%
-df_reordered_global.to_csv(out_path_global)
+assert out_national.shape[0] + out_global.shape[0] == df_renamed_desired_units.shape[0]
+
+# %%
+out_global.to_csv(out_path_global)
 out_path_global
 
 # %%
-df_reordered_national.to_csv(out_path_national)
+out_national.to_csv(out_path_national)
 out_path_national
