@@ -74,7 +74,6 @@ ceds_map.to_frame(index=False)
 ceds = pd.concat(
     read_CEDS(Path(ceds_data_folder) / f"{s}_CEDS_emissions_by_country_sector_v{ceds_release}.csv") for s in species
 ).rename_axis(index={"region": "country"})
-ceds.attrs["name"] = "CEDS21"
 ceds = ceds.pix.semijoin(ceds_map, how="outer")
 ceds.loc[isna].pix.unique(["sector_59", "sector"])  # print sectors with NAs
 
