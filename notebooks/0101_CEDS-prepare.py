@@ -193,6 +193,23 @@ out_global
 # %%
 assert out_national.shape[0] + out_global.shape[0] == ceds_reformatted_iamc_desired_units.shape[0]
 
+# %% [markdown]
+# Check that national sums equal global total.
+
+# %%
+national_sums_checker = (
+    pix.assignlevel(out_national.groupby(["model", "scenario", "variable", "unit"]).sum(), region="World")
+    .reset_index()
+    .set_index(out_global.index.names)
+)
+national_sums_checker.columns = national_sums_checker.columns.astype(int)
+national_sums_checker
+
+# %%
+pd.testing.assert_frame_equal(out_global, national_sums_checker, check_like=True)
+# # Interesting, means CEDS has shipping and aircraft at country level
+# out_national.loc[pix.ismatch(variable=["**Aircraft", "**Shipping"])].sum()
+
 # %%
 ceds_processed_output_file_national.parent.mkdir(exist_ok=True, parents=True)
 out_national.to_csv(ceds_processed_output_file_national)
