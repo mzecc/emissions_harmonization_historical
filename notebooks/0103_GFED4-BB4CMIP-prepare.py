@@ -167,53 +167,101 @@ def gfed_to_scmrun(in_da: xr.DataArray, *, unit_label: str, world: bool = False)
 
 # %%
 gfed_processed_output_dir.mkdir(exist_ok=True, parents=True)
-for species in tqdm(species_data):
+for species in tqdm(species_data, desc="Species"):
     species_ds = xr.open_mfdataset(bb4cmip_file_groups[species], combine_attrs="drop_conflicts").rename(
         {"latitude": "lat", "longitude": "lon"}
     )
-    # Handy for testing
-    species_ds = species_ds.isel(time=range(12 * 3))
+    # # Handy for testing
+    # species_ds = species_ds.isel(time=range(12 * 3))
     # # Handy for seeing what's going on
     # display(species_ds)
 
-    # First get the emissions on to an annual grid
+    # First get the emissions on an annual grid
     emissions_da = species_ds[species].chunk("auto")
     assert emissions_da.units == "kg m-2 s-1"
 
+    # get annual sum emissions in each grid cell
     # weight by month length
     seconds_per_month = (
         np.tile([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], len(emissions_da.time) // 12) * 24 * 60 * 60
     )
     weights = xr.DataArray(seconds_per_month, dims=("time",), coords=emissions_da.coords["time"].coords)
-
-    # get annual sum emissions in each grid cell
     gridded_annual_emissions_rate = (emissions_da * weights).groupby("time.year").sum().compute()  # kg / m2 / yr
+    # # no weighting by month length
+    # (testing in case it lines up better with data provider, doesn't seem to matter)
+    # seconds_per_year = 365 * 24 * 60 * 60
+    # gridded_annual_emissions_rate = (
+    #    emissions_da.groupby("time.year").mean().compute()
+    # ) * seconds_per_year  # kg / m2 / yr
 
-    # regrid to half degree
-    regridded_annual_emissions_rate = gridded_annual_emissions_rate.regrid.conservative(
-        idxr
-    )  # still kg / m2 / yr, now coarser grid
+    # Split into chunks from here to avoid destroying laptops
+    n_yrs_to_process = 10
+    out_world_l = []
+    out_country_l = []
+    # Convert to list to help tqdm out
+    yr_starts = list(gridded_annual_emissions_rate.year[::n_yrs_to_process].values)
+    for yr_start in tqdm(yr_starts, desc=f"{species} chunks"):
+        yr_end = yr_start + n_yrs_to_process
+        if yr_end > gridded_annual_emissions_rate.year.max():
+            yr_end = int(gridded_annual_emissions_rate.year.max()) + 1
 
-    # get cell areas of new grid
-    cell_area = xr.DataArray(
-        ptolemy.cell_area(lats=regridded_annual_emissions_rate.lat, lons=regridded_annual_emissions_rate.lon)
-    )  # m2
+        chunk_to_process = gridded_annual_emissions_rate.sel(year=range(yr_start, yr_end))
 
-    # emissions in each country, annual time series
-    # Mt / yr in each country, the 1e9 is kg to Mt
-    assert species_ds[species].units == "kg m-2 s-1"
-    country_emissions = ((regridded_annual_emissions_rate * cell_area * idxr).sum(["lat", "lon"])).compute() / 1e9
-    world_emissions = (regridded_annual_emissions_rate * cell_area).sum(["lat", "lon"]).compute() / 1e9
+        # regrid to half degree
+        regridded_annual_emissions_rate = chunk_to_process.regrid.conservative(
+            idxr
+        )  # still kg / m2 / yr, now coarser grid
 
-    out_world = gfed_to_scmrun(world_emissions, unit_label=species_data[species]["unit_label"], world=True)
-    out_country = gfed_to_scmrun(country_emissions, unit_label=species_data[species]["unit_label"])
+        # get cell areas of new grid
+        cell_area = xr.DataArray(
+            ptolemy.cell_area(lats=regridded_annual_emissions_rate.lat, lons=regridded_annual_emissions_rate.lon)
+        )  # m2
 
-    # write out temporary files to save RAM and process combined dataset later
+        # emissions in each country, annual time series
+        # Mt / yr in each country, the 1e9 is kg to Mt
+        country_emissions = ((regridded_annual_emissions_rate * cell_area * idxr).sum(["lat", "lon"])).compute() / 1e9
+        world_emissions = (regridded_annual_emissions_rate * cell_area).sum(["lat", "lon"]).compute() / 1e9
 
+        out_world_chunk = gfed_to_scmrun(world_emissions, unit_label=species_data[species]["unit_label"], world=True)
+        out_country_chunk = gfed_to_scmrun(country_emissions, unit_label=species_data[species]["unit_label"])
+
+        out_world_l.append(out_world_chunk)
+        out_country_l.append(out_country_chunk)
+        # break
+
+    out_world = scmdata.run_append(out_world_l)
+    out_country = scmdata.run_append(out_country_l)
+
+    # Last checks with what data provider thinks
+    for original_file in bb4cmip_file_groups[species]:
+        orig_ds = xr.open_dataset(original_file)
+        timerange = original_file.stem.split("_")[-1].split("-")
+        compare_unit = species_data[species]["unit_label"].replace("Mt", "Tg")
+
+        for i, timestamp in enumerate(timerange):
+            year = int(timestamp[:4])
+            if i < 1:
+                compare_val = float(orig_ds.attrs["annual_total_first_year_Tg_yr"])
+            elif i == 1:
+                compare_val = float(orig_ds.attrs["annual_total_last_year_Tg_yr"])
+            else:
+                raise NotImplementedError()
+
+            try:
+                np.testing.assert_allclose(
+                    np.round(out_world.filter(year=year).convert_unit(compare_unit).values.squeeze(), 2),
+                    compare_val,
+                )
+            except AssertionError as exc:
+                print(f"Difference from what the data provider thinks the global value should be in {year}")
+                print(exc)
+
+    # write out temporary files to save RAM and process combined dataset in 0104
     gfed_temp_file_world = gfed_processed_output_dir / f"{species}_world_{GFED_PROCESSING_ID}.csv"
     out_world.timeseries(time_axis="year").to_csv(gfed_temp_file_world)
     print(f"Wrote {gfed_temp_file_world}")
     gfed_temp_file_country = gfed_processed_output_dir / f"{species}_national_{GFED_PROCESSING_ID}.csv"
     out_country.timeseries(time_axis="year").to_csv(gfed_temp_file_country)
     print(f"Wrote {gfed_temp_file_country}")
+
     # break
