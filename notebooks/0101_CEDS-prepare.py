@@ -64,7 +64,7 @@ species = [
 
 # %%
 ceds_mapping = pd.read_excel(ceds_sector_mapping_file, sheet_name="CEDS Mapping 2024")
-ceds_map = get_map(ceds_mapping, "59_Sectors_2024")
+ceds_map = get_map(ceds_mapping, "59_Sectors_2024")  # note; with 7BC now added it is actually 60 sectors, not 59?!
 ceds_map.to_frame(index=False)
 
 # %% [markdown]
