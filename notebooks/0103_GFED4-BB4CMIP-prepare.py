@@ -46,7 +46,14 @@ bb4cmip_file_groups = defaultdict(list)
 
 for file in bb4cmip_files:
     variable = file.name.split("_")[0]
+    if variable == "Higher":
+        # My bad, we didn't catch this in validation
+        variable = "_".join(file.name.split("_")[:2])
+
     bb4cmip_file_groups[variable].append(file)
+
+# %%
+bb4cmip_file_groups.keys()
 
 # %%
 species_data = {
@@ -54,10 +61,13 @@ species_data = {
         "unit_label": "Mt BC / yr",
         "filename_label": "BC",
     },
-    "NMVOC": {
-        "unit_label": "Mt NMVOC / yr",
-        "filename_label": "NMVOC_bulk",
-    },
+    # TODO: check with Chris where this is mean to come from.
+    # There is no NMVOC_bulk in BB4CMIP.
+    # Maybe Higher_Alkenes?
+    # "NMVOC": {
+    #     "unit_label": "Mt NMVOC / yr",
+    #     "filename_label": "NMVOC_bulk",
+    # },
     "CO": {
         "unit_label": "Mt CO / yr",
         "filename_label": "CO",
@@ -162,8 +172,8 @@ for species in tqdm(species_data):
         {"latitude": "lat", "longitude": "lon"}
     )
     # Handy for testing
-    # species_ds = species_ds.isel(time=range(12 * 3))
-    # Handy for seeing what's going on
+    species_ds = species_ds.isel(time=range(12 * 3))
+    # # Handy for seeing what's going on
     # display(species_ds)
 
     # First get the emissions on to an annual grid
@@ -202,6 +212,8 @@ for species in tqdm(species_data):
 
     gfed_temp_file_world = gfed_processed_output_dir / f"{species}_world_{GFED_PROCESSING_ID}.csv"
     out_world.timeseries(time_axis="year").to_csv(gfed_temp_file_world)
+    print(f"Wrote {gfed_temp_file_world}")
     gfed_temp_file_country = gfed_processed_output_dir / f"{species}_national_{GFED_PROCESSING_ID}.csv"
     out_country.timeseries(time_axis="year").to_csv(gfed_temp_file_country)
-    break
+    print(f"Wrote {gfed_temp_file_country}")
+    # break
