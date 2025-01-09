@@ -80,17 +80,33 @@ df_renamed
 
 # %%
 df_renamed_desired_units = convert_to_desired_units(df_renamed)
+df_renamed_desired_units.columns = df_renamed_desired_units.columns.astype(int)
 
 # %%
 out_global = df_renamed_desired_units.loc[pix.ismatch(region="World")]
 out_global
 
 # %%
-out_national = df_reordered.loc[~pix.ismatch(region="World")]
+out_national = df_renamed_desired_units.loc[~pix.ismatch(region="World")]
 out_national
 
 # %%
 assert out_national.shape[0] + out_global.shape[0] == df_renamed_desired_units.shape[0]
+
+# %% [markdown]
+# Check that national sums equal global total.
+
+# %%
+national_sums_checker = (
+    pix.assignlevel(out_national.groupby(["model", "scenario", "variable", "unit"]).sum(), region="World")
+    .reset_index()
+    .set_index(out_global.index.names)
+)
+national_sums_checker.columns = national_sums_checker.columns.astype(int)
+national_sums_checker
+
+# %%
+pd.testing.assert_frame_equal(out_global, national_sums_checker, check_like=True)
 
 # %%
 out_global.to_csv(out_path_global)
