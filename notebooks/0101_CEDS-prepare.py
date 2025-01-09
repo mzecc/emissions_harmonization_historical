@@ -16,6 +16,7 @@
 # import external packages and functions
 from pathlib import Path
 
+import openscm_units
 import pandas as pd
 import pandas_indexing as pix
 from pandas_indexing.core import isna
@@ -24,8 +25,12 @@ from emissions_harmonization_historical.ceds import add_global, get_map, read_CE
 from emissions_harmonization_historical.constants import CEDS_PROCESSING_ID, DATA_ROOT
 
 # set unit registry
-ur = pix.units.set_openscm_registry_as_default()
+pix.units.set_openscm_registry_as_default()
 
+
+# %%
+ur = openscm_units.unit_registry
+Q = openscm_units.unit_registry.Quantity
 
 # %% [markdown]
 # Set paths
@@ -95,37 +100,7 @@ ceds = ceds.pix.aggregate(country=country_combinations)
 ceds = add_global(ceds)
 
 # %%
-unit_wishes = pd.MultiIndex.from_tuples(
-    [
-        ("BC", "Mt BC/yr"),
-        ("CH4", "Mt CH4/yr"),
-        ("N2O", "Mt N2O/yr"),
-        ("CO", "Mt CO/yr"),
-        ("CO2", "Mt CO2/yr"),
-        ("NH3", "Mt NH3/yr"),
-        ("NMVOC", "Mt NMVOC/yr"),
-        # NOx is NO2 in openscm-units, have to check iam-units.
-        # To remove doubt, use NO2 units here.
-        ("NOx", "kt NO2/yr"),
-        ("OC", "Mt OC/yr"),
-        ("SO2", "Mt SO2/yr"),
-    ],
-    names=["em", "unit"],
-)
-
-# %%
-ceds.pix.unique(unit_wishes.names)
-
-# %%
-ceds.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
-
-# %%
-# CEDS reformatted
-ceds_reformatted = (
-    ceds.droplevel("unit")
-    .pix.semijoin(unit_wishes, how="left")
-    .rename_axis(index={"em": "variable", "country": "region"})
-)
+ceds_reformatted = ceds.rename_axis(index={"em": "variable", "country": "region"})
 ceds_reformatted
 
 # %%
@@ -138,23 +113,92 @@ ceds_reformatted_iamc = (
 ).sort_values(by=["region", "variable"])
 ceds_reformatted_iamc
 
+# %%
+ceds_reformatted_iamc
+
+# %%
+unit_wishes = (
+    # ("variable", "unit")
+    ("BC", "Mt BC/yr"),
+    ("CH4", "Mt CH4/yr"),
+    ("N2O", "Mt N2O/yr"),
+    ("CO", "Mt CO/yr"),
+    ("CO2", "Mt CO2/yr"),
+    ("NH3", "Mt NH3/yr"),
+    ("NMVOC", "Mt NMVOC/yr"),
+    ("NOx", "kt N2O/yr"),
+    ("OC", "Mt OC/yr"),
+    ("Sulfur", "Mt SO2/yr"),
+)
+
+
+# %%
+def get_conv_factor(species, start_unit, target_unit):
+    """
+    Get conversion factor
+    """
+    if species == "OC" and (start_unit == "Mt C/yr" and target_unit == "Mt OC/yr"):
+        return 1.0
+
+    if species == "BC" and (start_unit == "Mt C/yr" and target_unit == "Mt BC/yr"):
+        return 1.0
+
+    if species == "NOx" and (start_unit == "Mt NO2/yr" and target_unit == "kt N2O/yr"):
+        with ur.context("NOx_conversions"):
+            interim = Q(1, start_unit).to("kt N / yr")
+
+        with ur.context("N2O_conversions"):
+            return interim.to(target_unit).m
+
+    return Q(1, start_unit).to(target_unit).m
+
+
+# %%
+# I have no idea how I'm meant to navigate this better, anyway
+ceds_reformatted_iamc_desired_units = ceds_reformatted_iamc.copy()
+for species, target_unit in unit_wishes:
+    locator = pix.ismatch(variable=f"Emissions|{species}|**")
+    current_unit = ceds_reformatted_iamc_desired_units.loc[locator].index.get_level_values("unit").unique()
+    if len(current_unit) != 1:
+        raise AssertionError(current_unit)
+
+    current_unit = current_unit[0]
+
+    if current_unit == target_unit:
+        continue
+
+    conversion_factor = get_conv_factor(species=species, start_unit=current_unit, target_unit=target_unit)
+    print(f"{species=} {current_unit=} {target_unit=} {conversion_factor=}")
+
+    tmp = ceds_reformatted_iamc_desired_units.loc[locator].copy()
+    ceds_reformatted_iamc_desired_units = ceds_reformatted_iamc_desired_units.loc[~locator]
+
+    tmp *= conversion_factor
+    tmp = pix.assignlevel(tmp, unit=target_unit)
+
+    ceds_reformatted_iamc_desired_units = pd.concat([tmp, ceds_reformatted_iamc_desired_units])
+    # break
+
+ceds_reformatted_iamc_desired_units = ceds_reformatted_iamc_desired_units.sort_index()
+ceds_reformatted_iamc_desired_units
+
 # %% [markdown]
 # Save formatted CEDS data
 
 # %%
-ceds_reformatted_iamc_global = ceds_reformatted_iamc.loc[pix.isin(region="World")]
-ceds_reformatted_iamc_national = ceds_reformatted_iamc.loc[~pix.isin(region="World")]
-ceds_reformatted_iamc_global
+out_global = ceds_reformatted_iamc_desired_units.loc[pix.isin(region="World")]
+out_national = ceds_reformatted_iamc_desired_units.loc[~pix.isin(region="World")]
+out_global
 
 # %%
-assert ceds_reformatted_iamc_national.shape[0] + ceds_reformatted_iamc_global.shape[0] == ceds_reformatted_iamc.shape[0]
+assert out_national.shape[0] + out_global.shape[0] == ceds_reformatted_iamc_desired_units.shape[0]
 
 # %%
 ceds_processed_output_file_national.parent.mkdir(exist_ok=True, parents=True)
-ceds_reformatted_iamc_national.to_csv(ceds_processed_output_file_national)
+out_national.to_csv(ceds_processed_output_file_national)
 ceds_processed_output_file_national
 
 # %%
 ceds_processed_output_file_global.parent.mkdir(exist_ok=True, parents=True)
-ceds_reformatted_iamc_global.to_csv(ceds_processed_output_file_global)
+out_global.to_csv(ceds_processed_output_file_global)
 ceds_processed_output_file_global
