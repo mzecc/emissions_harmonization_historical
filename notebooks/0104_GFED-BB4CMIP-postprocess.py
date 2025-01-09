@@ -32,9 +32,7 @@ out_path_national = data_path / f"gfed-bb4cmip_cmip7_national_{GFED_PROCESSING_I
 # %%
 species = [
     "BC",
-    # # Not sure where this is meant to come from yet,
-    # # see note in 0103
-    # "NMVOC",
+    "NMVOC",
     "CO",
     "CO2",
     "CH4",

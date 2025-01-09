@@ -61,13 +61,10 @@ species_data = {
         "unit_label": "Mt BC / yr",
         "filename_label": "BC",
     },
-    # TODO: check with Chris where this is mean to come from.
-    # There is no NMVOC_bulk in BB4CMIP.
-    # Maybe Higher_Alkenes?
-    # "NMVOC": {
-    #     "unit_label": "Mt NMVOC / yr",
-    #     "filename_label": "NMVOC_bulk",
-    # },
+    "NMVOC": {
+        "unit_label": "Mt NMVOC / yr",
+        "filename_label": "NMVOC_bulk",
+    },
     "CO": {
         "unit_label": "Mt CO / yr",
         "filename_label": "CO",
@@ -167,7 +164,7 @@ def gfed_to_scmrun(in_da: xr.DataArray, *, unit_label: str, world: bool = False)
 
 # %%
 gfed_processed_output_dir.mkdir(exist_ok=True, parents=True)
-for species in tqdm(species_data, desc="Species"):
+for species, species_info in tqdm(species_data.items(), desc="Species"):
     species_ds = xr.open_mfdataset(bb4cmip_file_groups[species], combine_attrs="drop_conflicts").rename(
         {"latitude": "lat", "longitude": "lon"}
     )
@@ -222,8 +219,8 @@ for species in tqdm(species_data, desc="Species"):
         country_emissions = ((regridded_annual_emissions_rate * cell_area * idxr).sum(["lat", "lon"])).compute() / 1e9
         world_emissions = (regridded_annual_emissions_rate * cell_area).sum(["lat", "lon"]).compute() / 1e9
 
-        out_world_chunk = gfed_to_scmrun(world_emissions, unit_label=species_data[species]["unit_label"], world=True)
-        out_country_chunk = gfed_to_scmrun(country_emissions, unit_label=species_data[species]["unit_label"])
+        out_world_chunk = gfed_to_scmrun(world_emissions, unit_label=species_info["unit_label"], world=True)
+        out_country_chunk = gfed_to_scmrun(country_emissions, unit_label=species_info["unit_label"])
 
         out_world_l.append(out_world_chunk)
         out_country_l.append(out_country_chunk)
@@ -236,7 +233,7 @@ for species in tqdm(species_data, desc="Species"):
     for original_file in bb4cmip_file_groups[species]:
         orig_ds = xr.open_dataset(original_file)
         timerange = original_file.stem.split("_")[-1].split("-")
-        compare_unit = species_data[species]["unit_label"].replace("Mt", "Tg")
+        compare_unit = species_info["unit_label"].replace("Mt", "Tg")
 
         for i, timestamp in enumerate(timerange):
             year = int(timestamp[:4])
