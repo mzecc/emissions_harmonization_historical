@@ -64,7 +64,7 @@ species = [
 
 # %%
 ceds_mapping = pd.read_excel(ceds_sector_mapping_file, sheet_name="CEDS Mapping 2024")
-ceds_map = get_map(ceds_mapping, "59_Sectors_2024")
+ceds_map = get_map(ceds_mapping, "59_Sectors_2024")  # note; with 7BC now added it is actually 60 sectors, not 59?!
 ceds_map.to_frame(index=False)
 
 # %% [markdown]
@@ -74,7 +74,6 @@ ceds_map.to_frame(index=False)
 ceds = pd.concat(
     read_CEDS(Path(ceds_data_folder) / f"{s}_CEDS_emissions_by_country_sector_v{ceds_release}.csv") for s in species
 ).rename_axis(index={"region": "country"})
-ceds.attrs["name"] = "CEDS21"
 ceds = ceds.pix.semijoin(ceds_map, how="outer")
 ceds.loc[isna].pix.unique(["sector_59", "sector"])  # print sectors with NAs
 
@@ -107,7 +106,7 @@ unit_wishes = pd.MultiIndex.from_tuples(
         ("NMVOC", "Mt NMVOC/yr"),
         # NOx is NO2 in openscm-units, have to check iam-units.
         # To remove doubt, use NO2 units here.
-        ("NOx", "Mt NO2/yr"),
+        ("NOx", "kt NO2/yr"),
         ("OC", "Mt OC/yr"),
         ("SO2", "Mt SO2/yr"),
     ],
@@ -116,6 +115,9 @@ unit_wishes = pd.MultiIndex.from_tuples(
 
 # %%
 ceds.pix.unique(unit_wishes.names)
+
+# %%
+ceds.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
 
 # %%
 # CEDS reformatted
@@ -135,9 +137,6 @@ ceds_reformatted_iamc = (
     .reorder_levels(["model", "scenario", "region", "variable", "unit"])
 ).sort_values(by=["region", "variable"])
 ceds_reformatted_iamc
-
-# %%
-ceds.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
 
 # %% [markdown]
 # Save formatted CEDS data
