@@ -16,21 +16,21 @@
 # import external packages and functions
 from pathlib import Path
 
-import openscm_units
+import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 from pandas_indexing.core import isna
 
 from emissions_harmonization_historical.ceds import add_global, get_map, read_CEDS
-from emissions_harmonization_historical.constants import CEDS_PROCESSING_ID, DATA_ROOT
+from emissions_harmonization_historical.constants import (
+    CEDS_EXPECTED_NUMBER_OF_REGION_VARIABLE_PAIRS_IN_GLOBAL_HARMONIZATION,
+    CEDS_PROCESSING_ID,
+    DATA_ROOT,
+)
 
 # set unit registry
 pix.units.set_openscm_registry_as_default()
 
-
-# %%
-ur = openscm_units.unit_registry
-Q = openscm_units.unit_registry.Quantity
 
 # %% [markdown]
 # Set paths
@@ -42,6 +42,13 @@ ceds_sector_mapping_file = DATA_ROOT / Path("national", "ceds", "data_aux", "sec
 ceds_processed_output_file_national = DATA_ROOT / Path(
     "national", "ceds", "processed", f"ceds_cmip7_national_{CEDS_PROCESSING_ID}.csv"
 )
+ceds_processed_output_file_international = DATA_ROOT / Path(
+    "national", "ceds", "processed", f"ceds_cmip7_international_{CEDS_PROCESSING_ID}.csv"
+)
+# (by default we do not save this one below to avoid data duplication)
+# ceds_processed_output_file_national_and_international = DATA_ROOT / Path(
+#     "national", "ceds", "processed", f"ceds_cmip7_national_and_international_{CEDS_PROCESSING_ID}.csv"
+# )
 ceds_processed_output_file_global = DATA_ROOT / Path(
     "national", "ceds", "processed", f"ceds_cmip7_global_{CEDS_PROCESSING_ID}.csv"
 )
@@ -83,8 +90,55 @@ ceds = ceds.pix.semijoin(ceds_map, how="outer")
 ceds.loc[isna].pix.unique(["sector_59", "sector"])  # print sectors with NAs
 
 # %%
-ceds = ceds.pix.dropna(subset=["units"]).pix.format(unit="{units}/yr", drop=True)  # adjust units
-ceds = pix.units.convert_unit(ceds, lambda x: "Mt " + x.removeprefix("kt").strip())  # adjust units
+# '6B_Other-not-in-total' is not assigned, and normally not used by CEDS. To be certain that we notice it when something
+# ... changes, we check that it is indeed zero, such that we are not missing anything.
+year_cols = ceds.columns.astype(int)
+first_year = year_cols[0]
+last_year = year_cols[-1]
+sum_of_6B_other = (
+    ceds.loc[pix.ismatch(sector_59="6B_Other-not-in-total")]
+    .sum(axis=1)  # sum across years
+    .sum(axis=0)  # sum across species and countries
+)
+assert sum_of_6B_other == 0
+
+# %%
+ceds
+
+# %%
+# change units to align with IAM scenario data
+# adjust units; change column 'units' to 'units' and add '/yr'
+ceds = ceds.pix.dropna(subset=["units"]).pix.format(unit="{units}/yr", drop=True)
+# adjust units; change all to values to Mt instead of kt
+ceds = pix.units.convert_unit(ceds, lambda x: "Mt " + x.removeprefix("kt").strip())
+# exception for N2O/yr, which should remain in kt following https://github.com/IAMconsortium/common-definitions/
+ceds = pix.units.convert_unit(ceds, lambda x: "kt " + x.removeprefix("Mt").strip() if x == "Mt N2O/yr" else x)
+# unit of BC from C to BC
+ceds.index = pd.MultiIndex.from_tuples(
+    [
+        (em, country, sector_59, sector, "Mt BC/yr" if unit == "Mt C/yr" and em == "BC" else unit)
+        for em, country, sector_59, sector, unit in ceds.index
+    ],
+    names=ceds.index.names,
+)
+# unit of OC from C to OC
+ceds.index = pd.MultiIndex.from_tuples(
+    [
+        (em, country, sector_59, sector, "Mt OC/yr" if unit == "Mt C/yr" and em == "OC" else unit)
+        for em, country, sector_59, sector, unit in ceds.index
+    ],
+    names=ceds.index.names,
+)
+# change name(s) of emissions species
+# use 'Sulfur' instead of 'SO2'
+ceds.index = pd.MultiIndex.from_tuples(
+    [
+        ("Sulfur" if em == "SO2" else em, country, sector_59, sector, unit)
+        for em, country, sector_59, sector, unit in ceds.index
+    ],
+    names=ceds.index.names,
+)
+ceds
 
 # %%
 ceds = ceds.groupby(["em", "country", "unit", "sector"]).sum().pix.fixna()  # group and fix NAs
@@ -104,118 +158,138 @@ ceds_reformatted = ceds.rename_axis(index={"em": "variable", "country": "region"
 ceds_reformatted
 
 # %%
+# check that all units are as wished.
+# ... as this is for the harmonization of IAMs (in CMIP7 / ScenarioMIP), the desired units are defined in https://github.com/IAMconsortium/common-definitions/
+unit_wishes = pd.MultiIndex.from_tuples(
+    [
+        ("BC", "Mt BC/yr"),
+        ("CH4", "Mt CH4/yr"),
+        ("N2O", "kt N2O/yr"),
+        ("CO", "Mt CO/yr"),
+        ("CO2", "Mt CO2/yr"),
+        ("NH3", "Mt NH3/yr"),
+        ("NMVOC", "Mt NMVOC/yr"),
+        ("NOx", "Mt NO2/yr"),
+        ("OC", "Mt OC/yr"),
+        ("Sulfur", "Mt SO2/yr"),
+    ],
+    names=["variable", "unit"],
+)
+
+# check that we follow the desired units
+ceds_reformatted.pix.unique(unit_wishes.names)
+unit_mismatches = ceds_reformatted.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
+
+assert unit_mismatches.empty, f"Unit mismatches detected:\n{unit_mismatches}"
+
+# %%
 # rename to IAMC-style variable names including standard index order
 ceds_reformatted_iamc = (
-    ceds_reformatted.rename(index={"SO2": "Sulfur"}, level="variable")
-    .pix.format(variable="Emissions|{variable}|{sector}", drop=True)
+    ceds_reformatted.pix.format(variable="Emissions|{variable}|{sector}", drop=True)
     .pix.assign(model="History", scenario=f"CEDSv{ceds_release}")
     .reorder_levels(["model", "scenario", "region", "variable", "unit"])
 ).sort_values(by=["region", "variable"])
 ceds_reformatted_iamc
 
-# %%
-ceds_reformatted_iamc
-
-# %%
-unit_wishes = (
-    # ("variable", "unit")
-    ("BC", "Mt BC/yr"),
-    ("CH4", "Mt CH4/yr"),
-    ("N2O", "Mt N2O/yr"),
-    ("CO", "Mt CO/yr"),
-    ("CO2", "Mt CO2/yr"),
-    ("NH3", "Mt NH3/yr"),
-    ("NMVOC", "Mt NMVOC/yr"),
-    ("NOx", "kt N2O/yr"),
-    ("OC", "Mt OC/yr"),
-    ("Sulfur", "Mt SO2/yr"),
-)
-
-
-# %%
-def get_conv_factor(species, start_unit, target_unit):
-    """
-    Get conversion factor
-    """
-    if species == "OC" and (start_unit == "Mt C/yr" and target_unit == "Mt OC/yr"):
-        return 1.0
-
-    if species == "BC" and (start_unit == "Mt C/yr" and target_unit == "Mt BC/yr"):
-        return 1.0
-
-    if species == "NOx" and (start_unit == "Mt NO2/yr" and target_unit == "kt N2O/yr"):
-        with ur.context("NOx_conversions"):
-            interim = Q(1, start_unit).to("kt N / yr")
-
-        with ur.context("N2O_conversions"):
-            return interim.to(target_unit).m
-
-    return Q(1, start_unit).to(target_unit).m
-
-
-# %%
-# I have no idea how I'm meant to navigate this better, anyway
-ceds_reformatted_iamc_desired_units = ceds_reformatted_iamc.copy()
-for species, target_unit in unit_wishes:
-    locator = pix.ismatch(variable=f"Emissions|{species}|**")
-    current_unit = ceds_reformatted_iamc_desired_units.loc[locator].index.get_level_values("unit").unique()
-    if len(current_unit) != 1:
-        raise AssertionError(current_unit)
-
-    current_unit = current_unit[0]
-
-    if current_unit == target_unit:
-        continue
-
-    conversion_factor = get_conv_factor(species=species, start_unit=current_unit, target_unit=target_unit)
-    print(f"{species=} {current_unit=} {target_unit=} {conversion_factor=}")
-
-    tmp = ceds_reformatted_iamc_desired_units.loc[locator].copy()
-    ceds_reformatted_iamc_desired_units = ceds_reformatted_iamc_desired_units.loc[~locator]
-
-    tmp *= conversion_factor
-    tmp = pix.assignlevel(tmp, unit=target_unit)
-
-    ceds_reformatted_iamc_desired_units = pd.concat([tmp, ceds_reformatted_iamc_desired_units])
-    # break
-
-ceds_reformatted_iamc_desired_units = ceds_reformatted_iamc_desired_units.sort_index()
-ceds_reformatted_iamc_desired_units
-
 # %% [markdown]
 # Save formatted CEDS data
 
 # %%
-out_global = ceds_reformatted_iamc_desired_units.loc[pix.isin(region="World")]
-out_national = ceds_reformatted_iamc_desired_units.loc[~pix.isin(region="World")]
-out_global
+out_global = ceds_reformatted_iamc.loc[pix.isin(region="World")]  # only the added "World" region
+out_national_with_global = ceds_reformatted_iamc.loc[
+    ~pix.isin(region="World")
+]  # remove the added "World" region, and the CEDS "global" region
+out_national_without_global = ceds_reformatted_iamc.loc[
+    ~pix.isin(region=["World", "global"])
+]  # remove the added "World" region, and the CEDS "global" region
+out_national_only_global = ceds_reformatted_iamc.loc[
+    pix.isin(region="global")
+]  # only the CEDS "global" region; which represents "international" emissions
 
 # %%
-assert out_national.shape[0] + out_global.shape[0] == ceds_reformatted_iamc_desired_units.shape[0]
+assert out_national_with_global.shape[0] + out_global.shape[0] == ceds_reformatted_iamc.shape[0]
+assert (
+    out_national_without_global.shape[0] + out_national_only_global.shape[0] + out_global.shape[0]
+    == ceds_reformatted_iamc.shape[0]
+)
 
 # %% [markdown]
 # Check that national sums equal global total.
 
 # %%
+# Check that `out_national_with_global` totals (all countries in iso3c + CEDS 'global' region)
+# ... are the same as `out_global` totals ("World")
 national_sums_checker = (
-    pix.assignlevel(out_national.groupby(["model", "scenario", "variable", "unit"]).sum(), region="World")
+    pix.assignlevel(out_national_with_global.groupby(["model", "scenario", "variable", "unit"]).sum(), region="World")
     .reset_index()
     .set_index(out_global.index.names)
 )
 national_sums_checker.columns = national_sums_checker.columns.astype(int)
 national_sums_checker
-
-# %%
 pd.testing.assert_frame_equal(out_global, national_sums_checker, check_like=True)
-# # Interesting, means CEDS has shipping and aircraft at country level
-# out_national.loc[pix.ismatch(variable=["**Aircraft", "**Shipping"])].sum()
 
 # %%
+# Check that `out_national_without_global` totals (all countries in iso3c) are the same as `out_global` totals ("World")
+# - this should not hold for aircraft and international shipping
+
+# without aircraft and international shipping:
+global_checker = out_global.loc[~pix.ismatch(variable=["**Aircraft", "**Shipping"])]
+national_sums_checker = (
+    pix.assignlevel(
+        out_national_without_global.groupby(["model", "scenario", "variable", "unit"]).sum(), region="World"
+    )
+    .loc[~pix.ismatch(variable=["**Aircraft", "**Shipping"])]
+    .reset_index()
+    .set_index(out_global.index.names)
+)
+national_sums_checker.columns = national_sums_checker.columns.astype(int)
+national_sums_checker
+pd.testing.assert_frame_equal(global_checker, national_sums_checker, check_like=True)
+
+# check that aircraft and international shipping are zero:
+filtered_rows = out_national_without_global[
+    out_national_without_global.index.to_frame().apply(
+        lambda row: row.str.contains("Aircraft|Shipping", case=False).any(), axis=1
+    )
+]
+numeric_values = filtered_rows.select_dtypes(include=[np.number])
+non_zero_values = numeric_values[numeric_values != 0].dropna(how="all")
+if non_zero_values.empty:
+    print("✅ Test passed: All numeric values for 'Aircraft' or 'Shipping' rows are zero.")
+else:
+    # For version 2024_07_08 of CEDS, we expect this to show BC and OC emissions for USA.
+    # ... the reason is that for 'International Shipping', we also include the CEDS sector '1A3di_Oil_Tanker_Loading'
+    # ... which only reports non-zero values for USA for BC and OC.
+    print("⚠️ Found non-zero values in the following rows:")
+    nz = non_zero_values.pix.to_tidy()
+    print(nz[["region", "variable"]].drop_duplicates())
+
+    assert (
+        len(nz[["region", "variable"]].drop_duplicates())
+        == CEDS_EXPECTED_NUMBER_OF_REGION_VARIABLE_PAIRS_IN_GLOBAL_HARMONIZATION
+    )  # ... if the CEDS version is not 2024_07_08, this assert statement may need to be updated
+
+
+# %%
+# national CEDS data
 ceds_processed_output_file_national.parent.mkdir(exist_ok=True, parents=True)
-out_national.to_csv(ceds_processed_output_file_national)
+out_national_without_global.to_csv(ceds_processed_output_file_national)
 ceds_processed_output_file_national
 
 # %%
+# international only CEDS data (aircraft and international shipping)
+ceds_processed_output_file_international.parent.mkdir(exist_ok=True, parents=True)
+out_national_only_global.to_csv(ceds_processed_output_file_international)
+ceds_processed_output_file_international
+
+# %%
+# # national+international CEDS data (by default we do not save this to avoid data duplication)
+# ceds_processed_output_file_national_and_international.parent.mkdir(exist_ok=True, parents=True)
+# out_national_without_global.to_csv(ceds_processed_output_file_national_and_international)
+# ceds_processed_output_file_national_and_international
+
+# %%
+# globally aggregated data (all emissions)
 ceds_processed_output_file_global.parent.mkdir(exist_ok=True, parents=True)
 out_global.to_csv(ceds_processed_output_file_global)
 ceds_processed_output_file_global
