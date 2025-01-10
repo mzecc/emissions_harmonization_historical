@@ -19,9 +19,14 @@
 # %%
 import pandas as pd
 import pandas_indexing as pix
+import pint
 
 from emissions_harmonization_historical.constants import DATA_ROOT, GFED_PROCESSING_ID
-from emissions_harmonization_historical.units import convert_to_desired_units
+from emissions_harmonization_historical.units import assert_units_match_wishes
+
+# %%
+# set unit registry
+pix.units.set_openscm_registry_as_default()
 
 # %%
 data_path = DATA_ROOT / "national/gfed-bb4cmip/processed"
@@ -79,7 +84,24 @@ df_renamed = df_reordered.rename(
 df_renamed
 
 # %%
-df_renamed_desired_units = convert_to_desired_units(df_renamed)
+with pint.get_application_registry().context("NOx_conversions"):
+    df_renamed_desired_units = pix.units.convert_unit(
+        df_renamed, 
+        {"Mt NO / yr": "Mt NO2/yr"},
+    )
+
+# %%
+df_renamed_desired_units = pix.units.convert_unit(
+    df_renamed_desired_units, 
+    lambda x: x.replace(" / yr", "/yr"),
+)
+df_renamed_desired_units = pix.units.convert_unit(
+    df_renamed_desired_units, 
+    {"Mt N2O/yr": "kt N2O/yr"},
+)
+
+# %%
+assert_units_match_wishes(df_renamed_desired_units)
 df_renamed_desired_units.columns = df_renamed_desired_units.columns.astype(int)
 
 # %%

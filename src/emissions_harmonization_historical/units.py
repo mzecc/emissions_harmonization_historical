@@ -11,17 +11,20 @@ import pandas_indexing as pix
 UR = openscm_units.unit_registry
 Q = UR.Quantity
 
-# Units we want things to be in
+# Units we want things to be in.
+# As this is for the harmonization of IAMs (in CMIP7 / ScenarioMIP),
+# the desired units are defined in
+# https://github.com/IAMconsortium/common-definitions/.
 UNIT_WISHES = (
     # ("variable", "unit")
     ("BC", "Mt BC/yr"),
     ("CH4", "Mt CH4/yr"),
-    ("N2O", "Mt N2O/yr"),
+    ("N2O", "kt N2O/yr"),
     ("CO", "Mt CO/yr"),
     ("CO2", "Mt CO2/yr"),
     ("NH3", "Mt NH3/yr"),
     ("NMVOC", "Mt NMVOC/yr"),
-    ("NOx", "kt N2O/yr"),
+    ("NOx", "Mt NO2/yr"),
     ("OC", "Mt OC/yr"),
     ("Sulfur", "Mt SO2/yr"),
 )
@@ -53,20 +56,11 @@ def get_conv_factor(species: str, start_unit: str, target_unit: str) -> float:
     if species == "BC" and (start_unit == "Mt C/yr" and target_unit == "Mt BC/yr"):
         return 1.0
 
-    if species == "NOx":
-        if start_unit == "Mt NO2/yr" and target_unit == "kt N2O/yr":
-            with UR.context("NOx_conversions"):
-                interim = Q(1, start_unit).to("kt N / yr")
+    if species == "NOx" and (start_unit == "Mt NO / yr" and target_unit == "Mt NO2/yr"):
+        with UR.context("NOx_conversions"):
+            res = Q(1, start_unit).to(target_unit).m
 
-            with UR.context("N2O_conversions"):
-                return interim.to(target_unit).m
-
-        if start_unit == "Mt NO / yr" and target_unit == "kt N2O/yr":
-            with UR.context("NOx_conversions"):
-                interim = Q(1, start_unit).to("kt N / yr")
-
-            with UR.context("N2O_conversions"):
-                return interim.to(target_unit).m
+        return res
 
     return Q(1, start_unit).to(target_unit).m
 
@@ -113,3 +107,21 @@ def convert_to_desired_units(indf: pd.DataFrame) -> pd.DataFrame:
     outdf = outdf.sort_index()
 
     return outdf
+
+
+def assert_units_match_wishes(indf: pd.DataFrame) -> None:
+    mismatches = []
+    for species, target_unit in UNIT_WISHES:
+        locator = pix.ismatch(variable=f"**Emissions|{species}|**")
+        current_unit = indf.loc[locator].index.get_level_values("unit").unique()
+        if len(current_unit) != 1:
+            raise AssertionError(current_unit)
+
+        current_unit = current_unit[0]
+
+        if current_unit == target_unit:
+            continue
+
+        mismatches.append((species, target_unit, current_unit))
+
+    assert not mismatches, f"Unit mismatches detected:\n{mismatches}"
