@@ -31,6 +31,19 @@ UNIT_WISHES = (
 
 
 def assert_units_match_wishes(indf: pd.DataFrame) -> None:
+    """
+    Assert that the units used in a `pd.DataFrame` match the units we want
+
+    Parameters
+    ----------
+    indf
+        `pd.DataFrame` to check
+
+    Raises
+    ------
+    AssertionError
+        Units for emissions of a species don't match the desired units
+    """
     mismatches = []
     for species, target_unit in UNIT_WISHES:
         locator = pix.ismatch(variable=f"**Emissions|{species}|**")

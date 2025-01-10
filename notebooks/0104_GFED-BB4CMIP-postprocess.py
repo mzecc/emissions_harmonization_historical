@@ -86,17 +86,17 @@ df_renamed
 # %%
 with pint.get_application_registry().context("NOx_conversions"):
     df_renamed_desired_units = pix.units.convert_unit(
-        df_renamed, 
+        df_renamed,
         {"Mt NO / yr": "Mt NO2/yr"},
     )
 
 # %%
 df_renamed_desired_units = pix.units.convert_unit(
-    df_renamed_desired_units, 
+    df_renamed_desired_units,
     lambda x: x.replace(" / yr", "/yr"),
 )
 df_renamed_desired_units = pix.units.convert_unit(
-    df_renamed_desired_units, 
+    df_renamed_desired_units,
     {"Mt N2O/yr": "kt N2O/yr"},
 )
 
