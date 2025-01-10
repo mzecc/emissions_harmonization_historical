@@ -4,12 +4,8 @@ Ad-hoc support for unit handling
 
 from __future__ import annotations
 
-import openscm_units
 import pandas as pd
 import pandas_indexing as pix
-
-UR = openscm_units.unit_registry
-Q = UR.Quantity
 
 # Units we want things to be in.
 # As this is for the harmonization of IAMs (in CMIP7 / ScenarioMIP),
