@@ -253,10 +253,6 @@ else:
         == CEDS_EXPECTED_NUMBER_OF_REGION_VARIABLE_PAIRS_IN_GLOBAL_HARMONIZATION
     )  # ... if the CEDS version is not 2024_07_08, this assert statement may need to be updated
 
-
-# %%
-out_national_only_global
-
 # %%
 # national CEDS data
 ceds_processed_output_file_national.parent.mkdir(exist_ok=True, parents=True)
