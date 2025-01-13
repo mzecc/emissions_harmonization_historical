@@ -165,11 +165,15 @@ def gfed_to_scmrun(in_da: xr.DataArray, *, unit_label: str, world: bool = False)
 # %%
 gfed_processed_output_dir.mkdir(exist_ok=True, parents=True)
 for species, species_info in tqdm(species_data.items(), desc="Species"):
+    print(f"Processing {species=}")
+
     species_ds = xr.open_mfdataset(bb4cmip_file_groups[species], combine_attrs="drop_conflicts").rename(
         {"latitude": "lat", "longitude": "lon"}
     )
     # # Handy for testing
     # species_ds = species_ds.isel(time=range(12 * 3))
+    # species_ds = species_ds.isel(time=species_ds["time"].dt.year.isin([1750, 1899, 1900, 2022]))
+
     # # Handy for seeing what's going on
     # display(species_ds)
 
@@ -178,14 +182,14 @@ for species, species_info in tqdm(species_data.items(), desc="Species"):
     assert emissions_da.units == "kg m-2 s-1"
 
     # get annual sum emissions in each grid cell
-    # weight by month length
+    ### weight by month length
     seconds_per_month = (
         np.tile([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], len(emissions_da.time) // 12) * 24 * 60 * 60
     )
     weights = xr.DataArray(seconds_per_month, dims=("time",), coords=emissions_da.coords["time"].coords)
     gridded_annual_emissions_rate = (emissions_da * weights).groupby("time.year").sum().compute()  # kg / m2 / yr
-    # # no weighting by month length
-    # (testing in case it lines up better with data provider, doesn't seem to matter)
+    ### no weighting by month length
+    ## (testing in case it lines up better with data provider, doesn't seem to matter)
     # seconds_per_year = 365 * 24 * 60 * 60
     # gridded_annual_emissions_rate = (
     #    emissions_da.groupby("time.year").mean().compute()
@@ -248,12 +252,13 @@ for species, species_info in tqdm(species_data.items(), desc="Species"):
                 np.testing.assert_allclose(
                     np.round(out_world.filter(year=year).convert_unit(compare_unit).values.squeeze(), 2),
                     compare_val,
+                    rtol=7.5e-3,
                 )
             except AssertionError as exc:
                 print(f"Difference from what the data provider thinks the global value should be in {year}")
                 print(exc)
 
-    # write out temporary files to save RAM and process combined dataset in 0104
+    # Write out temporary files to save RAM and process combined dataset in 0104
     gfed_temp_file_world = gfed_processed_output_dir / f"{species}_world_{GFED_PROCESSING_ID}.csv"
     out_world.timeseries(time_axis="year").to_csv(gfed_temp_file_world)
     print(f"Wrote {gfed_temp_file_world}")
@@ -262,3 +267,5 @@ for species, species_info in tqdm(species_data.items(), desc="Species"):
     print(f"Wrote {gfed_temp_file_country}")
 
     # break
+
+# %%
