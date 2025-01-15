@@ -1,7 +1,0 @@
-- Employment Status:
-    - Employed:
-        description: employed
-        navigate: Employment
-    - Unemployed:
-        description: unemployed
-        navigate: Unemployment
