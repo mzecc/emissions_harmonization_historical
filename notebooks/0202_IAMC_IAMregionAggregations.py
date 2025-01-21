@@ -17,9 +17,19 @@
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 
 # create IAM region mappings using common-definitions
 from emissions_harmonization_historical.constants import DATA_ROOT
+
+# %%
+# OPTIONAL
+# create the region mapping .csv file using common-definitions
+# https://github.com/IAMconsortium/common-definitions
+# first, clone this repository to the same path as the emissions_harmonization_historical repository
+
+region_mapping_path = DATA_ROOT.parents[0] / 'src/emissions_harmonization_historical/region_mapping.py'
+# %run {str(region_mapping_path)}
 
 # %%
 cmip7_history_file = DATA_ROOT / Path("combined_cmip7_history.csv")
@@ -78,6 +88,41 @@ history_for_all_iamc_regions = history_for_all_iamc_regions[columns_order]
 
 # %%
 history_for_all_iamc_regions
+
+# %%
+# run a few tests to ensure processing went as intended
+pd.testing.assert_index_equal(history_for_all_iamc_regions.columns, cmip7_history.columns, check_order=False)
+np.testing.assert_array_equal(history_for_all_iamc_regions['region'].unique(), region_mapping['model_region'].unique())
+
+# %%
+# test whether the aggregation worked, for a sample region
+# derive test region from aggregated dataframe
+test_df = history_for_all_iamc_regions[history_for_all_iamc_regions['region'] == "AIM 3.0|North Africa"]
+
+# sum over same region from cmip7_history dataframe
+countries = region_mapping.loc[region_mapping['model_region'] == "AIM 3.0|North Africa", 'iso_list']
+test_countries = countries.iloc[0]
+
+test_data = cmip7_history[(cmip7_history["region"].isin(test_countries))]
+region_df = test_data.groupby(['model', 'scenario', 'variable', 'unit'], as_index=False).sum()
+
+# Add a new column 'model_region' with the value "AIM 3.0|North Africa"
+region_df['region'] = "AIM 3.0|North Africa"
+
+# reorder columns
+columns = list(region_df.columns)
+columns.insert(2, columns.pop(columns.index('region')))
+
+# Reassign the DataFrame to the new column order
+region_df = region_df[columns]
+
+# reindex both dfs
+test_df = test_df.reset_index(drop=True)
+region_df = region_df.reset_index(drop=True)
+
+# test both aggregates against one another
+
+pd.testing.assert_frame_equal(test_df, region_df)
 
 # %%
 iamc_commondefinitions_regions_processed_output_file.parent.mkdir(exist_ok=True, parents=True)

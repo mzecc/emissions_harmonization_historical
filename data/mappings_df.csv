@@ -1,0 +1,291 @@
+,model(s),common_region,constituent_regions
+0,['REMIND-MAgPIE 3.4-4.8'],World,"['REMIND-MAgPIE 3.4-4.8|Canada, Australia, New Zealand', 'REMIND-MAgPIE 3.4-4.8|China and Taiwan', 'REMIND-MAgPIE 3.4-4.8|India', 'REMIND-MAgPIE 3.4-4.8|Japan', 'REMIND-MAgPIE 3.4-4.8|Other Asia', 'REMIND-MAgPIE 3.4-4.8|Latin America and the Caribbean', 'REMIND-MAgPIE 3.4-4.8|Middle East and North Africa', 'REMIND-MAgPIE 3.4-4.8|Russia and Reforming Economies', 'REMIND-MAgPIE 3.4-4.8|Sub-Saharan Africa', 'REMIND-MAgPIE 3.4-4.8|United States of America', 'REMIND-MAgPIE 3.4-4.8|EU 28', 'REMIND-MAgPIE 3.4-4.8|Non-EU28 Europe']"
+1,['REMIND-MAgPIE 3.4-4.8'],Asia (R5),"['REMIND-MAgPIE 3.4-4.8|China and Taiwan', 'REMIND-MAgPIE 3.4-4.8|India', 'REMIND-MAgPIE 3.4-4.8|Other Asia']"
+2,['REMIND-MAgPIE 3.4-4.8'],Latin America (R5),['REMIND-MAgPIE 3.4-4.8|Latin America and the Caribbean']
+3,['REMIND-MAgPIE 3.4-4.8'],Middle East & Africa (R5),"['REMIND-MAgPIE 3.4-4.8|Sub-Saharan Africa', 'REMIND-MAgPIE 3.4-4.8|Middle East and North Africa']"
+4,['REMIND-MAgPIE 3.4-4.8'],OECD & EU (R5),"['REMIND-MAgPIE 3.4-4.8|Japan', 'REMIND-MAgPIE 3.4-4.8|United States of America', 'REMIND-MAgPIE 3.4-4.8|Canada, Australia, New Zealand', 'REMIND-MAgPIE 3.4-4.8|EU 28', 'REMIND-MAgPIE 3.4-4.8|Non-EU28 Europe']"
+5,['REMIND-MAgPIE 3.4-4.8'],Reforming Economies (R5),['REMIND-MAgPIE 3.4-4.8|Russia and Reforming Economies']
+6,['REMIND-MAgPIE 3.4-4.8'],Africa (R10),['REMIND-MAgPIE 3.4-4.8|Sub-Saharan Africa']
+7,['REMIND-MAgPIE 3.4-4.8'],China+ (R10),['REMIND-MAgPIE 3.4-4.8|China and Taiwan']
+8,['REMIND-MAgPIE 3.4-4.8'],Europe (R10),"['REMIND-MAgPIE 3.4-4.8|EU 28', 'REMIND-MAgPIE 3.4-4.8|Non-EU28 Europe']"
+9,['REMIND-MAgPIE 3.4-4.8'],India+ (R10),['REMIND-MAgPIE 3.4-4.8|India']
+10,['REMIND-MAgPIE 3.4-4.8'],Latin America (R10),['REMIND-MAgPIE 3.4-4.8|Latin America and the Caribbean']
+11,['REMIND-MAgPIE 3.4-4.8'],Middle East (R10),['REMIND-MAgPIE 3.4-4.8|Middle East and North Africa']
+12,['REMIND-MAgPIE 3.4-4.8'],North America (R10),['REMIND-MAgPIE 3.4-4.8|United States of America']
+13,['REMIND-MAgPIE 3.4-4.8'],Reforming Economies (R10),['REMIND-MAgPIE 3.4-4.8|Russia and Reforming Economies']
+14,['REMIND-MAgPIE 3.4-4.8'],Rest of Asia (R10),['REMIND-MAgPIE 3.4-4.8|Other Asia']
+15,['REMIND-MAgPIE 3.4-4.8'],Pacific OECD (R10),['REMIND-MAgPIE 3.4-4.8|Japan']
+16,['REMIND-MAgPIE 3.4-4.8'],Other (R10),"['REMIND-MAgPIE 3.4-4.8|Canada, Australia, New Zealand']"
+17,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",World,"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|Argentina', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|Brazil', 'GCAM 7.1|Canada', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Central Asia', 'GCAM 7.1|China', 'GCAM 7.1|Colombia', 'GCAM 7.1|EU-12', 'GCAM 7.1|EU-15', 'GCAM 7.1|Europe_Eastern', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association', 'GCAM 7.1|India', 'GCAM 7.1|Indonesia', 'GCAM 7.1|Japan', 'GCAM 7.1|Mexico', 'GCAM 7.1|Middle East', 'GCAM 7.1|Pakistan', 'GCAM 7.1|Russia', 'GCAM 7.1|South Africa', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|South Asia', 'GCAM 7.1|South Korea', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan', 'GCAM 7.1|USA']"
+18,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Asia (R5),"['GCAM 7.1|Central Asia', 'GCAM 7.1|China', 'GCAM 7.1|India', 'GCAM 7.1|Indonesia', 'GCAM 7.1|Pakistan', 'GCAM 7.1|South Asia', 'GCAM 7.1|South Korea', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan']"
+19,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Latin America (R5),"['GCAM 7.1|Brazil', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Mexico', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|Argentina', 'GCAM 7.1|Colombia']"
+20,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Middle East & Africa (R5),"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|Middle East', 'GCAM 7.1|South Africa']"
+21,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",OECD & EU (R5),"['GCAM 7.1|USA', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|Canada', 'GCAM 7.1|EU-15', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association', 'GCAM 7.1|Japan']"
+22,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Reforming Economies (R5),"['GCAM 7.1|EU-12', 'GCAM 7.1|Europe_Eastern', 'GCAM 7.1|Russia']"
+23,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",European Union (R9),"['GCAM 7.1|EU-12', 'GCAM 7.1|EU-15']"
+24,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",USA (R9),['GCAM 7.1|USA']
+25,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Other OECD (R9),"['GCAM 7.1|Canada', 'GCAM 7.1|Japan', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|South Korea', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association']"
+26,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",China (R9),['GCAM 7.1|China']
+27,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",India (R9),['GCAM 7.1|India']
+28,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Other Asia (R9),"['GCAM 7.1|Indonesia', 'GCAM 7.1|Pakistan', 'GCAM 7.1|South Asia', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan']"
+29,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Reforming Economies (R9),"['GCAM 7.1|Russia', 'GCAM 7.1|Central Asia', 'GCAM 7.1|Europe_Eastern']"
+30,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Latin America (R9),"['GCAM 7.1|Argentina', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|Brazil', 'GCAM 7.1|Colombia', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Mexico']"
+31,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Middle East & Africa (R9),"['GCAM 7.1|Middle East', 'GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|South Africa']"
+32,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Africa (R10),"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|South Africa']"
+33,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",China+ (R10),['GCAM 7.1|China']
+34,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Europe (R10),"['GCAM 7.1|EU-12', 'GCAM 7.1|EU-15', 'GCAM 7.1|Europe_Eastern', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association']"
+35,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",India+ (R10),['GCAM 7.1|India']
+36,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Latin America (R10),"['GCAM 7.1|Argentina', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|Brazil', 'GCAM 7.1|Colombia', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Mexico']"
+37,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Middle East (R10),['GCAM 7.1|Middle East']
+38,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",North America (R10),"['GCAM 7.1|Canada', 'GCAM 7.1|USA']"
+39,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Pacific OECD (R10),"['GCAM 7.1|Japan', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|South Korea']"
+40,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Reforming Economies (R10),"['GCAM 7.1|Russia', 'GCAM 7.1|Central Asia']"
+41,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Rest of Asia (R10),"['GCAM 7.1|Indonesia', 'GCAM 7.1|Pakistan', 'GCAM 7.1|South Asia', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan']"
+42,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Brazil,['GCAM 7.1|Brazil']
+43,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Canada,['GCAM 7.1|Canada']
+44,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",China,['GCAM 7.1|China']
+45,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",India,['GCAM 7.1|India']
+46,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Japan,['GCAM 7.1|Japan']
+47,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",United States,['GCAM 7.1|USA']
+48,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",African Union,"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western']"
+49,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",European Union and United Kingdom,"['GCAM 7.1|EU-12', 'GCAM 7.1|EU-15']"
+50,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",World,"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|Argentina', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|Brazil', 'GCAM 7.1|Canada', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Central Asia', 'GCAM 7.1|China', 'GCAM 7.1|Colombia', 'GCAM 7.1|EU-12', 'GCAM 7.1|EU-15', 'GCAM 7.1|Europe_Eastern', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association', 'GCAM 7.1|India', 'GCAM 7.1|Indonesia', 'GCAM 7.1|Japan', 'GCAM 7.1|Mexico', 'GCAM 7.1|Middle East', 'GCAM 7.1|Pakistan', 'GCAM 7.1|Russia', 'GCAM 7.1|South Africa', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|South Asia', 'GCAM 7.1|South Korea', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan', 'GCAM 7.1|USA']"
+51,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Asia (R5),"['GCAM 7.1|Central Asia', 'GCAM 7.1|China', 'GCAM 7.1|India', 'GCAM 7.1|Indonesia', 'GCAM 7.1|Pakistan', 'GCAM 7.1|South Asia', 'GCAM 7.1|South Korea', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan']"
+52,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Latin America (R5),"['GCAM 7.1|Brazil', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Mexico', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|Argentina', 'GCAM 7.1|Colombia']"
+53,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Middle East & Africa (R5),"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|Middle East', 'GCAM 7.1|South Africa']"
+54,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",OECD & EU (R5),"['GCAM 7.1|USA', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|Canada', 'GCAM 7.1|EU-15', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association', 'GCAM 7.1|Japan']"
+55,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Reforming Economies (R5),"['GCAM 7.1|EU-12', 'GCAM 7.1|Europe_Eastern', 'GCAM 7.1|Russia']"
+56,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",European Union (R9),"['GCAM 7.1|EU-12', 'GCAM 7.1|EU-15']"
+57,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",USA (R9),['GCAM 7.1|USA']
+58,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Other OECD (R9),"['GCAM 7.1|Canada', 'GCAM 7.1|Japan', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|South Korea', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association']"
+59,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",China (R9),['GCAM 7.1|China']
+60,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",India (R9),['GCAM 7.1|India']
+61,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Other Asia (R9),"['GCAM 7.1|Indonesia', 'GCAM 7.1|Pakistan', 'GCAM 7.1|South Asia', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan']"
+62,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Reforming Economies (R9),"['GCAM 7.1|Russia', 'GCAM 7.1|Central Asia', 'GCAM 7.1|Europe_Eastern']"
+63,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Latin America (R9),"['GCAM 7.1|Argentina', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|Brazil', 'GCAM 7.1|Colombia', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Mexico']"
+64,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Middle East & Africa (R9),"['GCAM 7.1|Middle East', 'GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|South Africa']"
+65,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Africa (R10),"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western', 'GCAM 7.1|South Africa']"
+66,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",China+ (R10),['GCAM 7.1|China']
+67,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Europe (R10),"['GCAM 7.1|EU-12', 'GCAM 7.1|EU-15', 'GCAM 7.1|Europe_Eastern', 'GCAM 7.1|Europe_Non_EU', 'GCAM 7.1|European Free Trade Association']"
+68,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",India+ (R10),['GCAM 7.1|India']
+69,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Latin America (R10),"['GCAM 7.1|Argentina', 'GCAM 7.1|South America_Northern', 'GCAM 7.1|South America_Southern', 'GCAM 7.1|Brazil', 'GCAM 7.1|Colombia', 'GCAM 7.1|Central America and Caribbean', 'GCAM 7.1|Mexico']"
+70,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Middle East (R10),['GCAM 7.1|Middle East']
+71,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",North America (R10),"['GCAM 7.1|Canada', 'GCAM 7.1|USA']"
+72,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Pacific OECD (R10),"['GCAM 7.1|Japan', 'GCAM 7.1|Australia_NZ', 'GCAM 7.1|South Korea']"
+73,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Reforming Economies (R10),"['GCAM 7.1|Russia', 'GCAM 7.1|Central Asia']"
+74,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Rest of Asia (R10),"['GCAM 7.1|Indonesia', 'GCAM 7.1|Pakistan', 'GCAM 7.1|South Asia', 'GCAM 7.1|Southeast Asia', 'GCAM 7.1|Taiwan']"
+75,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Brazil,['GCAM 7.1|Brazil']
+76,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Canada,['GCAM 7.1|Canada']
+77,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",China,['GCAM 7.1|China']
+78,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",India,['GCAM 7.1|India']
+79,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",Japan,['GCAM 7.1|Japan']
+80,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",United States,['GCAM 7.1|USA']
+81,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",African Union,"['GCAM 7.1|Africa_Eastern', 'GCAM 7.1|Africa_Northern', 'GCAM 7.1|Africa_Southern', 'GCAM 7.1|Africa_Western']"
+82,"['GCAM 7.1', 'GCAM 7.1 scenarioMIP']",European Union and United Kingdom,"['GCAM 7.1|EU-12', 'GCAM 7.1|EU-15']"
+83,['IMACLIM 2.0'],World,"['IMACLIM 2.0|Africa', 'IMACLIM 2.0|Brazil', 'IMACLIM 2.0|Canada', 'IMACLIM 2.0|China', 'IMACLIM 2.0|Former Soviet Union excluding EU Baltic countries', 'IMACLIM 2.0|Europe excluding FSU', 'IMACLIM 2.0|India', 'IMACLIM 2.0|Japan, Australia, New Zealand and Korea', 'IMACLIM 2.0|Middle East', 'IMACLIM 2.0|Rest of Latin America', 'IMACLIM 2.0|Rest of Asia', 'IMACLIM 2.0|USA']"
+84,['IMACLIM 2.0'],Asia (R5),"['IMACLIM 2.0|India', 'IMACLIM 2.0|China', 'IMACLIM 2.0|Rest of Asia']"
+85,['IMACLIM 2.0'],Latin America (R5),"['IMACLIM 2.0|Rest of Latin America', 'IMACLIM 2.0|Brazil']"
+86,['IMACLIM 2.0'],Middle East & Africa (R5),"['IMACLIM 2.0|Middle East', 'IMACLIM 2.0|Africa']"
+87,['IMACLIM 2.0'],OECD & EU (R5),"['IMACLIM 2.0|USA', 'IMACLIM 2.0|Canada', 'IMACLIM 2.0|Japan, Australia, New Zealand and Korea', 'IMACLIM 2.0|Europe excluding FSU']"
+88,['IMACLIM 2.0'],Reforming Economies (R5),['IMACLIM 2.0|Former Soviet Union excluding EU Baltic countries']
+89,['IMACLIM 2.0'],European Union (R9),['IMACLIM 2.0|Europe excluding FSU']
+90,['IMACLIM 2.0'],USA (R9),['IMACLIM 2.0|USA']
+91,['IMACLIM 2.0'],Other OECD (R9),"['IMACLIM 2.0|Canada', 'IMACLIM 2.0|Japan, Australia, New Zealand and Korea']"
+92,['IMACLIM 2.0'],China (R9),['IMACLIM 2.0|China']
+93,['IMACLIM 2.0'],India (R9),['IMACLIM 2.0|India']
+94,['IMACLIM 2.0'],Other Asia (R9),['IMACLIM 2.0|Rest of Asia']
+95,['IMACLIM 2.0'],Reforming Economies (R9),['IMACLIM 2.0|Former Soviet Union excluding EU Baltic countries']
+96,['IMACLIM 2.0'],Middle East & Africa (R9),"['IMACLIM 2.0|Middle East', 'IMACLIM 2.0|Africa']"
+97,['IMACLIM 2.0'],Latin America (R9),"['IMACLIM 2.0|Brazil', 'IMACLIM 2.0|Rest of Latin America']"
+98,['IMACLIM 2.0'],Africa (R10),['IMACLIM 2.0|Africa']
+99,['IMACLIM 2.0'],China+ (R10),['IMACLIM 2.0|China']
+100,['IMACLIM 2.0'],Europe (R10),['IMACLIM 2.0|Europe excluding FSU']
+101,['IMACLIM 2.0'],India+ (R10),['IMACLIM 2.0|India']
+102,['IMACLIM 2.0'],Latin America (R10),"['IMACLIM 2.0|Rest of Latin America', 'IMACLIM 2.0|Brazil']"
+103,['IMACLIM 2.0'],Middle East (R10),['IMACLIM 2.0|Middle East']
+104,['IMACLIM 2.0'],North America (R10),"['IMACLIM 2.0|USA', 'IMACLIM 2.0|Canada']"
+105,['IMACLIM 2.0'],Pacific OECD (R10),"['IMACLIM 2.0|Japan, Australia, New Zealand and Korea']"
+106,['IMACLIM 2.0'],Reforming Economies (R10),['IMACLIM 2.0|Former Soviet Union excluding EU Baltic countries']
+107,['IMACLIM 2.0'],Rest of Asia (R10),['IMACLIM 2.0|Rest of Asia']
+108,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",World,"['REMIND 3.1|Canada, Australia, New Zealand', 'REMIND 3.1|China and Taiwan', 'REMIND 3.1|India', 'REMIND 3.1|Japan', 'REMIND 3.1|Other Asia', 'REMIND 3.1|Latin America and the Caribbean', 'REMIND 3.1|Middle East and North Africa', 'REMIND 3.1|Russia and Reforming Economies', 'REMIND 3.1|Sub-Saharan Africa', 'REMIND 3.1|United States of America', 'REMIND 3.1|EU 28', 'REMIND 3.1|Non-EU28 Europe', 'REMIND 3.1|Germany', 'REMIND 3.1|France', 'REMIND 3.1|United Kingdom and Ireland', 'REMIND 3.1|EU Center-East Europe', 'REMIND 3.1|EU Center-South Europe', 'REMIND 3.1|EU North-Center Europe', 'REMIND 3.1|EU South-Center Europe', 'REMIND 3.1|EU South-West Europe', 'REMIND 3.1|EU North-West Europe', 'REMIND 3.1|Non-EU Northern Europe', 'REMIND 3.1|Non-EU Southern Europe']"
+109,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Asia (R5),"['REMIND 3.1|China and Taiwan', 'REMIND 3.1|India', 'REMIND 3.1|Other Asia']"
+110,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Latin America (R5),['REMIND 3.1|Latin America and the Caribbean']
+111,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Middle East & Africa (R5),"['REMIND 3.1|Sub-Saharan Africa', 'REMIND 3.1|Middle East and North Africa']"
+112,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",OECD & EU (R5),"['REMIND 3.1|Japan', 'REMIND 3.1|United States of America', 'REMIND 3.1|Canada, Australia, New Zealand', 'REMIND 3.1|EU 28', 'REMIND 3.1|Non-EU28 Europe', 'REMIND 3.1|Germany', 'REMIND 3.1|France', 'REMIND 3.1|United Kingdom and Ireland', 'REMIND 3.1|EU Center-East Europe', 'REMIND 3.1|EU North-Center Europe', 'REMIND 3.1|EU Center-South Europe', 'REMIND 3.1|EU South-Center Europe', 'REMIND 3.1|EU South-West Europe', 'REMIND 3.1|EU North-West Europe', 'REMIND 3.1|Non-EU Northern Europe', 'REMIND 3.1|Non-EU Southern Europe']"
+113,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Reforming Economies (R5),['REMIND 3.1|Russia and Reforming Economies']
+114,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Africa (R10),['REMIND 3.1|Sub-Saharan Africa']
+115,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",China+ (R10),['REMIND 3.1|China and Taiwan']
+116,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Europe (R10),"['REMIND 3.1|EU 28', 'REMIND 3.1|Non-EU28 Europe', 'REMIND 3.1|Germany', 'REMIND 3.1|France', 'REMIND 3.1|United Kingdom and Ireland', 'REMIND 3.1|EU Center-East Europe', 'REMIND 3.1|EU North-Center Europe', 'REMIND 3.1|EU Center-South Europe', 'REMIND 3.1|EU South-Center Europe', 'REMIND 3.1|EU South-West Europe', 'REMIND 3.1|EU North-West Europe', 'REMIND 3.1|Non-EU Northern Europe', 'REMIND 3.1|Non-EU Southern Europe']"
+117,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",India+ (R10),['REMIND 3.1|India']
+118,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Latin America (R10),['REMIND 3.1|Latin America and the Caribbean']
+119,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Middle East (R10),['REMIND 3.1|Middle East and North Africa']
+120,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",North America (R10),['REMIND 3.1|United States of America']
+121,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Reforming Economies (R10),['REMIND 3.1|Russia and Reforming Economies']
+122,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Rest of Asia (R10),['REMIND 3.1|Other Asia']
+123,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Pacific OECD (R10),['REMIND 3.1|Japan']
+124,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Other (R10),"['REMIND 3.1|Canada, Australia, New Zealand']"
+125,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",World,"['REMIND 3.1|Canada, Australia, New Zealand', 'REMIND 3.1|China and Taiwan', 'REMIND 3.1|India', 'REMIND 3.1|Japan', 'REMIND 3.1|Other Asia', 'REMIND 3.1|Latin America and the Caribbean', 'REMIND 3.1|Middle East and North Africa', 'REMIND 3.1|Russia and Reforming Economies', 'REMIND 3.1|Sub-Saharan Africa', 'REMIND 3.1|United States of America', 'REMIND 3.1|EU 28', 'REMIND 3.1|Non-EU28 Europe', 'REMIND 3.1|Germany', 'REMIND 3.1|France', 'REMIND 3.1|United Kingdom and Ireland', 'REMIND 3.1|EU Center-East Europe', 'REMIND 3.1|EU Center-South Europe', 'REMIND 3.1|EU North-Center Europe', 'REMIND 3.1|EU South-Center Europe', 'REMIND 3.1|EU South-West Europe', 'REMIND 3.1|EU North-West Europe', 'REMIND 3.1|Non-EU Northern Europe', 'REMIND 3.1|Non-EU Southern Europe']"
+126,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Asia (R5),"['REMIND 3.1|China and Taiwan', 'REMIND 3.1|India', 'REMIND 3.1|Other Asia']"
+127,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Latin America (R5),['REMIND 3.1|Latin America and the Caribbean']
+128,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Middle East & Africa (R5),"['REMIND 3.1|Sub-Saharan Africa', 'REMIND 3.1|Middle East and North Africa']"
+129,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",OECD & EU (R5),"['REMIND 3.1|Japan', 'REMIND 3.1|United States of America', 'REMIND 3.1|Canada, Australia, New Zealand', 'REMIND 3.1|EU 28', 'REMIND 3.1|Non-EU28 Europe', 'REMIND 3.1|Germany', 'REMIND 3.1|France', 'REMIND 3.1|United Kingdom and Ireland', 'REMIND 3.1|EU Center-East Europe', 'REMIND 3.1|EU North-Center Europe', 'REMIND 3.1|EU Center-South Europe', 'REMIND 3.1|EU South-Center Europe', 'REMIND 3.1|EU South-West Europe', 'REMIND 3.1|EU North-West Europe', 'REMIND 3.1|Non-EU Northern Europe', 'REMIND 3.1|Non-EU Southern Europe']"
+130,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Reforming Economies (R5),['REMIND 3.1|Russia and Reforming Economies']
+131,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Africa (R10),['REMIND 3.1|Sub-Saharan Africa']
+132,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",China+ (R10),['REMIND 3.1|China and Taiwan']
+133,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Europe (R10),"['REMIND 3.1|EU 28', 'REMIND 3.1|Non-EU28 Europe', 'REMIND 3.1|Germany', 'REMIND 3.1|France', 'REMIND 3.1|United Kingdom and Ireland', 'REMIND 3.1|EU Center-East Europe', 'REMIND 3.1|EU North-Center Europe', 'REMIND 3.1|EU Center-South Europe', 'REMIND 3.1|EU South-Center Europe', 'REMIND 3.1|EU South-West Europe', 'REMIND 3.1|EU North-West Europe', 'REMIND 3.1|Non-EU Northern Europe', 'REMIND 3.1|Non-EU Southern Europe']"
+134,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",India+ (R10),['REMIND 3.1|India']
+135,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Latin America (R10),['REMIND 3.1|Latin America and the Caribbean']
+136,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Middle East (R10),['REMIND 3.1|Middle East and North Africa']
+137,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",North America (R10),['REMIND 3.1|United States of America']
+138,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Reforming Economies (R10),['REMIND 3.1|Russia and Reforming Economies']
+139,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Rest of Asia (R10),['REMIND 3.1|Other Asia']
+140,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Pacific OECD (R10),['REMIND 3.1|Japan']
+141,"['REMIND 3.1', 'REMIND-MAgPIE 3.1-4.6']",Other (R10),"['REMIND 3.1|Canada, Australia, New Zealand']"
+142,['IMAGE 3.4'],World,"['IMAGE 3.4|Western Europe', 'IMAGE 3.4|Central Europe', 'IMAGE 3.4|Brazil', 'IMAGE 3.4|Canada', 'IMAGE 3.4|China Region', 'IMAGE 3.4|Eastern Africa', 'IMAGE 3.4|India', 'IMAGE 3.4|Indonesia Region', 'IMAGE 3.4|Japan', 'IMAGE 3.4|Korea Region', 'IMAGE 3.4|Middle East', 'IMAGE 3.4|Mexico', 'IMAGE 3.4|Northern Africa', 'IMAGE 3.4|Oceania', 'IMAGE 3.4|Central America', 'IMAGE 3.4|Rest of Southern Africa', 'IMAGE 3.4|Rest of South America', 'IMAGE 3.4|Rest of South Asia', 'IMAGE 3.4|Russia Region', 'IMAGE 3.4|South Africa', 'IMAGE 3.4|Southeastern Asia', 'IMAGE 3.4|Central Asia', 'IMAGE 3.4|Turkey', 'IMAGE 3.4|Ukraine Region', 'IMAGE 3.4|United States', 'IMAGE 3.4|Western Africa']"
+143,['IMAGE 3.4'],OECD & EU (R5),"['IMAGE 3.4|Canada', 'IMAGE 3.4|Central Europe', 'IMAGE 3.4|Japan', 'IMAGE 3.4|Oceania', 'IMAGE 3.4|Turkey', 'IMAGE 3.4|United States', 'IMAGE 3.4|Western Europe']"
+144,['IMAGE 3.4'],Reforming Economies (R5),"['IMAGE 3.4|Russia Region', 'IMAGE 3.4|Central Asia', 'IMAGE 3.4|Ukraine Region']"
+145,['IMAGE 3.4'],Asia (R5),"['IMAGE 3.4|China Region', 'IMAGE 3.4|India', 'IMAGE 3.4|Indonesia Region', 'IMAGE 3.4|Korea Region', 'IMAGE 3.4|Rest of South Asia', 'IMAGE 3.4|Southeastern Asia']"
+146,['IMAGE 3.4'],Middle East & Africa (R5),"['IMAGE 3.4|Eastern Africa', 'IMAGE 3.4|Middle East', 'IMAGE 3.4|Northern Africa', 'IMAGE 3.4|Rest of Southern Africa', 'IMAGE 3.4|South Africa', 'IMAGE 3.4|Western Africa']"
+147,['IMAGE 3.4'],Latin America (R5),"['IMAGE 3.4|Brazil', 'IMAGE 3.4|Mexico', 'IMAGE 3.4|Central America', 'IMAGE 3.4|Rest of South America']"
+148,['IMAGE 3.4'],European Union (R9),"['IMAGE 3.4|Central Europe', 'IMAGE 3.4|Western Europe']"
+149,['IMAGE 3.4'],USA (R9),['IMAGE 3.4|United States']
+150,['IMAGE 3.4'],Other OECD (R9),"['IMAGE 3.4|Canada', 'IMAGE 3.4|Japan', 'IMAGE 3.4|Oceania', 'IMAGE 3.4|Turkey']"
+151,['IMAGE 3.4'],China (R9),['IMAGE 3.4|China Region']
+152,['IMAGE 3.4'],India (R9),['IMAGE 3.4|India']
+153,['IMAGE 3.4'],Other Asia (R9),"['IMAGE 3.4|Indonesia Region', 'IMAGE 3.4|Korea Region', 'IMAGE 3.4|Rest of South Asia', 'IMAGE 3.4|Southeastern Asia']"
+154,['IMAGE 3.4'],Reforming Economies (R9),"['IMAGE 3.4|Russia Region', 'IMAGE 3.4|Central Asia', 'IMAGE 3.4|Ukraine Region']"
+155,['IMAGE 3.4'],Latin America (R9),"['IMAGE 3.4|Brazil', 'IMAGE 3.4|Mexico', 'IMAGE 3.4|Central America', 'IMAGE 3.4|Rest of South America']"
+156,['IMAGE 3.4'],Middle East & Africa (R9),"['IMAGE 3.4|Eastern Africa', 'IMAGE 3.4|Middle East', 'IMAGE 3.4|Northern Africa', 'IMAGE 3.4|Rest of Southern Africa', 'IMAGE 3.4|South Africa', 'IMAGE 3.4|Western Africa']"
+157,['IMAGE 3.4'],Africa (R10),"['IMAGE 3.4|Eastern Africa', 'IMAGE 3.4|Northern Africa', 'IMAGE 3.4|Rest of Southern Africa', 'IMAGE 3.4|South Africa', 'IMAGE 3.4|Western Africa']"
+158,['IMAGE 3.4'],China+ (R10),['IMAGE 3.4|China Region']
+159,['IMAGE 3.4'],Europe (R10),"['IMAGE 3.4|Central Europe', 'IMAGE 3.4|Turkey', 'IMAGE 3.4|Western Europe']"
+160,['IMAGE 3.4'],India+ (R10),"['IMAGE 3.4|India', 'IMAGE 3.4|Rest of South Asia']"
+161,['IMAGE 3.4'],Latin America (R10),"['IMAGE 3.4|Mexico', 'IMAGE 3.4|Central America', 'IMAGE 3.4|Rest of South America', 'IMAGE 3.4|Brazil']"
+162,['IMAGE 3.4'],Middle East (R10),['IMAGE 3.4|Middle East']
+163,['IMAGE 3.4'],North America (R10),"['IMAGE 3.4|Canada', 'IMAGE 3.4|United States']"
+164,['IMAGE 3.4'],Pacific OECD (R10),"['IMAGE 3.4|Japan', 'IMAGE 3.4|Oceania']"
+165,['IMAGE 3.4'],Reforming Economies (R10),"['IMAGE 3.4|Russia Region', 'IMAGE 3.4|Central Asia', 'IMAGE 3.4|Ukraine Region']"
+166,['IMAGE 3.4'],Rest of Asia (R10),"['IMAGE 3.4|Indonesia Region', 'IMAGE 3.4|Korea Region', 'IMAGE 3.4|Southeastern Asia']"
+167,['IMAGE 3.4'],Brazil,['IMAGE 3.4|Brazil']
+168,['IMAGE 3.4'],Canada,['IMAGE 3.4|Canada']
+169,['IMAGE 3.4'],China,['IMAGE 3.4|China Region']
+170,['IMAGE 3.4'],India,['IMAGE 3.4|India']
+171,['IMAGE 3.4'],Japan,['IMAGE 3.4|Japan']
+172,['IMAGE 3.4'],United States,['IMAGE 3.4|United States']
+173,['IMAGE 3.4'],African Union,"['IMAGE 3.4|Eastern Africa', 'IMAGE 3.4|Northern Africa', 'IMAGE 3.4|Rest of Southern Africa', 'IMAGE 3.4|South Africa', 'IMAGE 3.4|Western Africa']"
+174,['MESSAGEix-GLOBIOM 2.1-M-R12'],World,"['MESSAGEix-GLOBIOM 2.1-R12|Sub-Saharan Africa', 'MESSAGEix-GLOBIOM 2.1-R12|Rest of Centrally Planned Asia', 'MESSAGEix-GLOBIOM 2.1-R12|China', 'MESSAGEix-GLOBIOM 2.1-R12|Eastern Europe', 'MESSAGEix-GLOBIOM 2.1-R12|Former Soviet Union', 'MESSAGEix-GLOBIOM 2.1-R12|Latin America and the Caribbean', 'MESSAGEix-GLOBIOM 2.1-R12|Middle East and North Africa', 'MESSAGEix-GLOBIOM 2.1-R12|North America', 'MESSAGEix-GLOBIOM 2.1-R12|Pacific OECD', 'MESSAGEix-GLOBIOM 2.1-R12|Other Pacific Asia', 'MESSAGEix-GLOBIOM 2.1-R12|South Asia', 'MESSAGEix-GLOBIOM 2.1-R12|Western Europe']"
+175,['MESSAGEix-GLOBIOM 2.1-M-R12'],Asia (R5),"['MESSAGEix-GLOBIOM 2.1-R12|South Asia', 'MESSAGEix-GLOBIOM 2.1-R12|Other Pacific Asia', 'MESSAGEix-GLOBIOM 2.1-R12|Rest of Centrally Planned Asia', 'MESSAGEix-GLOBIOM 2.1-R12|China']"
+176,['MESSAGEix-GLOBIOM 2.1-M-R12'],Latin America (R5),['MESSAGEix-GLOBIOM 2.1-R12|Latin America and the Caribbean']
+177,['MESSAGEix-GLOBIOM 2.1-M-R12'],Middle East & Africa (R5),"['MESSAGEix-GLOBIOM 2.1-R12|Middle East and North Africa', 'MESSAGEix-GLOBIOM 2.1-R12|Sub-Saharan Africa']"
+178,['MESSAGEix-GLOBIOM 2.1-M-R12'],OECD & EU (R5),"['MESSAGEix-GLOBIOM 2.1-R12|Western Europe', 'MESSAGEix-GLOBIOM 2.1-R12|Pacific OECD', 'MESSAGEix-GLOBIOM 2.1-R12|North America', 'MESSAGEix-GLOBIOM 2.1-R12|Eastern Europe']"
+179,['MESSAGEix-GLOBIOM 2.1-M-R12'],Reforming Economies (R5),['MESSAGEix-GLOBIOM 2.1-R12|Former Soviet Union']
+180,['MESSAGEix-GLOBIOM 2.1-M-R12'],Africa (R10),['MESSAGEix-GLOBIOM 2.1-R12|Sub-Saharan Africa']
+181,['MESSAGEix-GLOBIOM 2.1-M-R12'],China+ (R10),"['MESSAGEix-GLOBIOM 2.1-R12|China', 'MESSAGEix-GLOBIOM 2.1-R12|Rest of Centrally Planned Asia']"
+182,['MESSAGEix-GLOBIOM 2.1-M-R12'],Europe (R10),"['MESSAGEix-GLOBIOM 2.1-R12|Eastern Europe', 'MESSAGEix-GLOBIOM 2.1-R12|Western Europe']"
+183,['MESSAGEix-GLOBIOM 2.1-M-R12'],India+ (R10),['MESSAGEix-GLOBIOM 2.1-R12|South Asia']
+184,['MESSAGEix-GLOBIOM 2.1-M-R12'],Latin America (R10),['MESSAGEix-GLOBIOM 2.1-R12|Latin America and the Caribbean']
+185,['MESSAGEix-GLOBIOM 2.1-M-R12'],Middle East (R10),['MESSAGEix-GLOBIOM 2.1-R12|Middle East and North Africa']
+186,['MESSAGEix-GLOBIOM 2.1-M-R12'],North America (R10),['MESSAGEix-GLOBIOM 2.1-R12|North America']
+187,['MESSAGEix-GLOBIOM 2.1-M-R12'],Pacific OECD (R10),['MESSAGEix-GLOBIOM 2.1-R12|Pacific OECD']
+188,['MESSAGEix-GLOBIOM 2.1-M-R12'],Reforming Economies (R10),['MESSAGEix-GLOBIOM 2.1-R12|Former Soviet Union']
+189,['MESSAGEix-GLOBIOM 2.1-M-R12'],Rest of Asia (R10),['MESSAGEix-GLOBIOM 2.1-R12|Other Pacific Asia']
+190,['COFFEE 1.5'],World,"['COFFEE 1.5|Africa (excluding South Africa)', 'COFFEE 1.5|Australia & New Zealand', 'COFFEE 1.5|Brazil', 'COFFEE 1.5|Central America', 'COFFEE 1.5|Canada', 'COFFEE 1.5|Caspian Sea', 'COFFEE 1.5|China', 'COFFEE 1.5|Europe', 'COFFEE 1.5|India', 'COFFEE 1.5|Japan', 'COFFEE 1.5|South Korea', 'COFFEE 1.5|Middle East', 'COFFEE 1.5|Rest of Asia and Oceania', 'COFFEE 1.5|Russia', 'COFFEE 1.5|South Africa', 'COFFEE 1.5|South America', 'COFFEE 1.5|United States', 'COFFEE 1.5|Rest of Europe']"
+191,['COFFEE 1.5'],OECD & EU (R5),"['COFFEE 1.5|Australia & New Zealand', 'COFFEE 1.5|Canada', 'COFFEE 1.5|Europe', 'COFFEE 1.5|Japan', 'COFFEE 1.5|United States']"
+192,['COFFEE 1.5'],Reforming Economies (R5),"['COFFEE 1.5|Caspian Sea', 'COFFEE 1.5|Russia', 'COFFEE 1.5|Rest of Europe']"
+193,['COFFEE 1.5'],Asia (R5),"['COFFEE 1.5|China', 'COFFEE 1.5|India', 'COFFEE 1.5|South Korea', 'COFFEE 1.5|Rest of Asia and Oceania']"
+194,['COFFEE 1.5'],Middle East & Africa (R5),"['COFFEE 1.5|Africa (excluding South Africa)', 'COFFEE 1.5|Middle East', 'COFFEE 1.5|South Africa']"
+195,['COFFEE 1.5'],Latin America (R5),"['COFFEE 1.5|Brazil', 'COFFEE 1.5|Central America', 'COFFEE 1.5|South America']"
+196,['COFFEE 1.5'],Africa (R10),"['COFFEE 1.5|Africa (excluding South Africa)', 'COFFEE 1.5|South Africa']"
+197,['COFFEE 1.5'],China+ (R10),['COFFEE 1.5|China']
+198,['COFFEE 1.5'],Europe (R10),"['COFFEE 1.5|Europe', 'COFFEE 1.5|Rest of Europe']"
+199,['COFFEE 1.5'],India+ (R10),['COFFEE 1.5|India']
+200,['COFFEE 1.5'],Latin America (R10),"['COFFEE 1.5|Brazil', 'COFFEE 1.5|Central America', 'COFFEE 1.5|South America']"
+201,['COFFEE 1.5'],Middle East (R10),['COFFEE 1.5|Middle East']
+202,['COFFEE 1.5'],North America (R10),"['COFFEE 1.5|Canada', 'COFFEE 1.5|United States']"
+203,['COFFEE 1.5'],Pacific OECD (R10),"['COFFEE 1.5|Australia & New Zealand', 'COFFEE 1.5|Japan']"
+204,['COFFEE 1.5'],Reforming Economies (R10),"['COFFEE 1.5|Caspian Sea', 'COFFEE 1.5|Russia']"
+205,['COFFEE 1.5'],Rest of Asia (R10),['COFFEE 1.5|Rest of Asia and Oceania']
+206,['COFFEE 1.5'],European Union (R9),['COFFEE 1.5|Europe']
+207,['COFFEE 1.5'],USA (R9),['COFFEE 1.5|United States']
+208,['COFFEE 1.5'],Other OECD (R9),"['COFFEE 1.5|Australia & New Zealand', 'COFFEE 1.5|Canada', 'COFFEE 1.5|Japan']"
+209,['COFFEE 1.5'],China (R9),['COFFEE 1.5|China']
+210,['COFFEE 1.5'],India (R9),['COFFEE 1.5|India']
+211,['COFFEE 1.5'],Other Asia (R9),"['COFFEE 1.5|South Korea', 'COFFEE 1.5|Rest of Asia and Oceania']"
+212,['COFFEE 1.5'],Reforming Economies (R9),"['COFFEE 1.5|Caspian Sea', 'COFFEE 1.5|Russia', 'COFFEE 1.5|Rest of Europe']"
+213,['COFFEE 1.5'],Latin America (R9),"['COFFEE 1.5|Brazil', 'COFFEE 1.5|Central America', 'COFFEE 1.5|South America']"
+214,['COFFEE 1.5'],Middle East & Africa (R9),"['COFFEE 1.5|Africa (excluding South Africa)', 'COFFEE 1.5|Middle East', 'COFFEE 1.5|South Africa']"
+215,['COFFEE 1.5'],European Union and United Kingdom,['COFFEE 1.5|Europe']
+216,['COFFEE 1.5'],African Union,"['COFFEE 1.5|Africa (excluding South Africa)', 'COFFEE 1.5|South Africa']"
+217,['COFFEE 1.5'],Brazil,['COFFEE 1.5|Brazil']
+218,['COFFEE 1.5'],Canada,['COFFEE 1.5|Canada']
+219,['COFFEE 1.5'],China,['COFFEE 1.5|China']
+220,['COFFEE 1.5'],India,['COFFEE 1.5|India']
+221,['COFFEE 1.5'],Japan,['COFFEE 1.5|Japan']
+222,['COFFEE 1.5'],South Korea,['COFFEE 1.5|South Korea']
+223,['COFFEE 1.5'],South Africa,['COFFEE 1.5|South Africa']
+224,['COFFEE 1.5'],Russian Federation,['COFFEE 1.5|Russia']
+225,['COFFEE 1.5'],United States,['COFFEE 1.5|United States']
+226,['WITCH 6.0'],World,"['WITCH 6.0|Brazil', 'WITCH 6.0|Canada', 'WITCH 6.0|China', 'WITCH 6.0|Europe (EU+EFTA+Balkan Countries and Turkey)', 'WITCH 6.0|India', 'WITCH 6.0|Indonesia', 'WITCH 6.0|Japan and Korea', 'WITCH 6.0|Latin America and the Caribbean', 'WITCH 6.0|Middle East and North Africa', 'WITCH 6.0|Mexico', 'WITCH 6.0|Australia, New Zealand, and Oceania islands', 'WITCH 6.0|South Asia', 'WITCH 6.0|South East Asia', 'WITCH 6.0|South Africa', 'WITCH 6.0|Sub Saharan Africa', 'WITCH 6.0|Non-EU Eastern European and Transition Countries', 'WITCH 6.0|United States of America']"
+227,['WITCH 6.0'],Asia (R5),"['WITCH 6.0|China', 'WITCH 6.0|India', 'WITCH 6.0|Indonesia', 'WITCH 6.0|South Asia', 'WITCH 6.0|South East Asia']"
+228,['WITCH 6.0'],Latin America (R5),"['WITCH 6.0|Brazil', 'WITCH 6.0|Latin America and the Caribbean', 'WITCH 6.0|Mexico']"
+229,['WITCH 6.0'],Middle East & Africa (R5),"['WITCH 6.0|Middle East and North Africa', 'WITCH 6.0|South Africa', 'WITCH 6.0|Sub Saharan Africa']"
+230,['WITCH 6.0'],OECD & EU (R5),"['WITCH 6.0|Canada', 'WITCH 6.0|Europe (EU+EFTA+Balkan Countries and Turkey)', 'WITCH 6.0|Japan and Korea', 'WITCH 6.0|Australia, New Zealand, and Oceania islands', 'WITCH 6.0|United States of America']"
+231,['WITCH 6.0'],Reforming Economies (R5),['WITCH 6.0|Non-EU Eastern European and Transition Countries']
+232,['WITCH 6.0'],China (R9),['WITCH 6.0|China']
+233,['WITCH 6.0'],European Union (R9),['WITCH 6.0|Europe (EU+EFTA+Balkan Countries and Turkey)']
+234,['WITCH 6.0'],India (R9),['WITCH 6.0|India']
+235,['WITCH 6.0'],Latin America (R9),"['WITCH 6.0|Brazil', 'WITCH 6.0|Latin America and the Caribbean', 'WITCH 6.0|Mexico']"
+236,['WITCH 6.0'],Middle East & Africa (R9),"['WITCH 6.0|Middle East and North Africa', 'WITCH 6.0|South Africa', 'WITCH 6.0|Sub Saharan Africa']"
+237,['WITCH 6.0'],Other Asia (R9),"['WITCH 6.0|Indonesia', 'WITCH 6.0|South Asia', 'WITCH 6.0|South East Asia']"
+238,['WITCH 6.0'],Other OECD (R9),"['WITCH 6.0|Canada', 'WITCH 6.0|Japan and Korea', 'WITCH 6.0|Australia, New Zealand, and Oceania islands']"
+239,['WITCH 6.0'],Reforming Economies (R9),['WITCH 6.0|Non-EU Eastern European and Transition Countries']
+240,['WITCH 6.0'],USA (R9),['WITCH 6.0|United States of America']
+241,['WITCH 6.0'],Africa (R10),"['WITCH 6.0|South Africa', 'WITCH 6.0|Sub Saharan Africa']"
+242,['WITCH 6.0'],China+ (R10),['WITCH 6.0|China']
+243,['WITCH 6.0'],Europe (R10),['WITCH 6.0|Europe (EU+EFTA+Balkan Countries and Turkey)']
+244,['WITCH 6.0'],India+ (R10),"['WITCH 6.0|India', 'WITCH 6.0|South Asia']"
+245,['WITCH 6.0'],Latin America (R10),"['WITCH 6.0|Brazil', 'WITCH 6.0|Latin America and the Caribbean', 'WITCH 6.0|Mexico']"
+246,['WITCH 6.0'],Middle East (R10),['WITCH 6.0|Middle East and North Africa']
+247,['WITCH 6.0'],North America (R10),"['WITCH 6.0|Canada', 'WITCH 6.0|United States of America']"
+248,['WITCH 6.0'],Pacific OECD (R10),"['WITCH 6.0|Japan and Korea', 'WITCH 6.0|Australia, New Zealand, and Oceania islands']"
+249,['WITCH 6.0'],Reforming Economies (R10),['WITCH 6.0|Non-EU Eastern European and Transition Countries']
+250,['WITCH 6.0'],Rest of Asia (R10),"['WITCH 6.0|Indonesia', 'WITCH 6.0|South East Asia']"
+251,['AIM/Hub-Global 2.4'],Asia (R5),"['AIM/Hub-Global 2.4|China', 'AIM/Hub-Global 2.4|India', 'AIM/Hub-Global 2.4|Rest of Asia', 'AIM/Hub-Global 2.4|Rest of East and South East Asia']"
+252,['AIM/Hub-Global 2.4'],Latin America (R5),"['AIM/Hub-Global 2.4|Brazil', 'AIM/Hub-Global 2.4|Rest of Latin America']"
+253,['AIM/Hub-Global 2.4'],Middle East & Africa (R5),"['AIM/Hub-Global 2.4|Other Africa', 'AIM/Hub-Global 2.4|Middle East', 'AIM/Hub-Global 2.4|North Africa']"
+254,['AIM/Hub-Global 2.4'],OECD & EU (R5),"['AIM/Hub-Global 2.4|Canada', 'AIM/Hub-Global 2.4|Japan', 'AIM/Hub-Global 2.4|Turkey', 'AIM/Hub-Global 2.4|USA', 'AIM/Hub-Global 2.4|EU', 'AIM/Hub-Global 2.4|Rest of Europe', 'AIM/Hub-Global 2.4|New Zealand and Australia']"
+255,['AIM/Hub-Global 2.4'],Reforming Economies (R5),['AIM/Hub-Global 2.4|Former USSR']
+256,['AIM/Hub-Global 2.4'],Africa (R10),"['AIM/Hub-Global 2.4|Other Africa', 'AIM/Hub-Global 2.4|North Africa']"
+257,['AIM/Hub-Global 2.4'],China+ (R10),['AIM/Hub-Global 2.4|China']
+258,['AIM/Hub-Global 2.4'],Europe (R10),"['AIM/Hub-Global 2.4|Turkey', 'AIM/Hub-Global 2.4|EU', 'AIM/Hub-Global 2.4|Rest of Europe']"
+259,['AIM/Hub-Global 2.4'],India+ (R10),['AIM/Hub-Global 2.4|India']
+260,['AIM/Hub-Global 2.4'],Latin America (R10),"['AIM/Hub-Global 2.4|Brazil', 'AIM/Hub-Global 2.4|Rest of Latin America']"
+261,['AIM/Hub-Global 2.4'],Middle East (R10),['AIM/Hub-Global 2.4|Middle East']
+262,['AIM/Hub-Global 2.4'],North America (R10),"['AIM/Hub-Global 2.4|Canada', 'AIM/Hub-Global 2.4|USA']"
+263,['AIM/Hub-Global 2.4'],Pacific OECD (R10),"['AIM/Hub-Global 2.4|Japan', 'AIM/Hub-Global 2.4|New Zealand and Australia']"
+264,['AIM/Hub-Global 2.4'],Reforming Economies (R10),['AIM/Hub-Global 2.4|Former USSR']
+265,['AIM/Hub-Global 2.4'],Rest of Asia (R10),"['AIM/Hub-Global 2.4|Rest of Asia', 'AIM/Hub-Global 2.4|Rest of East and South East Asia']"
+266,['AIM 3.0'],World,"['AIM 3.0|Brazil', 'AIM 3.0|Canada', 'AIM 3.0|China', 'AIM 3.0|Former USSR', 'AIM 3.0|India', 'AIM 3.0|Japan', 'AIM 3.0|Turkey', 'AIM 3.0|USA', 'AIM 3.0|Other Africa', 'AIM 3.0|EU & UK', 'AIM 3.0|Rest of Europe', 'AIM 3.0|Rest of Latin America', 'AIM 3.0|Middle East', 'AIM 3.0|North Africa', 'AIM 3.0|New Zealand and Australia', 'AIM 3.0|Rest of Asia', 'AIM 3.0|Rest of East and South East Asia']"
+267,['AIM 3.0'],OECD & EU (R5),"['AIM 3.0|Canada', 'AIM 3.0|Japan', 'AIM 3.0|Turkey', 'AIM 3.0|USA', 'AIM 3.0|EU & UK', 'AIM 3.0|Rest of Europe', 'AIM 3.0|New Zealand and Australia']"
+268,['AIM 3.0'],Reforming Economies (R5),['AIM 3.0|Former USSR']
+269,['AIM 3.0'],Asia (R5),"['AIM 3.0|China', 'AIM 3.0|India', 'AIM 3.0|Rest of Asia', 'AIM 3.0|Rest of East and South East Asia']"
+270,['AIM 3.0'],Middle East & Africa (R5),"['AIM 3.0|Other Africa', 'AIM 3.0|Middle East', 'AIM 3.0|North Africa']"
+271,['AIM 3.0'],Latin America (R5),"['AIM 3.0|Brazil', 'AIM 3.0|Rest of Latin America']"
+272,['AIM 3.0'],Africa (R10),"['AIM 3.0|Other Africa', 'AIM 3.0|North Africa']"
+273,['AIM 3.0'],China+ (R10),['AIM 3.0|China']
+274,['AIM 3.0'],Europe (R10),"['AIM 3.0|Turkey', 'AIM 3.0|EU & UK', 'AIM 3.0|Rest of Europe']"
+275,['AIM 3.0'],India+ (R10),['AIM 3.0|India']
+276,['AIM 3.0'],Latin America (R10),"['AIM 3.0|Brazil', 'AIM 3.0|Rest of Latin America']"
+277,['AIM 3.0'],Middle East (R10),['AIM 3.0|Middle East']
+278,['AIM 3.0'],North America (R10),"['AIM 3.0|Canada', 'AIM 3.0|USA']"
+279,['AIM 3.0'],Pacific OECD (R10),"['AIM 3.0|Japan', 'AIM 3.0|New Zealand and Australia']"
+280,['AIM 3.0'],Reforming Economies (R10),['AIM 3.0|Former USSR']
+281,['AIM 3.0'],Rest of Asia (R10),"['AIM 3.0|Rest of Asia', 'AIM 3.0|Rest of East and South East Asia']"
+282,['AIM 3.0'],Brazil,['AIM 3.0|Brazil']
+283,['AIM 3.0'],Canada,['AIM 3.0|Canada']
+284,['AIM 3.0'],China,['AIM 3.0|China']
+285,['AIM 3.0'],India,['AIM 3.0|India']
+286,['AIM 3.0'],Japan,['AIM 3.0|Japan']
+287,['AIM 3.0'],United States,['AIM 3.0|USA']
+288,['AIM 3.0'],African Union,"['AIM 3.0|Other Africa', 'AIM 3.0|North Africa']"
+289,['AIM 3.0'],European Union and United Kingdom,['AIM 3.0|EU & UK']
