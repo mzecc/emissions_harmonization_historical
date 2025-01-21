@@ -10,9 +10,7 @@ import pandas as pd
 from emissions_harmonization_historical.constants import DATA_ROOT
 
 # define output paths+names
-region_file = DATA_ROOT / Path("region_df.csv")
-mappings_file = DATA_ROOT / Path("mappings_df.csv")
-
+region_file = DATA_ROOT / Path("regionmapping", "region_df.csv")
 
 # Set working directory
 working_directory = Path(__file__).parent.parent.parent.parent / "common-definitions"  # Directory of the current script
@@ -68,11 +66,5 @@ for ram in rp.mappings.values():
             for common_region in ram.common_regions
         ]
     )
-mappings_df = pd.DataFrame(
-    rows,
-    columns=["model(s)", "common_region", "constituent_regions"],
-)
-
 
 region_df.to_csv(region_file)
-#mappings_df.to_csv(mappings_file)
