@@ -36,7 +36,7 @@ BURNING_OPTION = "GFED4_1s"  # options: ["GFED4_1s", "GFED4-BB4CMIP"]
 
 # file name for output
 # TODO: add versioning / ID to this file
-combined_processed_output_file = DATA_ROOT / Path("combined_cmip7_history.csv")
+combined_processed_output_file = DATA_ROOT / Path("combined-processed-output", "cmip7_history.csv")
 
 # %%
 if CEDS_OPTION == "CEDS-Zenodo-national":
