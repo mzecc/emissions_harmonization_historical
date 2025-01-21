@@ -75,4 +75,4 @@ mappings_df = pd.DataFrame(
 
 
 region_df.to_csv(region_file)
-mappings_df.to_csv(mappings_file)
+#mappings_df.to_csv(mappings_file)
