@@ -13,38 +13,44 @@
 # ---
 
 # %%
-# import external packages and functions
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-# create IAM region mappings using common-definitions
-from emissions_harmonization_historical.constants import DATA_ROOT
+from emissions_harmonization_historical.constants import COMBINED_HISTORY_ID, DATA_ROOT, IAMC_REGION_PROCESSING_ID
+from emissions_harmonization_historical.region_mapping import create_region_mapping
 
 # %%
-# OPTIONAL
-# create the region mapping .csv file using common-definitions
-# https://github.com/IAMconsortium/common-definitions
-# first, clone this repository to the same path as the emissions_harmonization_historical repository
-
-region_mapping_path = DATA_ROOT.parents[0] / "src/emissions_harmonization_historical/region_mapping.py"
-# %run {str(region_mapping_path)}
-
-# %%
-cmip7_history_file = DATA_ROOT / Path("combined-processed-output", "cmip7_history.csv")
 region_mapping_file = DATA_ROOT / Path("regionmapping", "region_df.csv")
+
+# %%
+# Create the region mapping .csv file using common-definitions.
+# To do this, clone https://github.com/IAMconsortium/common-definitions.
+# Then point common_definitions_path to wherever your clone is.
+common_definitions_path = DATA_ROOT.parents[1] / "common-definitions"
+region_file = DATA_ROOT / Path("regionmapping", "region_df.csv")
+force_generation = False
+if not region_file.exists() or force_generation:
+    create_region_mapping(
+        out_file=region_mapping_file,
+        region_file=region_file,
+        common_definitions_path=common_definitions_path,
+    )
+
+# %%
+cmip7_history_file = DATA_ROOT / Path("combined-processed-output", f"cmip7_history_{COMBINED_HISTORY_ID}.csv")
 
 # file name for output
 # TODO: add versioning / ID to this file
 iamc_commondefinitions_regions_processed_output_file = DATA_ROOT / Path(
-    "combined-processed-output", "iamc_regions_cmip7_history.csv"
+    "combined-processed-output", f"iamc_regions_cmip7_history_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 iamc_commondefinitions_regions_history_missing_iso_vsCEDSGFED = DATA_ROOT / Path(
-    "combined-processed-output", "iamc_regions_cmip7_history_missing_iso_vsCEDSGFED.csv"
+    "combined-processed-output", f"iamc_regions_cmip7_history_missing_iso_vsCEDSGFED_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 iamc_commondefinitions_regions_history_missing_iso = DATA_ROOT / Path(
-    "combined-processed-output", "iamc_regions_cmip7_history_missing_iso.csv"
+    "combined-processed-output", f"iamc_regions_cmip7_history_missing_iso_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 
 # %%
@@ -124,7 +130,7 @@ for r in [
     test_data = cmip7_history[(cmip7_history["region"].isin(test_countries))]
     region_df = test_data.groupby(["model", "scenario", "variable", "unit"], as_index=False).sum()
 
-    # Add a new column 'model_region' with the value "AIM 3.0|North Africa"
+    # Add a new column 'model_region' with the value region
     region_df["region"] = r
 
     # reorder columns
@@ -162,15 +168,9 @@ for src in hist_sources:
     df = cmip7_history[cmip7_history["scenario"] == src]
     print(src)
 
-    iso_list = []
+    iso_list = sorted(df["region"].unique().tolist())
 
-    for i in np.arange(0, len(df)):
-        iso_list.append(df["region"])
-
-    unique = list(set(item for sublist in iso_list for item in sublist))
-    unique.sort()
-
-    temp_df = pd.DataFrame({"model": src, "iso_list": [unique]})
+    temp_df = pd.DataFrame({"model": src, "iso_list": [iso_list]})
     hist_sources_countries = pd.concat([hist_sources_countries, temp_df], ignore_index=True)
 
 hist_sources_countries
@@ -184,16 +184,11 @@ missing_iso = pd.DataFrame(
     columns=["model", "iso_list", "missing_vs_ceds", "missing_vs_gfed", "missing_from_ceds", "missing_from_gfed"]
 )
 
+missing_iso_l = []
 for m in iams:
     df = region_mapping[region_mapping["model"] == m]
 
-    iso_list = []
-
-    for i in np.arange(0, len(df)):
-        iso_list.append(df["iso_list"].iloc[i])
-
-    unique = list(set(item for sublist in iso_list for item in sublist))
-    unique.sort()
+    unique = sorted(list(set([v for sublist in df["iso_list"].tolist() for v in sublist])))
 
     # compare against ceds and gfed respectively
     # list the iso codes present in the respective historical dataset but not in the IAM region aggregations
@@ -214,7 +209,9 @@ for m in iams:
         }
     )
 
-    missing_iso = pd.concat([missing_iso, temp_df], ignore_index=True)
+    missing_iso_l.append(temp_df)
+
+missing_iso = pd.concat(missing_iso_l, ignore_index=True)
 
 missing_iso
 
@@ -234,10 +231,12 @@ unique_iso = sorted(set(iso for sublist in all_iso["iso_list"] for iso in sublis
 # Create a new DataFrame with unique iso codes as rows
 iso_present = pd.DataFrame({"iso": unique_iso})
 
-
 # Add a column for each model, indicating if the iso code is in the model's iso_list
 for model, iso_list in zip(all_iso["model"], all_iso["iso_list"]):
     iso_present[model] = iso_present["iso"].apply(lambda x: x in iso_list)
 
+iso_present
+
 # %%
 iso_present.to_csv(iamc_commondefinitions_regions_history_missing_iso, index=False)
+iamc_commondefinitions_regions_history_missing_iso

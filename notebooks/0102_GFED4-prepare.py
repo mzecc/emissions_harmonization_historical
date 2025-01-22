@@ -17,13 +17,12 @@
 from pathlib import Path
 
 import pandas as pd
+import pandas_indexing as pix
 import ptolemy
 import xarray as xr
 from pandas_indexing import set_openscm_registry_as_default
-import pandas_indexing as pix
-from pandas_indexing.core import isna
 
-from emissions_harmonization_historical.constants import DATA_ROOT
+from emissions_harmonization_historical.constants import DATA_ROOT, GFED_PROCESSING_ID
 from emissions_harmonization_historical.gfed import (
     add_global,
     read_cell_area,
@@ -61,13 +60,17 @@ gfed_grid_template = Path(
     gfed_data_aux_folder, "BC-em-openburning_input4MIPs_emissions_CMIP_REMIND-MAGPIE-SSP5-34-OS-V1_gn_201501-210012.nc"
 )  # for country-level grid emissions reporting template
 
-gfed_processed_output_file = DATA_ROOT / Path("national", "gfed", "processed", "gfed_cmip7_national_alpha.csv")
+gfed_processed_output_file = DATA_ROOT / Path(
+    "national", "gfed", "processed", f"gfed_cmip7_national_{GFED_PROCESSING_ID}.csv"
+)
 
 gfed_processed_output_file_national = DATA_ROOT / Path(
-    "national", "gfed", "processed", "gfed_cmip7_national_alpha.csv")
+    "national", "gfed", "processed", f"gfed_cmip7_national_{GFED_PROCESSING_ID}.csv"
+)
 
 gfed_processed_output_file_World = DATA_ROOT / Path(
-    "national", "gfed", "processed", "gfed_cmip7_World_alpha.csv")
+    "national", "gfed", "processed", f"gfed_cmip7_World_{GFED_PROCESSING_ID}.csv"
+)
 
 
 gfed_temp_file = DATA_ROOT / Path("national", "gfed", "processed", "gfed_temporaryfile.csv")
@@ -216,8 +219,7 @@ emissions_df = (
 )
 
 # %%
-country_combinations = {
-    "srb_ksv": ["srb", "srb (kosovo)"]}
+country_combinations = {"srb_ksv": ["srb", "srb (kosovo)"]}
 emissions_df = emissions_df.pix.aggregate(country=country_combinations)
 
 # %% [markdown]
@@ -295,9 +297,7 @@ burningCMIP7_ref.pix
 
 # %%
 out_global = burningCMIP7_ref.loc[pix.isin(region="World")]  # only the added "World" region
-out_national_without_World = burningCMIP7_ref.loc[
-    ~pix.isin(region="World")
-]  # remove the added "World" region
+out_national_without_World = burningCMIP7_ref.loc[~pix.isin(region="World")]  # remove the added "World" region
 out_only_World = burningCMIP7_ref.loc[
     pix.isin(region="World")
 ]  # only the GFED "global" region; which represents "international" emissions

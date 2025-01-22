@@ -1,38 +1,33 @@
 """Here we specify functions used to generate the 'region_df.csv' from the common-definitions repository."""
 
 from pathlib import Path
-import os
+
+import pandas as pd
 from nomenclature import countries
 from nomenclature.definition import DataStructureDefinition
 from nomenclature.processor import RegionProcessor
-import pandas as pd
-
-from emissions_harmonization_historical.constants import DATA_ROOT
-
-# define output paths+names
-region_file = DATA_ROOT / Path("regionmapping", "region_df.csv")
-
-# Set working directory
-working_directory = Path(__file__).parent.parent.parent.parent / "common-definitions"  # Directory of the current script
-os.chdir(working_directory)
 
 
-# a DSD stores the definitions info for regions, variables, scenarios
-dsd = DataStructureDefinition("definitions")
+def get_iso3_list(country_list: list[str]) -> list[str]:
+    """
+    Get list of ISO3 values for a list of countries
 
-# dsd.region stores a dictionary of <region name>: <RegionCode object>
-# a RegionCode object stores the info for a region defined in the YAML files, such as the model (
-region_df = pd.DataFrame(
-    [(r.name, r.hierarchy, r.countries, r.iso3_codes) for r in dsd.region.values()],
-    columns=["name", "hierarchy", "countries", "iso3"]
-)
+    Parameters
+    ----------
+    country_list
+        Countries for which to retrieve ISO3 values
 
+    Returns
+    -------
+    :
+        List of ISO3 values.
 
-# fill currently empty iso3 column
-# Function to fetch ISO3 codes
-def get_iso3_list(country_list):
+        For any country for which an ISO3 could not be created,
+        `None` is returned in the output.
+    """
     if not country_list:
         return None
+
     iso3_list = []
     for country in country_list:
         try:
@@ -40,31 +35,61 @@ def get_iso3_list(country_list):
             if iso3:
                 iso3_list.append(iso3.alpha_3)
             else:
+                print(f"No iso3 for {country=}")
                 iso3_list.append(None)  # If no match found
-        except Exception:
+        except Exception as exc:
+            print(f"Exception retrieving iso3 for {country=}. {exc=}")
             iso3_list.append(None)
+
     return iso3_list
 
 
-# fill the iso3 column
-region_df["iso3"] = region_df["countries"].apply(get_iso3_list)
+def create_region_mapping(out_file: Path, region_file: Path, common_definitions_path: Path) -> Path:
+    """
+    Create the region mapping file
 
-# the RegionProcessor creates the mappings object
-# the mappings are defined at the model level in a RegionAggregationMapping object
-# each RAM contains, among other things, the list of "common regions" (regions resulting
-# from aggregation) and their constituents
-rp = RegionProcessor.from_directory("mappings", dsd)
-rows = []
-for ram in rp.mappings.values():
-    rows.extend(
-        [
-            (
-                ram.model,
-                common_region.name,
-                [ram.rename_mapping[nr] for nr in common_region.constituent_regions],
-            )
-            for common_region in ram.common_regions
-        ]
+    Parameters
+    ----------
+    out_file
+        File in which to write the mapping
+
+    region_file
+        Path in which the region definitions are stored
+
+    common_definitions_path
+        Path in which the common-definitions repository can be found.
+
+        This is the repo it should point to:
+        https://github.com/IAMconsortium/common-definitions.
+
+    Returns
+    -------
+    :
+        File in which the mapping was written
+    """
+    dsd = DataStructureDefinition(common_definitions_path / "definitions")
+
+    region_df = pd.DataFrame(
+        [(r.name, r.hierarchy, r.countries, r.iso3_codes) for r in dsd.region.values()],
+        columns=["name", "hierarchy", "countries", "iso3"],
     )
 
-region_df.to_csv(region_file)
+    region_df["iso3"] = region_df["countries"].apply(get_iso3_list)
+
+    rp = RegionProcessor.from_directory(common_definitions_path / "mappings", dsd)
+    rows = []
+    for ram in rp.mappings.values():
+        rows.extend(
+            [
+                (
+                    ram.model,
+                    common_region.name,
+                    [ram.rename_mapping[nr] for nr in common_region.constituent_regions],
+                )
+                for common_region in ram.common_regions
+            ]
+        )
+
+    region_df.to_csv(out_file)
+
+    return out_file

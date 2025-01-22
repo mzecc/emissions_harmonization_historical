@@ -44,8 +44,12 @@ Then, download the data
 ```sh
 # Comma-separated list
 # You can search with esgpull search e.g. `venv/bin/esgpull search --all project:input4MIPs mip_era:CMIP6Plus source_id:DRES-CMIP-BB4CMIP7-1-0 grid_label:gn`
-variable_ids_to_grab="BC,CH4,CO,CO2,N2O,NH3,NOx,OC,SO2,gridcellarea"
+variable_ids_to_grab="BC,CH4,CO,CO2,Multiple,N2O,NH3,NMVOC_bulk,NOx,OC,SO2,gridcellarea"
 venv/bin/esgpull add --tag bb4cmip --track variable_id:"${variable_ids_to_grab}" project:input4MIPs mip_era:CMIP6Plus source_id:DRES-CMIP-BB4CMIP7-1-0 grid_label:gn
 venv/bin/esgpull update -y --tag bb4cmip
-venv/bin/esgpull download
+venv/bin/esgpull download --tag bb4cmip
+
+venv/bin/esgpull add --tag bb4cmip-nmvoc-bulk --track variable_long_name:"biomass_burning_NMVOC_bulk_flux" project:input4MIPs mip_era:CMIP6Plus source_id:DRES-CMIP-BB4CMIP7-1-0 grid_label:gn
+venv/bin/esgpull update -y --tag bb4cmip-nmvoc-bulk
+venv/bin/esgpull download --tag bb4cmip-nmvoc-bulk
 ```
