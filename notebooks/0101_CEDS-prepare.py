@@ -27,6 +27,7 @@ from emissions_harmonization_historical.constants import (
     CEDS_PROCESSING_ID,
     DATA_ROOT,
 )
+from emissions_harmonization_historical.units import assert_units_match_wishes
 
 # set unit registry
 pix.units.set_openscm_registry_as_default()
@@ -106,8 +107,11 @@ assert sum_of_6B_other == 0
 ceds
 
 # %%
+ceds
+
+# %%
 # change units to align with IAM scenario data
-# adjust units; change column 'units' to 'units' and add '/yr'
+# adjust units; change column 'units' to 'unit' and add '/yr'
 ceds = ceds.pix.dropna(subset=["units"]).pix.format(unit="{units}/yr", drop=True)
 # adjust units; change all to values to Mt instead of kt
 ceds = pix.units.convert_unit(ceds, lambda x: "Mt " + x.removeprefix("kt").strip())
@@ -147,8 +151,9 @@ ceds = ceds.groupby(["em", "country", "unit", "sector"]).sum().pix.fixna()  # gr
 # aggregate countries where this is necessary, e.g. because of specific other data (like SSP socioeconomic driver data)
 # based on the new SSP data, we only need to aggregate Serbia and Kosovo
 country_combinations = {
-    #"isr_pse": ["isr", "pse"], "sdn_ssd": ["ssd", "sdn"], 
-    "srb_ksv": ["srb", "srb (kosovo)"]}
+    # "isr_pse": ["isr", "pse"], "sdn_ssd": ["ssd", "sdn"],
+    "srb_ksv": ["srb", "srb (kosovo)"]
+}
 ceds = ceds.pix.aggregate(country=country_combinations)
 
 # %%
@@ -160,31 +165,6 @@ ceds_reformatted = ceds.rename_axis(index={"em": "variable", "country": "region"
 ceds_reformatted
 
 # %%
-# check that all units are as wished.
-# ... as this is for the harmonization of IAMs (in CMIP7 / ScenarioMIP), the desired units are defined in https://github.com/IAMconsortium/common-definitions/
-unit_wishes = pd.MultiIndex.from_tuples(
-    [
-        ("BC", "Mt BC/yr"),
-        ("CH4", "Mt CH4/yr"),
-        ("N2O", "kt N2O/yr"),
-        ("CO", "Mt CO/yr"),
-        ("CO2", "Mt CO2/yr"),
-        ("NH3", "Mt NH3/yr"),
-        ("NMVOC", "Mt NMVOC/yr"),
-        ("NOx", "Mt NO2/yr"),
-        ("OC", "Mt OC/yr"),
-        ("Sulfur", "Mt SO2/yr"),
-    ],
-    names=["variable", "unit"],
-)
-
-# check that we follow the desired units
-ceds_reformatted.pix.unique(unit_wishes.names)
-unit_mismatches = ceds_reformatted.pix.unique(unit_wishes.names).symmetric_difference(unit_wishes)
-
-assert unit_mismatches.empty, f"Unit mismatches detected:\n{unit_mismatches}"
-
-# %%
 # rename to IAMC-style variable names including standard index order
 ceds_reformatted_iamc = (
     ceds_reformatted.pix.format(variable="Emissions|{variable}|{sector}", drop=True)
@@ -192,6 +172,12 @@ ceds_reformatted_iamc = (
     .reorder_levels(["model", "scenario", "region", "variable", "unit"])
 ).sort_values(by=["region", "variable"])
 ceds_reformatted_iamc
+
+# %%
+ceds_reformatted_iamc
+
+# %%
+assert_units_match_wishes(ceds_reformatted_iamc)
 
 # %% [markdown]
 # Save formatted CEDS data
@@ -245,7 +231,6 @@ national_sums_checker = (
     .set_index(out_global.index.names)
 )
 national_sums_checker.columns = national_sums_checker.columns.astype(int)
-national_sums_checker
 pd.testing.assert_frame_equal(global_checker, national_sums_checker, check_like=True)
 
 # check that aircraft and international shipping are zero:
@@ -270,7 +255,6 @@ else:
         len(nz[["region", "variable"]].drop_duplicates())
         == CEDS_EXPECTED_NUMBER_OF_REGION_VARIABLE_PAIRS_IN_GLOBAL_HARMONIZATION
     )  # ... if the CEDS version is not 2024_07_08, this assert statement may need to be updated
-
 
 # %%
 # national CEDS data
