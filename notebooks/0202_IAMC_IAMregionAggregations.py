@@ -38,6 +38,7 @@ region_mapping_file = DATA_ROOT / Path("regionmapping", "region_df.csv")
 # file name for output
 # TODO: add versioning / ID to this file
 iamc_commondefinitions_regions_processed_output_file = DATA_ROOT / Path("iamc_regions_cmip7_history.csv")
+iamc_commondefinitions_regions_history_missing_iso = DATA_ROOT / Path("iamc_regions_cmip7_history_missing_iso.csv")
 
 # %%
 cmip7_history = pd.read_csv(cmip7_history_file)
@@ -128,3 +129,69 @@ pd.testing.assert_frame_equal(test_df, region_df)
 iamc_commondefinitions_regions_processed_output_file.parent.mkdir(exist_ok=True, parents=True)
 history_for_all_iamc_regions.to_csv(iamc_commondefinitions_regions_processed_output_file, index=False)
 iamc_commondefinitions_regions_processed_output_file
+
+# %% [markdown]
+# produce overview of missing countries
+
+# %%
+# extract list of unique iso codes present in respective historical dataset (post-processing)
+hist = cmip7_history['scenario'].unique()
+
+history = pd.DataFrame(columns=['model', 'iso_list'])
+
+for m in hist:
+    df = cmip7_history[cmip7_history['scenario'] == m]
+    print(m)
+
+    iso_list = []
+    
+    for i in np.arange(0, len(df)):
+        iso_list.append(df['region'])
+    
+    unique = list(set(item for sublist in iso_list for item in sublist))
+    unique.sort()
+
+    
+    temp_df = pd.DataFrame({'model':m, 'iso_list': [unique]})
+    history = pd.concat([history, temp_df], ignore_index=True)
+
+history
+
+# %%
+# extract list of unique iso codes present in each IAM, as well as the R5/9/10 region aggregations
+
+models = region_mapping['model'].unique()
+
+missing_iso = pd.DataFrame(columns=['model', 'iso_list', 
+                                    'missing_vs_ceds', 'missing_vs_gfed',
+                                    'missing_from_ceds', 'missing_from_gfed'])
+
+for m in models:
+    df = region_mapping[region_mapping['model'] == m]
+
+    iso_list = []
+    
+    for i in np.arange(0, len(df)):
+        iso_list.append(df['iso_list'].iloc[i])
+    
+    unique = list(set(item for sublist in iso_list for item in sublist))
+    unique.sort()
+
+    # compare against ceds and gfed respectively
+    # list the iso codes present in the respective historical dataset but not in the IAM region aggregations
+    missing_vs_ceds = list(set(history['iso_list'][0]) - set(unique))
+    missing_vs_gfed = list(set(history['iso_list'][1]) - set(unique))
+
+    missing_from_ceds = list(set(unique) - set(history['iso_list'][0]))
+    missing_from_gfed = list(set(unique) - set(history['iso_list'][1]))
+
+    temp_df = pd.DataFrame({'model':m, 'iso_list': [unique], 
+                            'missing_vs_ceds': [missing_vs_ceds], 'missing_vs_gfed': [missing_vs_gfed],
+                            'missing_from_ceds': [missing_from_ceds], 'missing_from_gfed': [missing_from_gfed]})
+    
+    missing_iso = pd.concat([output, temp_df], ignore_index=True)
+    
+missing_iso
+
+# %%
+missing_iso.to_csv(iamc_commondefinitions_regions_history_missing_iso, index=False)
