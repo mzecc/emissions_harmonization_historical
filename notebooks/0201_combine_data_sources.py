@@ -21,7 +21,9 @@ import pandas_indexing as pix
 
 from emissions_harmonization_historical.constants import (
     CEDS_PROCESSING_ID,
+    COMBINED_HISTORY_ID,
     DATA_ROOT,
+    GFED_PROCESSING_ID,
 )
 
 # set unit registry
@@ -35,8 +37,9 @@ CEDS_OPTION = (
 BURNING_OPTION = "GFED4_1s"  # options: ["GFED4_1s", "GFED4-BB4CMIP"]
 
 # file name for output
-# TODO: add versioning / ID to this file
-combined_processed_output_file = DATA_ROOT / Path("combined-processed-output", "cmip7_history.csv")
+combined_processed_output_file = DATA_ROOT / Path(
+    "combined-processed-output", f"cmip7_history_{COMBINED_HISTORY_ID}.csv"
+)
 
 # %%
 if CEDS_OPTION == "CEDS-Zenodo-national":
@@ -49,8 +52,12 @@ if CEDS_OPTION == "CEDS-Zenodo-national":
     ceds = pd.concat([pd.read_csv(ceds_processed_national), pd.read_csv(ceds_processed_global)])
 
 if BURNING_OPTION == "GFED4_1s":
-    gfed_processed_national = DATA_ROOT / Path("national", "gfed", "processed", "gfed_cmip7_national_alpha.csv")
-    gfed_processed_global = DATA_ROOT / Path("national", "gfed", "processed", "gfed_cmip7_global_alpha.csv")
+    gfed_processed_national = DATA_ROOT / Path(
+        "national", "gfed", "processed", f"gfed_cmip7_national_{GFED_PROCESSING_ID}.csv"
+    )
+    gfed_processed_global = DATA_ROOT / Path(
+        "national", "gfed", "processed", f"gfed_cmip7_World_{GFED_PROCESSING_ID}.csv"
+    )
     gfed = pd.concat([pd.read_csv(gfed_processed_national), pd.read_csv(gfed_processed_global)])
 
     ## TODO: all code in this if-statement after this comment is some ad-hoc
