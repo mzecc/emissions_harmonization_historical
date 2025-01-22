@@ -107,9 +107,6 @@ assert sum_of_6B_other == 0
 ceds
 
 # %%
-ceds
-
-# %%
 # change units to align with IAM scenario data
 # adjust units; change column 'units' to 'unit' and add '/yr'
 ceds = ceds.pix.dropna(subset=["units"]).pix.format(unit="{units}/yr", drop=True)
