@@ -1,9 +1,7 @@
 """
-Core package for climate assessment workflows.
+Workflows for assessing the global climate implications of global emission scenarios.
 
-Specifically, for workflows
-for assessing the global climate implications of global emission scenarios,
-typically from IAMs.
+Scenarios are typically from IAMs.
 """
 
 import importlib.metadata
