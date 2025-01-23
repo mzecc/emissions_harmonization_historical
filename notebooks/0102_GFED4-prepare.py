@@ -18,11 +18,12 @@ from pathlib import Path
 
 import pandas as pd
 import pandas_indexing as pix
+import pint
 import ptolemy
 import xarray as xr
 from pandas_indexing import set_openscm_registry_as_default
 
-from emissions_harmonization_historical.constants import DATA_ROOT, GFED_PROCESSING_ID
+from emissions_harmonization_historical.constants import DATA_ROOT, GFED_PROCESSING_ID, HISTORY_SCENARIO_NAME
 from emissions_harmonization_historical.gfed import (
     add_global,
     read_cell_area,
@@ -33,6 +34,7 @@ from emissions_harmonization_historical.gfed import (
     # month_to_cftime,
     read_year,
 )
+from emissions_harmonization_historical.units import assert_units_match_wishes
 
 # set unit registry
 ur = set_openscm_registry_as_default()
@@ -139,9 +141,7 @@ nmvoc_species = nmvoc_species.set_axis(
 # Whether to convert to kgC
 if voc_unit == "kg C":
     nmvoc_factors = (
-        nmvoc_species.loc[
-            nmvoc_species["NMVOC"].isin(["y"])
-        ]  # thomas gasser confirmed, so can be cleaned up without "?"
+        nmvoc_species.loc[nmvoc_species["NMVOC"].isin(["y"])]
         .pipe(lambda df: df["Carbon weight"] / df["Molecular weight"])
         .astype(float)
     )
@@ -195,6 +195,9 @@ country_emissions
 # Convert units from Dry Matter to emissions
 
 # %%
+country_emissions
+
+# %%
 units = pd.MultiIndex.from_tuples(
     [
         ("BC", "kg C"),
@@ -204,8 +207,11 @@ units = pd.MultiIndex.from_tuples(
         ("CH4", "kg CH4"),
         ("N2O", "kg N2O"),
         ("NH3", "kg NH3"),
-        ("NOx", "kg NOx"),
-        ("VOC", voc_unit),
+        # NOx units in GFED are NO by default,
+        # whereas NOx in openscm-units means
+        # NO2.
+        ("NOx", "kg NO"),
+        ("NMVOC", voc_unit),
         ("SO2", "kg SO2"),
     ],
     names=["em", "unit"],
@@ -217,6 +223,7 @@ emissions_df = (
     .pix.semijoin(units, how="left")
     .pix.convert_unit(lambda u: u.replace("kg", "kt"))
 )
+emissions_df
 
 # %%
 country_combinations = {"srb_ksv": ["srb", "srb (kosovo)"]}
@@ -227,7 +234,7 @@ emissions_df = emissions_df.pix.aggregate(country=country_combinations)
 
 # %%
 # intermediary save
-(emissions_df.to_csv(gfed_temp_file))
+emissions_df.to_csv(gfed_temp_file)
 
 # %% [markdown]
 # Reformat, including updated variable naming
@@ -255,7 +262,7 @@ unit = pd.MultiIndex.from_tuples(
         ("CH4", "kt CH4/yr"),
         ("N2O", "kt N2O/yr"),
         ("NH3", "kt NH3/yr"),
-        ("NOx", "kt NOx/yr"),
+        ("NOx", "kt NO/yr"),
         ("NMVOC", "kt VOC/yr"),
         ("SO2", "kt SO2/yr"),
     ],
@@ -278,22 +285,29 @@ burningCMIP7_ref = (
 # rename to IAMC-style variable names
 burningCMIP7_ref = (
     burningCMIP7_ref.rename(index={"SO2": "Sulfur", "NMVOC": "VOC"}, level="em")
-    .pix.format(variable="CMIP7 History|Emissions|{em}|{sector}", drop=True)
-    .pix.assign(model="History", scenario=gfed_release)
+    .pix.format(variable="Emissions|{em}|{sector}", drop=True)
+    .pix.assign(scenario=HISTORY_SCENARIO_NAME, model=gfed_release)
 )
 
 # add global level aggregation ("World")
 burningCMIP7_ref = add_global(burningCMIP7_ref, groups=["model", "scenario", "variable", "unit"])
 
 # %%
-burningCMIP7.pix
-
-# %%
-burningCMIP7_ref.pix
-
-# %%
+# Various fixes
 burningCMIP7_ref = burningCMIP7_ref.rename_axis(index={"em": "variable", "country": "region"})
-burningCMIP7_ref.pix
+burningCMIP7_ref = burningCMIP7_ref.pix.format(unit="{unit}/yr")
+
+with pint.get_application_registry().context("NOx_conversions"):
+    burningCMIP7_ref = burningCMIP7_ref.pix.convert_unit({"Mt N2O/yr": "kt N2O/yr", "Mt NO/yr": "Mt NO2/yr"})
+
+tmp = burningCMIP7_ref.reset_index("unit")
+tmp["unit"] = tmp["unit"].str.replace("Mt C/yr", "Mt BC/yr")
+burningCMIP7_ref = tmp.set_index("unit", append=True).reorder_levels(burningCMIP7_ref.index.names)
+burningCMIP7_ref
+
+# %%
+# Missing (NM)VOC at the moment from this processing...
+assert_units_match_wishes(burningCMIP7_ref)
 
 # %%
 out_global = burningCMIP7_ref.loc[pix.isin(region="World")]  # only the added "World" region
@@ -310,4 +324,4 @@ out_only_World.to_csv(gfed_processed_output_file_World)
 # Save formatted GFED data
 
 # %%
-(burningCMIP7_ref.to_csv(gfed_processed_output_file))
+burningCMIP7_ref.to_csv(gfed_processed_output_file)

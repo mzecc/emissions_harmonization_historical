@@ -26,6 +26,7 @@ from emissions_harmonization_historical.constants import (
     CEDS_EXPECTED_NUMBER_OF_REGION_VARIABLE_PAIRS_IN_GLOBAL_HARMONIZATION,
     CEDS_PROCESSING_ID,
     DATA_ROOT,
+    HISTORY_SCENARIO_NAME,
 )
 from emissions_harmonization_historical.units import assert_units_match_wishes
 
@@ -158,6 +159,10 @@ ceds = ceds.pix.aggregate(country=country_combinations)
 ceds = add_global(ceds)
 
 # %%
+# Rename NMVOC
+ceds = ceds.rename(index=lambda v: v.replace("NMVOC", "VOC"))
+
+# %%
 ceds_reformatted = ceds.rename_axis(index={"em": "variable", "country": "region"})
 ceds_reformatted
 
@@ -165,7 +170,7 @@ ceds_reformatted
 # rename to IAMC-style variable names including standard index order
 ceds_reformatted_iamc = (
     ceds_reformatted.pix.format(variable="Emissions|{variable}|{sector}", drop=True)
-    .pix.assign(model="History", scenario=f"CEDSv{ceds_release}")
+    .pix.assign(scenario=HISTORY_SCENARIO_NAME, model=f"CEDSv{ceds_release}")
     .reorder_levels(["model", "scenario", "region", "variable", "unit"])
 ).sort_values(by=["region", "variable"])
 ceds_reformatted_iamc

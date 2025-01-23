@@ -1,11 +1,29 @@
+# Output plots
+*.pdf
+
 # Processed data
 data/national/ceds/processed
 data/national/gfed/processed
 data/national/gfed-bb4cmip/processed
+data/global/adam-et-al-2024/processed
+data/global/edgar/processed/
+data/global/gcb/processed
+data/global/velders-et-al-2022/processed/
+data/global/wmo-2022/processed
 data/combined-processed-output
+data/global-composite
+
+# Raw WMO data
+data/global/wmo-2022/data_raw
+
+# EDGAR data
+data/global/edgar/data_raw/
 
 # RCMIP data
 data/global/rcmip/data_raw
+
+# GCB raw data
+data/global/gcb/data_raw
 
 # CEDS data
 data/national/ceds/data_raw

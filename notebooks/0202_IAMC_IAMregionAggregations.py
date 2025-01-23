@@ -17,6 +17,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pandas_indexing as pix
 
 from emissions_harmonization_historical.constants import COMBINED_HISTORY_ID, DATA_ROOT, IAMC_REGION_PROCESSING_ID
 from emissions_harmonization_historical.region_mapping import create_region_mapping
@@ -93,15 +94,10 @@ for _, row in region_mapping.iterrows():
     # append
     agg_data.append(aggregated_df_one_region)
 
-
 # Concatenate all aggregated DataFrames
-history_for_all_iamc_regions = pd.concat(agg_data, ignore_index=True)
-# Move 'region' between 'scenario' and 'variable'
-columns_order = ["model", "scenario", "region", "variable", "unit", *numeric_datacols]
+history_for_all_iamc_regions = pix.concat(agg_data, ignore_index=True)
+columns_order = ["model", "scenario", "variable", "region", "unit", *numeric_datacols]
 history_for_all_iamc_regions = history_for_all_iamc_regions[columns_order]
-
-# %%
-history_for_all_iamc_regions
 
 # %%
 # run a few tests to ensure processing went as intended
@@ -135,7 +131,7 @@ for r in [
 
     # reorder columns
     columns = list(region_df.columns)
-    columns.insert(2, columns.pop(columns.index("region")))
+    columns.insert(3, columns.pop(columns.index("region")))
 
     # Reassign the DataFrame to the new column order
     region_df = region_df[columns]
@@ -156,16 +152,16 @@ iamc_commondefinitions_regions_processed_output_file
 # # Check countries covered by (a) different historical data sources, and (b) different IAMs in common-definitions
 
 # %%
-cmip7_history["scenario"].unique()
+cmip7_history["model"].unique()
 
 # %%
 # extract list of unique iso codes present in respective historical dataset (post-processing)
-hist_sources = cmip7_history["scenario"].unique()
+hist_sources = cmip7_history["model"].unique()
 
 hist_sources_countries = pd.DataFrame(columns=["model", "iso_list"])  # create empty dataframe
 
 for src in hist_sources:
-    df = cmip7_history[cmip7_history["scenario"] == src]
+    df = cmip7_history[cmip7_history["model"] == src]
     print(src)
 
     iso_list = sorted(df["region"].unique().tolist())
@@ -176,8 +172,8 @@ for src in hist_sources:
 hist_sources_countries
 
 # %%
-# extract list of unique iso codes present in each IAM, as well as the R5/9/10 region aggregations
-
+# extract list of unique iso codes present in each IAM,
+# as well as the R5/9/10 region aggregations
 iams = region_mapping["model"].unique()
 
 missing_iso = pd.DataFrame(
@@ -192,11 +188,11 @@ for m in iams:
 
     # compare against ceds and gfed respectively
     # list the iso codes present in the respective historical dataset but not in the IAM region aggregations
-    missing_vs_ceds = list(set(hist_sources_countries["iso_list"][0]) - set(unique))
-    missing_vs_gfed = list(set(hist_sources_countries["iso_list"][1]) - set(unique))
+    missing_vs_ceds = sorted(list(set(hist_sources_countries["iso_list"][0]) - set(unique)))
+    missing_vs_gfed = sorted(list(set(hist_sources_countries["iso_list"][1]) - set(unique)))
 
-    missing_from_ceds = list(set(unique) - set(hist_sources_countries["iso_list"][0]))
-    missing_from_gfed = list(set(unique) - set(hist_sources_countries["iso_list"][1]))
+    missing_from_ceds = sorted(list(set(unique) - set(hist_sources_countries["iso_list"][0])))
+    missing_from_gfed = sorted(list(set(unique) - set(hist_sources_countries["iso_list"][1])))
 
     temp_df = pd.DataFrame(
         {
