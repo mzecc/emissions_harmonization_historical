@@ -193,7 +193,7 @@ ceds_biomass_burning_composite = (
     .pix.extract(variable="Emissions|{species}|{source}")
     .pix.assign(model="CEDS-BB4CMIP")
     .groupby([*(set(ceds_sum.index.names) - {"variable"}), "species"])
-    .sum()  # will give weird output if any units differ
+    .sum(min_count=2)  # will give weird output if any units differ
     .pix.format(variable="Emissions|{species}", drop=True)
 )
 ceds_biomass_burning_composite
@@ -292,7 +292,7 @@ for variable, source in global_variable_sources.items():
 
     global_composite_l.append(to_keep)
 
-global_composite = pix.concat(global_composite_l).sort_index()
+global_composite = pix.concat(global_composite_l).sort_index().sort_index(axis="columns")
 global_composite
 
 # %%
