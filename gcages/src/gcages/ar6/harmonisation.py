@@ -33,7 +33,9 @@ def load_ar6_historical_emissions() -> pd.DataFrame:
     :
         Historical emissions used in AR6
     """
-    filepath: Path = Path(importlib.resources.files("gcages") / "history_ar6.csv")  # type: ignore
+    filepath: Path = Path(  # type: ignore
+        importlib.resources.files("gcages") / "ar6" / "history_ar6.csv"
+    )
     res: pd.DataFrame = pd.read_csv(filepath)
     res.columns = res.columns.str.lower()
     res = res.set_index(["model", "scenario", "variable", "unit", "region"])
@@ -229,10 +231,6 @@ class AR6Harmoniser:
         #       - only data with a useable time axis is in there
         #       - metadata is appropriate/usable
 
-        # May need to drop all nan times here
-        # May need to drop out variables which are all zero
-        # May need to drop out variables which are zero in the harmonisation year
-
         harmonised_df = pix.concat(
             run_parallel(
                 func_to_call=harmonise_scenario,
@@ -259,11 +257,9 @@ class AR6Harmoniser:
         # TODO:
         #   - enable optional checks for:
         #       - input and output metadata is identical
-        #         (except maybe a stage indicator)
         #           - no mangled variable names
         #           - no mangled units
-        #           - output timesteps are from harmonisation year onwards,
-        #             otherwise identical to input
+        #           - output timesteps are from harmonisation year onwards only
         #       - output scenarios all have common starting point
 
         return out
