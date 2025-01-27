@@ -442,11 +442,6 @@ for model, mdf in pix.concat(
     # break
 
 # %%
-scenarios_raw_global.loc[pix.ismatch(model="WITCH*", variable="**HFC**")].loc[:, 2010:2050].dropna(
-    how="all", axis="columns"
-)
-
-# %%
 output_file.parent.mkdir(exist_ok=True, parents=True)
 harmonised.to_csv(output_file)
 output_file
