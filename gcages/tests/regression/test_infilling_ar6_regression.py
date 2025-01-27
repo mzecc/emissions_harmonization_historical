@@ -51,7 +51,9 @@ def test_infilling_single_model_scenario(model, scenario):
         msg = f"No test data for {model=} {scenario=}?"
         raise AssertionError(msg)
 
-    infiller = AR6Infiller.from_ar6_like_config(run_checks=False, n_processes=1)
+    infiller = AR6Infiller.from_ar6_like_config(
+        run_checks=False, n_processes=1, magicc_exe_path=1
+    )
 
     res = infiller(harmonised)
 

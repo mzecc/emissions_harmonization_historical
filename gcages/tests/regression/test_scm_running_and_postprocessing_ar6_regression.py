@@ -4,13 +4,14 @@ Regression tests of SCM running compared to AR6
 
 from __future__ import annotations
 
+import platform
 from pathlib import Path
 
 import pandas as pd
 import pandas_indexing as pix
 import pytest
 
-from gcages.ar6 import AR6Infiller
+from gcages.ar6 import AR6PostProcessor, AR6SCMRunner
 from gcages.testing import (
     AR6_IPS,
     assert_frame_equal,
@@ -40,13 +41,37 @@ def test_infilling_single_model_scenario(model, scenario):
     infilled = get_ar6_infilled_emissions(
         model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
     )
+    # Drop out some variables that come from post-processing/aren't used
+    infilled = (
+        infilled.loc[~pix.ismatch(variable="**Kyoto**")]
+        .loc[~pix.ismatch(variable="**F-Gases")]
+        .loc[~pix.ismatch(variable="**HFC")]
+        .loc[~pix.ismatch(variable="**PFC")]
+        .loc[~pix.ismatch(variable="**CO2")]
+    )
 
     if infilled.empty:
         msg = f"No test data for {model=} {scenario=}?"
         raise AssertionError(msg)
 
-    # TODO: try using more processes here
-    scm_runner = AR6SCMRunner.from_ar6_like_config(run_checks=False, n_processes=1)
+    if platform.system() == "Darwin":
+        if platform.processor() == "arm":
+            magicc_exe = TEST_DATA_DIR / "magicc-v7.5.3/bin/magicc-darwin-arm64"
+
+        else:
+            raise NotImplementedError(platform.processor())
+
+    else:
+        raise NotImplementedError(platform.system())
+
+    scm_runner = AR6SCMRunner.from_ar6_like_config(
+        run_checks=False,
+        # TODO: try using more processes here
+        n_processes=1,
+        magicc_exe_path=magicc_exe,
+        magicc_prob_distribution_path=TEST_DATA_DIR
+        / "magicc-v7.5.3/configs/600-member.json",
+    )
     post_processor = AR6PostProcessor.from_ar6_like_config(
         run_checks=False, n_processes=1
     )

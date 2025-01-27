@@ -1,6 +1,9 @@
 # Raw scenario database file
 tests/test-data/AR6_Scenarios_Database_World_ALL_CLIMATE_v1.1.csv
 
+# MAGICC stuff
+tests/test-data/magicc*
+
 # Notebooks
 *.ipynb
 
