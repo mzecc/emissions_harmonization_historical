@@ -26,11 +26,9 @@ from emissions_harmonization_historical.constants import (
     DATA_ROOT,
     HARMONISATION_ID,
     INFILLING_WMO_ID,
+    SCENARIO_TIME_ID,
 )
 from emissions_harmonization_historical.io import load_csv
-
-# %%
-SCENARIO_TIME_ID = "20250122-140031"
 
 # %%
 harmonised_file = (

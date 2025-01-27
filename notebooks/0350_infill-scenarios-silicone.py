@@ -18,7 +18,6 @@
 # Here we infill the variables we can using [silicone]().
 
 # %%
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import pandas_indexing as pix
@@ -31,11 +30,9 @@ from emissions_harmonization_historical.constants import (
     DATA_ROOT,
     HARMONISATION_ID,
     INFILLING_SILICONE_ID,
+    SCENARIO_TIME_ID,
 )
 from emissions_harmonization_historical.io import load_csv
-
-# %%
-SCENARIO_TIME_ID = "20250122-140031"
 
 # %%
 harmonised_file = (

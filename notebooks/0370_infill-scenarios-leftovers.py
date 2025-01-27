@@ -32,15 +32,13 @@ from emissions_harmonization_historical.constants import (
     INFILLING_LEFTOVERS_ID,
     INFILLING_SILICONE_ID,
     INFILLING_WMO_ID,
+    SCENARIO_TIME_ID,
 )
 from emissions_harmonization_historical.io import load_csv
 
 # %%
 # Disable all logging to avoid a million messages
 logging.disable()
-
-# %%
-SCENARIO_TIME_ID = "20250122-140031"
 
 # %%
 harmonised_file = (

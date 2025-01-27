@@ -34,15 +34,13 @@ from emissions_harmonization_historical.constants import (
     COMBINED_HISTORY_ID,
     DATA_ROOT,
     HARMONISATION_ID,
+    SCENARIO_TIME_ID,
 )
 from emissions_harmonization_historical.io import load_csv
 
 # %%
 # Disable all logging to avoid a million messages
 logging.disable()
-
-# %%
-SCENARIO_TIME_ID = "20250122-140031"
 
 # %%
 output_file = (
