@@ -143,7 +143,9 @@ def run_scm(
 
         for scenario_batch in tqdman.tqdm(scenario_batches, desc="Scenario batch"):
             # Add db checking here
-            assert False, "Up to DB implementation"
+            assert (
+                False
+            ), "Up to DB implementation (test independently first, then use here)"
             mod_scen_in_db = db.metadata.pix.unique(["model", "scenario"])
             not_run = scenario_batch[~scenario_batch.index.isin(mod_scen_in_db)]
 
