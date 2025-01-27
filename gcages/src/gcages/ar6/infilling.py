@@ -15,7 +15,6 @@ import pandas as pd
 import pandas_indexing as pix  # type: ignore
 import pyam
 import silicone.database_crunchers
-import tqdm.autonotebook as tqdman
 from attrs import define
 
 from gcages.io import load_timeseries_csv
@@ -148,7 +147,7 @@ def infill_scenario(
 
     # TODO: make progress bar optional
     infilled_silicone_l = []
-    for v_to_infill in tqdman.tqdm(to_infill_silicone):
+    for v_to_infill in to_infill_silicone:
         infiller = infillers[v_to_infill]
         tmp = infiller(pyam.IamDataFrame(indf)).timeseries()
         # The fact that this is needed suggests there's a bug in silicone
@@ -556,16 +555,11 @@ class AR6Infiller:
             )
         ).sort_index(axis="columns")
 
-        # TODO: add in the CO2 calculations here (?)
-        # i.e. if we have total CO2 and energy, calculate AFOLU as difference
-        # i.e. if we have total CO2 and AFOLU, calculate energy as difference
-
-        # Once the relationships are derived,
-        # the actual infilling is so cheap
-        # that running in parallel is sort of pointless,
-        # Nonetheless, we leave the option open.
-        # Note also that running in parallel is likely to be tricky,
-        # because we have so many local functions.
+        # This is not the most efficient parallelisation.
+        # It would be better to group by variable,
+        # then have an `infill_variable` function,
+        # but this would require a bit more thinking
+        # to actually achieve.
         infilled_df = pix.concat(
             run_parallel(
                 func_to_call=infill_scenario,
