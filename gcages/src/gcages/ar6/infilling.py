@@ -109,23 +109,51 @@ def infill_scenario(
     :
         Infilled scenario
     """
-    indf_variables = indf.pix.unique("variable")
-    if "Emissions|CO2|Energy and Industrial Processes" not in indf_variables:
-        # TODO: mucking around infilling CO2 fossil from total CO2 (?)
-        raise NotImplementedError
-
     assert_only_working_on_variable_unit_variations(indf)
 
-    to_infill = [v for v in infillers if v not in indf_variables]
+    indf_variables = indf.pix.unique("variable")
 
-    infilled_l = []
+    inferred_l = []
+    if "Emissions|CO2" in indf_variables:
+        for component_missing, component_other in (
+            ("Emissions|CO2|Energy and Industrial Processes", "Emissions|CO2|AFOLU"),
+            ("Emissions|CO2|AFOLU", "Emissions|CO2|Energy and Industrial Processes"),
+        ):
+            if (
+                component_missing not in indf_variables
+                and component_other in indf_variables
+            ):
+                inferred = (
+                    indf.loc[pix.isin(variable=["Emissions|CO2"])]
+                    .subtract(
+                        indf.loc[pix.isin(variable=[component_other])].reset_index(
+                            "variable", drop=True
+                        ),
+                        axis="rows",
+                    )
+                    .pix.assign(variable=component_missing)
+                )
+                inferred_l.append(inferred)
+
+    if inferred_l:
+        inferred = pix.concat(inferred_l)
+        inferred_variables = inferred.pix.unique("variable")
+    else:
+        inferred = None
+        inferred_variables = []
+
+    to_infill_silicone = [
+        v for v in infillers if v not in indf_variables and v not in inferred_variables
+    ]
+
     # TODO: make progress bar optional
-    for v_to_infill in tqdman.tqdm(to_infill):
+    infilled_silicone_l = []
+    for v_to_infill in tqdman.tqdm(to_infill_silicone):
         infiller = infillers[v_to_infill]
         tmp = infiller(pyam.IamDataFrame(indf)).timeseries()
         # The fact that this is needed suggests there's a bug in silicone
         tmp = tmp.loc[:, indf.columns]
-        infilled_l.append(tmp)
+        infilled_silicone_l.append(tmp)
 
     # Also add zeros for Emissions|HFC|HFC245ca.
     # The fact that this is effectively hidden in silicone is a little bit
@@ -133,9 +161,41 @@ def infill_scenario(
     tmp = (tmp * 0.0).pix.assign(
         variable="Emissions|HFC|HFC245ca", unit="kt HFC245ca/yr"
     )
-    infilled_l.append(tmp)
+    infilled_silicone_l.append(tmp)
 
-    infilled = pix.concat(infilled_l).sort_index(axis="columns")
+    infilled_silicone = pix.concat(infilled_silicone_l).sort_index(axis="columns")
+    infilled_silicone_vars = infilled_silicone.pix.unique("variable")
+
+    # If we started with total CO2 and infilled fossil CO2,
+    # we preserve harmonisation and the total by overwriting AFOLU CO2.
+    if (
+        "Emissions|CO2" in indf_variables
+        and "Emissions|CO2|Energy and Industrial Processes" in infilled_silicone_vars
+    ):
+        infilled_silicone = pix.concat(
+            [
+                infilled_silicone.loc[~pix.isin(variable=["Emissions|CO2|AFOLU"])],
+                (
+                    indf.loc[pix.isin(variable=["Emissions|CO2"])]
+                    .subtract(
+                        infilled_silicone.loc[
+                            pix.isin(
+                                variable=[
+                                    "Emissions|CO2|Energy and Industrial Processes"
+                                ]
+                            )
+                        ].reset_index("variable", drop=True),
+                        axis="rows",
+                    )
+                    .pix.assign(variable="Emissions|CO2|AFOLU")
+                ),
+            ]
+        )
+
+    if inferred is not None:
+        infilled = pix.concat([inferred, infilled_silicone])
+    else:
+        infilled = infilled_silicone
 
     return infilled
 
@@ -150,6 +210,10 @@ VARS_DB_CRUNCHERS = {
         silicone.database_crunchers.QuantileRollingWindows,
     ),
     "Emissions|CO2|AFOLU": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|CO2|Energy and Industrial Processes": (
         False,
         silicone.database_crunchers.QuantileRollingWindows,
     ),
@@ -388,32 +452,41 @@ def get_ar6_infiller(
 
 
 def do_ar6_like_infilling(
-    idf: pd.DataFrame,
+    indf: pyam.IamDataFrame,
     follower: str,
-    lead: tuple[str, ...],
-) -> pd.DataFrame:
+    lead_options: tuple[tuple[str, ...], ...],
+) -> pyam.IamDataFrame:
     """
     Infill a variable, AR6-style
 
     Parameters
     ----------
-    idf
+    indf
         Scenarios to infill
 
     follower
         Variable we are infilling
 
-    lead
-        Variable(s) to use as the lead gas for the infilling
+    lead_options
+        Options to try for variable(s) to use as the lead gas for the infilling.
+
+        The options are tried in the supplied order.
 
     Returns
     -------
     :
         Infilled timeseries.
     """
-    infiller = get_ar6_infiller(follower=follower, lead=lead)
+    indf_variables = indf.variable
+    for leads in lead_options:
+        if all(v in indf_variables for v in leads):
+            infiller = get_ar6_infiller(follower=follower, lead=leads)
 
-    res = infiller(idf)
+            res = infiller(indf)
+            break
+
+    else:
+        raise NotImplementedError
 
     return res
 
@@ -567,15 +640,24 @@ class AR6Infiller:
         if variables_to_infill is None:
             variables_to_infill = VARS_DB_CRUNCHERS.keys()
 
-        # May have to undo this to handle the infilling with CO2 fossil vs. CO2 total
-        lead = ("Emissions|CO2|Energy and Industrial Processes",)
+        lead_options = (
+            ("Emissions|CO2",),
+            ("Emissions|CO2|Energy and Industrial Processes",),
+        )
 
         infillers = {}
 
         for v_infill in variables_to_infill:
             infillers[v_infill] = partial(
-                do_ar6_like_infilling, follower=v_infill, lead=lead
+                do_ar6_like_infilling, follower=v_infill, lead_options=lead_options
             )
+
+        # CO2 Energy and Industrial special case
+        infillers["Emissions|CO2|Energy and Industrial Processes"] = partial(
+            do_ar6_like_infilling,
+            follower="Emissions|CO2|Energy and Industrial Processes",
+            lead_options=(("Emissions|CO2",),),
+        )
 
         # TODO: turn checks back on
         return cls(
