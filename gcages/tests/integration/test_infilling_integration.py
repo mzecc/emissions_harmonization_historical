@@ -71,26 +71,33 @@ def test_infilling_single_model_scenario(model, scenario):
 
 
 def test_infilling_ips_simultaneously():
-    raise NotImplementedError
-    raw = pd.concat(
+    harmonised = pd.concat(
         [
-            get_ar6_raw_emissions(
+            get_ar6_harmonised_emissions(
                 model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
             )
             for model, scenario in AR6_IPS
         ]
+    ).dropna(axis="columns", how="all")
+    # Drop out some variables that come from post-processing
+    harmonised = (
+        harmonised.loc[~pix.ismatch(variable="**Kyoto**")]
+        .loc[~pix.ismatch(variable="**F-Gases")]
+        .loc[~pix.ismatch(variable="**HFC")]
+        .loc[~pix.ismatch(variable="**PFC")]
     )
 
-    pre_processor = AR6PreProcessor.from_ar6_like_config(run_checks=False)
-    harmoniser = AR6Harmoniser.from_ar6_like_config(run_checks=False)
+    infiller = AR6Infiller.from_ar6_like_config(
+        run_checks=False,
+        n_processes=1,
+    )
 
-    pre_processed = pre_processor(raw)
-    res = harmoniser(pre_processed)
+    res = infiller(harmonised)
 
     exp = (
         pd.concat(
             [
-                get_ar6_harmonised_emissions(
+                get_ar6_infilled_emissions(
                     model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
                 )
                 for model, scenario in AR6_IPS
@@ -98,6 +105,7 @@ def test_infilling_ips_simultaneously():
         )
         .loc[~pix.ismatch(variable="**Kyoto**")]  # Not used downstream
         .loc[~pix.ismatch(variable="**F-Gases")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**CO2")]  # Not used downstream
         .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
         .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
     )
