@@ -17,6 +17,7 @@ from gcages.testing import (
     create_model_scenario_test_cases,
     get_all_model_scenarios,
     get_ar6_harmonised_emissions,
+    get_ar6_infilled_emissions,
     get_ar6_raw_emissions,
 )
 
@@ -39,6 +40,13 @@ infilling_cases = pytest.mark.parametrize(
 def test_infilling_single_model_scenario(model, scenario):
     harmonised = get_ar6_harmonised_emissions(
         model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
+    ).dropna(axis="columns", how="all")
+    # Drop out some variables that come from post-processing
+    harmonised = (
+        harmonised.loc[~pix.ismatch(variable="**Kyoto**")]
+        .loc[~pix.ismatch(variable="**F-Gases")]
+        .loc[~pix.ismatch(variable="**HFC")]
+        .loc[~pix.ismatch(variable="**PFC")]
     )
     if harmonised.empty:
         msg = f"No test data for {model=} {scenario=}?"
@@ -49,13 +57,14 @@ def test_infilling_single_model_scenario(model, scenario):
     res = infiller(harmonised)
 
     exp = (
-        get_ar6_harmonised_emissions(
+        get_ar6_infilled_emissions(
             model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
         )
         .loc[~pix.ismatch(variable="**Kyoto**")]  # Not used downstream
         .loc[~pix.ismatch(variable="**F-Gases")]  # Not used downstream
-        # .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
-        # .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**CO2")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
     )
 
     assert_frame_equal(res, exp)

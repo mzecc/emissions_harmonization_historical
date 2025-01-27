@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import importlib
 import multiprocessing
-from collections.abc import Mapping
-from functools import cache
+from collections.abc import Iterable, Mapping
+from functools import cache, partial
 from pathlib import Path
 from typing import Callable
 
@@ -18,8 +18,6 @@ import silicone.database_crunchers
 import tqdm.autonotebook as tqdman
 from attrs import define
 
-from gcages.aneris_helpers import harmonise_all
-from gcages.harmonisation.helpers import add_historical_year_based_on_scaling
 from gcages.io import load_timeseries_csv
 from gcages.parallelisation import (
     assert_only_working_on_variable_unit_variations,
@@ -27,6 +25,7 @@ from gcages.parallelisation import (
 )
 
 
+@cache
 def load_ar6_infilling_db(cfcs: bool = False) -> pd.DataFrame:
     """
     Load the infilling database that was used in AR6
@@ -60,7 +59,19 @@ def load_ar6_infilling_db(cfcs: bool = False) -> pd.DataFrame:
         out_column_type=int,
     )
 
-    if not cfcs:
+    if cfcs:
+        res = pix.assignlevel(
+            res,
+            # Not sure why this was like this, anyway
+            variable=res.index.get_level_values("variable").map(  # type: ignore
+                lambda x: x.replace("HFC245fa", "HFC245ca")
+            ),
+            unit=res.index.get_level_values("unit").map(
+                lambda x: x.replace("HFC245fa", "HFC245ca")
+            ),
+        )
+
+    else:
         res = pix.assignlevel(
             res,
             variable=res.index.get_level_values("variable").map(  # type: ignore
@@ -75,10 +86,7 @@ def load_ar6_infilling_db(cfcs: bool = False) -> pd.DataFrame:
 
 def infill_scenario(
     indf: pd.DataFrame,
-    history: pd.DataFrame,
-    year: int,
-    overrides: pd.DataFrame | None,
-    calc_scaling_year: int,
+    infillers: Mapping[str, Callable[[pd.DataFrame], pd.DataFrame]],
 ) -> pd.DataFrame:
     """
     Infill a single scenario
@@ -88,84 +96,326 @@ def infill_scenario(
     indf
         Scenario to harmonise
 
-    history
-        History to harmonise to
+    infillers
+        Functions to use for infilling each variable.
 
-    year
-        Year to use for harmonisation
-
-    overrides
-        Overrides to pass to aneris
-
-    calc_scaling_year
-        Year to use for calculating scaling if `year` is not in `indf`
+        The keys define the variable that can be infilled.
+        The variables define the function which,
+        given inputs with the expected lead variables,
+        returns the infilled time series.
 
     Returns
     -------
     :
         Infilled scenario
     """
-    if "Emissions|CO2|Energy and Industrial Processes" not in indf.pix.unique(
-        "variable"
-    ):
+    indf_variables = indf.pix.unique("variable")
+    if "Emissions|CO2|Energy and Industrial Processes" not in indf_variables:
         # TODO: mucking around infilling CO2 fossil from total CO2 (?)
         raise NotImplementedError
 
     assert_only_working_on_variable_unit_variations(indf)
 
-    # TODO: split this out
-    # A bunch of other fix ups that were applied in AR6
-    if year not in indf:
-        emissions_to_harmonise = add_historical_year_based_on_scaling(
-            year_to_add=year,
-            year_calc_scaling=calc_scaling_year,
-            emissions=indf,
-            emissions_history=history,
-        )
+    to_infill = [v for v in infillers if v not in indf_variables]
 
-    elif indf[year].isnull().any():
-        null_emms_in_harm_year = indf[year].isnull()
+    infilled_l = []
+    # TODO: make progress bar optional
+    for v_to_infill in tqdman.tqdm(to_infill):
+        infiller = infillers[v_to_infill]
+        tmp = infiller(pyam.IamDataFrame(indf)).timeseries()
+        # The fact that this is needed suggests there's a bug in silicone
+        tmp = tmp.loc[:, indf.columns]
+        infilled_l.append(tmp)
 
-        dont_change = indf[~null_emms_in_harm_year]
+    # Also add zeros for Emissions|HFC|HFC245ca.
+    # The fact that this is effectively hidden in silicone is a little bit
+    # the issue with how our stack is set up.
+    tmp = (tmp * 0.0).pix.assign(
+        variable="Emissions|HFC|HFC245ca", unit="kt HFC245ca/yr"
+    )
+    infilled_l.append(tmp)
 
-        updated = add_historical_year_based_on_scaling(
-            year_to_add=year,
-            year_calc_scaling=calc_scaling_year,
-            emissions=indf[null_emms_in_harm_year].drop(year, axis="columns"),
-            emissions_history=history,
-        )
+    infilled = pix.concat(infilled_l).sort_index(axis="columns")
 
-        emissions_to_harmonise = pd.concat([dont_change, updated])
+    return infilled
 
-    else:
-        emissions_to_harmonise = indf
 
-    # In AR6, any emissions with zero in the harmonisation year were dropped
-    emissions_to_harmonise = emissions_to_harmonise[
-        ~(emissions_to_harmonise[year] == 0.0)
-    ]
+VARS_DB_CRUNCHERS = {
+    "Emissions|BC": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|CH4": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|CO2|AFOLU": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|CO": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|N2O": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|NH3": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|NOx": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|OC": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|Sulfur": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|VOC": (
+        False,
+        silicone.database_crunchers.QuantileRollingWindows,
+    ),
+    "Emissions|HFC|HFC134a": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC143a": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC227ea": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC23": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC32": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC43-10": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC125": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|SF6": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|CF4": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|C2F6": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|C6F14": (
+        False,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CCl4": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CFC11": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CFC113": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CFC114": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CFC115": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CFC12": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CH2Cl2": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CH3Br": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CH3CCl3": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CH3Cl": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|CHCl3": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HCFC141b": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HCFC142b": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HCFC22": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC152a": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC236fa": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|HFC|HFC365mfc": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|Halon1202": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|Halon1211": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|Halon1301": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|Halon2402": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|NF3": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|C3F8": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|C4F10": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|C5F12": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|C7F16": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|C8F18": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|PFC|cC4F8": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+    "Emissions|SO2F2": (
+        True,
+        silicone.database_crunchers.RMSClosest,
+    ),
+}
+"""
+Definition of our default set of variables to infill and how to infill them
 
-    ### In AR6, we interpolated before harmonising
+Each key is a variable we can infill.
+Each value is a tuple with the following:
 
-    # First, check that there are no nans in the max year.
-    # I don't know what happens in that case.
-    if emissions_to_harmonise[emissions_to_harmonise.columns.max()].isnull().any():
-        raise NotImplementedError
+- `False` if we should use the 'full' infilling database,
+  `True` if we should use the database
+  that has information about CFCs and other species not typically modelled by IAMs
+- The database cruncher from silicone to use for infilling the variable
+"""
 
-    # Then, interpolate
-    out_interp_years = list(range(year, emissions_to_harmonise.columns.max() + 1))
-    emissions_to_harmonise = emissions_to_harmonise.reindex(
-        columns=out_interp_years
-    ).interpolate(method="slinear", axis="columns")
 
-    harmonised = harmonise_all(
-        emissions_to_harmonise,
-        history=history,
-        year=year,
-        overrides=overrides,
+@cache
+def get_ar6_infiller(
+    follower: str,
+    lead: tuple[str, ...],
+) -> Callable[[pd.DataFrame], pd.DataFrame]:
+    """
+    Get an AR6-style infiller
+
+    Parameters
+    ----------
+    follower
+        Variable we are infilling
+
+    lead
+        Variable(s) to use as the lead gas for the infilling
+
+    Returns
+    -------
+    :
+        Infiler to use to infill `follower`.
+    """
+    cfcs, cruncher = VARS_DB_CRUNCHERS[follower]
+    db = load_ar6_infilling_db(cfcs=cfcs)
+
+    infiller = cruncher(pyam.IamDataFrame(db)).derive_relationship(
+        variable_follower=follower,
+        variable_leaders=list(lead),
     )
 
-    return harmonised
+    return infiller
+
+
+def do_ar6_like_infilling(
+    idf: pd.DataFrame,
+    follower: str,
+    lead: tuple[str, ...],
+) -> pd.DataFrame:
+    """
+    Infill a variable, AR6-style
+
+    Parameters
+    ----------
+    idf
+        Scenarios to infill
+
+    follower
+        Variable we are infilling
+
+    lead
+        Variable(s) to use as the lead gas for the infilling
+
+    Returns
+    -------
+    :
+        Infilled timeseries.
+    """
+    infiller = get_ar6_infiller(follower=follower, lead=lead)
+
+    res = infiller(idf)
+
+    return res
 
 
 @define
@@ -226,6 +476,13 @@ class AR6Infiller:
         #       - only data with a useable time axis is in there
         #       - metadata is appropriate/usable
 
+        # Strip off any prefixes that might be there
+        to_infill = in_emissions.pix.assign(
+            variable=in_emissions.index.get_level_values("variable").map(
+                lambda x: x.replace("AR6 climate diagnostics|Harmonized|", "")
+            )
+        ).sort_index(axis="columns")
+
         # TODO: add in the CO2 calculations here (?)
         # i.e. if we have total CO2 and energy, calculate AFOLU as difference
         # i.e. if we have total CO2 and AFOLU, calculate energy as difference
@@ -234,27 +491,32 @@ class AR6Infiller:
         # the actual infilling is so cheap
         # that running in parallel is sort of pointless,
         # Nonetheless, we leave the option open.
+        # Note also that running in parallel is likely to be tricky,
+        # because we have so many local functions.
         infilled_df = pix.concat(
             run_parallel(
-                func_to_call=harmonise_scenario,
+                func_to_call=infill_scenario,
                 iterable_input=(
-                    gdf for _, gdf in in_emissions.groupby(["model", "scenario"])
+                    gdf for _, gdf in to_infill.groupby(["model", "scenario"])
                 ),
-                input_desc="model-scenario combinations to harmonise",
+                input_desc="model-scenario combinations to infill",
                 n_processes=self.n_processes,
-                history=self.historical_emissions,
-                year=self.harmonisation_year,
-                overrides=self.aneris_overrides,
-                calc_scaling_year=self.calc_scaling_year,
+                infillers=self.infillers,
             )
         )
 
-        # # Not sure why this is happening, anyway
-        # infilled_df.columns = infilled_df.columns.astype(int)
+        # Join input and output emissions (AR6 quirk)
+        out: pd.DataFrame = pix.concat(
+            [to_infill, infilled_df], axis="index"
+        ).sort_index(axis="columns")
 
         # Apply AR6 naming scheme
-        out: pd.DataFrame = infilled_df.pix.format(
-            variable="AR6 climate diagnostics|Infilled|{variable}"
+        out = out.pix.format(variable="AR6 climate diagnostics|Infilled|{variable}")
+        # Apply AR6 filtering
+        out = out.loc[~pix.ismatch(variable="**CO2")]
+        # Stuff like this is what prevents us from making actually plug and play tools
+        out = out.pix.assign(
+            unit=out.index.get_level_values("unit").str.replace("HFC4310", "HFC43-10")
         )
 
         # TODO:
@@ -270,9 +532,11 @@ class AR6Infiller:
         return out
 
     @classmethod
-    @cache
     def from_ar6_like_config(
-        cls, run_checks: bool = True, n_processes: int = multiprocessing.cpu_count()
+        cls,
+        run_checks: bool = True,
+        n_processes: int = multiprocessing.cpu_count(),
+        variables_to_infill: Iterable[str] | None = None,
     ) -> AR6Infiller:
         """
         Initialise from config (exactly) like what was used in AR6
@@ -290,244 +554,27 @@ class AR6Infiller:
 
             Set to 1 to process in serial.
 
+        variables_to_infill
+            Variables to infill.
+
+            If not supplied, we support all variables in `VARS_DB_CRUNCHERS`.
+
         Returns
         -------
         :
             Initialised harmoniser
         """
-        infilling_db_non_cfcs = load_ar6_infilling_db(cfcs=False)
-        infilling_db_cfcs = load_ar6_infilling_db(cfcs=True)
+        if variables_to_infill is None:
+            variables_to_infill = VARS_DB_CRUNCHERS.keys()
 
         # May have to undo this to handle the infilling with CO2 fossil vs. CO2 total
-        lead = ["Emissions|CO2|Energy and Industrial Processes"]
-        vars_db_crunchers = {
-            # variable_to_infill: (db_to_use, cruncher_to_use)
-            "Emissions|BC": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|CH4": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|CO2|AFOLU": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|CO": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|N2O": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|NH3": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|NOx": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|OC": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|Sulfur": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|VOC": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.QuantileRollingWindows,
-            ),
-            "Emissions|HFC|HFC134a": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC143a": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC227ea": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC23": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC32": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC43-10": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC125": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|SF6": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|CF4": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|C2F6": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|C6F14": (
-                infilling_db_non_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CCl4": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CFC11": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CFC113": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CFC114": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CFC115": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CFC12": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CH2Cl2": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CH3Br": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CH3CCl3": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CH3Cl": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|CHCl3": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HCFC141b": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HCFC142b": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HCFC22": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC152a": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|HFC|HFC236fa": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            # TODO: figure out what went on here
-            # 'Emissions|HFC|HFC245fa',
-            # "Emissions|HFC|HFC245ca": (
-            #     infilling_db_non_cfcs,
-            #     silicone.database_crunchers.RMSClosest,
-            # ),
-            "Emissions|HFC|HFC365mfc": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|Halon1202": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|Halon1211": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|Halon1301": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|Halon2402": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|NF3": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|C3F8": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|C4F10": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|C5F12": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|C7F16": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|C8F18": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|PFC|cC4F8": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-            "Emissions|SO2F2": (
-                infilling_db_cfcs,
-                silicone.database_crunchers.RMSClosest,
-            ),
-        }
+        lead = ("Emissions|CO2|Energy and Industrial Processes",)
 
         infillers = {}
-        for v_infill, (db, cruncher) in tqdman.tqdm(
-            vars_db_crunchers.items(), desc="Infillers"
-        ):
-            # Expensive, because you might create infillers for variables
-            # you want infill, but this is the cleanest way to set it up
-            # without having to add smart caching to silicone
-            # or creating the infillers within the infilling routine
-            # (which prevents dependency injection so is a bad pattern).
-            # Could do our own caching of creating the infillers here,
-            # but probably not worth it given we're only going to use this for tests
-            # and the class method is cached.
-            v_infill_db = db.loc[pix.isin(variable=[v_infill, *lead])]
-            infillers[v_infill] = cruncher(
-                pyam.IamDataFrame(v_infill_db)
-            ).derive_relationship(
-                variable_follower=v_infill,
-                variable_leaders=lead,
+
+        for v_infill in variables_to_infill:
+            infillers[v_infill] = partial(
+                do_ar6_like_infilling, follower=v_infill, lead=lead
             )
 
         # TODO: turn checks back on
