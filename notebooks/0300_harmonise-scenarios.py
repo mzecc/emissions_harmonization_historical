@@ -33,6 +33,7 @@ from gcages.units_helpers import strip_pint_incompatible_characters_from_units
 from emissions_harmonization_historical.constants import (
     COMBINED_HISTORY_ID,
     DATA_ROOT,
+    HARMONISATION_ID,
 )
 from emissions_harmonization_historical.io import load_csv
 
@@ -42,6 +43,15 @@ logging.disable()
 
 # %%
 SCENARIO_TIME_ID = "20250122-140031"
+
+# %%
+output_file = (
+    DATA_ROOT
+    / "climate-assessment-workflow"
+    / "harmonised"
+    / f"harmonised-scenarios_{SCENARIO_TIME_ID}_{HARMONISATION_ID}.csv"
+)
+output_file
 
 # %%
 HISTORICAL_GLOBAL_COMPOSITE_PATH = DATA_ROOT / "global-composite" / f"cmip7_history_world_{COMBINED_HISTORY_ID}.csv"
@@ -77,15 +87,16 @@ def transform_rcmip_to_iamc_variable(v):
 
 # %%
 rcmip = pd.read_csv(RCMIP_PATH)
-ar6_history = rcmip.copy()
-ar6_history.columns = ar6_history.columns.str.lower()
-ar6_history = ar6_history.set_index(["model", "scenario", "region", "variable", "unit", "mip_era", "activity_id"])
-ar6_history = ar6_history.loc[
+rcmip_clean = rcmip.copy()
+rcmip_clean.columns = rcmip_clean.columns.str.lower()
+rcmip_clean = rcmip_clean.set_index(["model", "scenario", "region", "variable", "unit", "mip_era", "activity_id"])
+rcmip_clean.columns = rcmip_clean.columns.astype(int)
+rcmip_clean = rcmip_clean.pix.assign(
+    variable=rcmip_clean.index.get_level_values("variable").map(transform_rcmip_to_iamc_variable)
+)
+ar6_history = rcmip_clean.loc[
     pix.ismatch(mip_era="CMIP6") & pix.ismatch(scenario="historical") & pix.ismatch(region="World")
-]
-ar6_history = ar6_history.reset_index(["mip_era", "activity_id"], drop=True)
-ar6_history.columns = ar6_history.columns.astype(int)
-ar6_history = ar6_history.pix.assign(variable=ar6_history.pix.unique("variable").map(transform_rcmip_to_iamc_variable))
+].reset_index(["mip_era", "activity_id"], drop=True)
 ar6_history
 
 # %%
@@ -107,9 +118,6 @@ scenarios_raw_global = scenarios_raw.loc[
     # & pix.isin(variable=history_cut.pix.unique("variable"))
 ]
 scenarios_raw_global
-
-# %%
-# scenarios_raw.loc[pix.ismatch(variable="Emissions|VOC")].pix.unique(["variable", "unit"])
 
 # %%
 # What are we still missing.
@@ -149,12 +157,6 @@ for (model, scenario), msdf in tmp.groupby(["model", "scenario"]):
         msg = "Emissions|CO2|Energy and Industrial Processes missing"
         print(f"{model=} {scenario=}")
         raise NotImplementedError(msg)
-
-# %%
-# pandas-indexing is so well done
-# scenarios_raw_global.pix.extract(
-#     variable="Emissions|{species}|{sector}|{subsector}", dropna=False, keep=True
-# ).index.to_frame(index=False)
 
 # %%
 scenarios_raw_global.pix.unique(["model", "scenario"]).to_frame(index=False)
@@ -228,8 +230,14 @@ for ax in fg.axes.flatten():
 #     )
 #     plt.show()
 
+# %% [markdown]
+# ### Set up pre-processer
+
 # %%
 pre_processor = PreProcessor(emissions_out=tuple(history.pix.unique("variable")))
+
+# %% [markdown]
+# ## Set up harmoniser
 
 # %%
 # As at 2024-01-13, just the list from AR6.
@@ -404,6 +412,7 @@ pre_processed
 
 # %%
 harmonised = harmoniser(pre_processed)
+harmonised
 
 # %%
 colours = plt.rcParams["axes.prop_cycle"].by_key()["color"]
@@ -433,3 +442,11 @@ for model, mdf in pix.concat(
     # break
 
 # %%
+scenarios_raw_global.loc[pix.ismatch(model="WITCH*", variable="**HFC**")].loc[:, 2010:2050].dropna(
+    how="all", axis="columns"
+)
+
+# %%
+output_file.parent.mkdir(exist_ok=True, parents=True)
+harmonised.to_csv(output_file)
+output_file
