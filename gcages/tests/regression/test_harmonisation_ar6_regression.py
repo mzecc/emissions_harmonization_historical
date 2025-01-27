@@ -1,5 +1,5 @@
 """
-Integration tests of harmonisation
+Regression tests of harmonisation compared to AR6
 """
 
 from __future__ import annotations

@@ -1,5 +1,5 @@
 """
-Regression tests of infilling compared to AR6
+Regression tests of SCM running compared to AR6
 """
 
 from __future__ import annotations
@@ -37,38 +37,51 @@ infilling_cases = pytest.mark.parametrize(
 @pytest.mark.slow
 @infilling_cases
 def test_infilling_single_model_scenario(model, scenario):
-    harmonised = get_ar6_harmonised_emissions(
+    infilled = get_ar6_infilled_emissions(
         model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
-    ).dropna(axis="columns", how="all")
-    # Drop out some variables that come from post-processing
-    harmonised = (
-        harmonised.loc[~pix.ismatch(variable="**Kyoto**")]
-        .loc[~pix.ismatch(variable="**F-Gases")]
-        .loc[~pix.ismatch(variable="**HFC")]
-        .loc[~pix.ismatch(variable="**PFC")]
     )
-    if harmonised.empty:
+
+    if infilled.empty:
         msg = f"No test data for {model=} {scenario=}?"
         raise AssertionError(msg)
 
-    infiller = AR6Infiller.from_ar6_like_config(run_checks=False, n_processes=1)
-
-    res = infiller(harmonised)
-
-    exp = (
-        get_ar6_infilled_emissions(
-            model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
-        )
-        .loc[~pix.ismatch(variable="**Kyoto**")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**F-Gases")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**CO2")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
+    # TODO: try using more processes here
+    scm_runner = AR6SCMRunner.from_ar6_like_config(run_checks=False, n_processes=1)
+    post_processor = AR6PostProcessor.from_ar6_like_config(
+        run_checks=False, n_processes=1
     )
 
-    assert_frame_equal(res, exp)
+    scm_results = scm_runner(infilled)
+    post_processed = post_processor(scm_results)
+
+    res_temperature_percentiles = post_processed.loc[
+        pix.ismatch(
+            variable="AR6 climate diagnostics|Surface Temperature (GSAT)|*|*Percentile"
+        )
+    ]
+    exp_temperature_percentiles = get_ar6_temperature_outputs(
+        model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
+    )
+
+    assert_frame_equal(res_temperature_percentiles, exp_temperature_percentiles)
+
+    exp_metadata = get_ar6_metadata_outputs(
+        model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
+    )
+    res_metadata = res_temperature_percentiles.index.to_frame(index=False).set_index(
+        ["model", "scenario"]
+    )
+
+    metadata_compare_cols = [
+        "Category",
+        "Category_name",
+    ]
+    assert_frame_equal(
+        res_metadata[metadata_compare_cols], exp_metadata[metadata_compare_cols]
+    )
 
 
+@pytest.mark.slow
 def test_infilling_ips_simultaneously():
     harmonised = pd.concat(
         [
