@@ -6,8 +6,10 @@ from __future__ import annotations
 
 import itertools
 
+import filelock
 import numpy as np
 import pandas as pd
+import pytest
 
 from gcages.database import GCDB
 
@@ -80,7 +82,67 @@ def test_save_and_load(tmpdir):
     pd.testing.assert_frame_equal(start, loaded)
 
 
-# - test locking
+def test_locking_load(tmpdir):
+    db = GCDB(tmpdir)
+
+    # Put some data in the db so there's something to lock
+    db.save(
+        create_test_df(
+            n_scenarios=1,
+            n_variables=1,
+            n_runs=1,
+            timepoints=np.array([10.0]),
+            units="Mt",
+        )
+    )
+
+    # Acquire the lock already here
+    with db.index_file_lock:
+        # We can't re-acquire it to load
+        with pytest.raises(filelock.Timeout):
+            db.load(lock_acquire_timeout=0.0)
+
+        with pytest.raises(filelock.Timeout):
+            db.load(lock_acquire_timeout=0.1)
+
+
+def test_locking_load_metadata(tmpdir):
+    db = GCDB(tmpdir)
+
+    # Put some data in the db so there's something to lock
+    db.save(
+        create_test_df(
+            n_scenarios=1,
+            n_variables=1,
+            n_runs=1,
+            timepoints=np.array([10.0]),
+            units="Mt",
+        )
+    )
+
+    # Acquire the lock already here
+    with db.index_file_lock:
+        # We can't re-acquire it to load
+        with pytest.raises(filelock.Timeout):
+            db.load_metadata(lock_acquire_timeout=0.0)
+
+        with pytest.raises(filelock.Timeout):
+            db.load_metadata(lock_acquire_timeout=0.1)
+
+
+def test_locking_save(tmpdir):
+    db = GCDB(tmpdir)
+
+    # Acquire the lock already here
+    with db.index_file_lock:
+        # We can't re-acquire it to load
+        with pytest.raises(filelock.Timeout):
+            db.save("not_used", lock_acquire_timeout=0.0)
+
+        with pytest.raises(filelock.Timeout):
+            db.save("not_used", lock_acquire_timeout=0.1)
+
+
 # - test multi-saving then loading
 # - test overwrite-saving
 # - test partial loading
