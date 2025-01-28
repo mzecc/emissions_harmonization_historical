@@ -75,13 +75,22 @@ class GCDB:
         return file_path
 
     def load(
-        self, lock_acquire_timeout: float = 10.0, progress: bool = False
+        self,
+        selector: pix.selectors.Selector | None = None,
+        *,
+        lock_acquire_timeout: float = 10.0,
+        progress: bool = False,
     ) -> pd.DataFrame:
         # TODO: add locators
         with self.index_file_lock.acquire(timeout=lock_acquire_timeout):
             index = pd.MultiIndex.from_frame(pd.read_csv(self.index_file)).to_frame()
 
-        files_to_load = index["filepath"].unique()
+        if selector is None:
+            index_to_load = index
+        else:
+            index_to_load = index.loc[selector]
+
+        files_to_load = index_to_load["filepath"].unique()
 
         if progress:
             import tqdm.autonotebook as tqdman
@@ -93,7 +102,12 @@ class GCDB:
         # Don't love this, but fine for now while we don't have datetime columns
         loaded.columns = loaded.columns.astype(float)
 
-        return loaded
+        if selector is None:
+            res = loaded
+        else:
+            res = loaded.loc[selector]
+
+        return res
 
     def load_metadata(self, lock_acquire_timeout: float = 10.0) -> pd.MultiIndex:
         with self.index_file_lock.acquire(timeout=lock_acquire_timeout):

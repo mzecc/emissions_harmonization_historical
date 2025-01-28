@@ -321,7 +321,33 @@ def test_locking_save(tmpdir):
             db.save("not_used", lock_acquire_timeout=0.1)
 
 
-# - test partial loading
-# - test metadata loading
-# - test checking what is in what
+def test_load_with_loc(tmpdir):
+    db = GCDB(tmpdir)
+
+    full_db = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    for _, pdf in full_db.groupby(["scenario"]):
+        db.save(pdf)
+
+    for selector in [
+        pix.isin(scenario=["scenario_1", "scenario_3"]),
+        pix.isin(scenario=["scenario_1", "scenario_3"], variable=["variable_2"]),
+        (
+            pix.isin(scenario=["scenario_1", "scenario_3"])
+            & pix.ismatch(variable=["variable_1*"])
+        ),
+        pix.isin(scenario=["scenario_1", "scenario_3"], variable=["variable_2"]),
+    ]:
+        loaded = db.load(selector)
+        exp = full_db.loc[selector]
+
+        pd.testing.assert_frame_equal(loaded, exp)
+
+
 # - test deletion
