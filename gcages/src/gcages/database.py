@@ -275,9 +275,22 @@ def _update_index_for_overwrite(
     file_ids_keep = set(file_ids_existing[~remove_loc])
     file_ids_overlap = file_ids_remove.intersection(file_ids_keep)
 
-    if file_ids_overlap:
+    file_map_out = file_map.copy()
+
+    if not file_ids_overlap:
+        # Nice and simple, just remove the old files
+        index_out = file_ids_existing[~remove_loc].reset_index()
+        for rfid in file_ids_remove:
+            os.remove(file_map_out.pop(rfid))
+
+    else:
+        # More complicated: for some files,
+        # some of the data needs to be removed
+        # while other parts need to be kept.
+        # Hence we have to re-write that data into files
+        # that are separate from the data we want to keep
+        # before we can continue.
         file_ids_out = file_ids_existing.copy()
-        file_map_out = file_map.copy()
         for ofid in file_ids_overlap:
             file = file_map_out.pop(ofid)
             overlap_file_data = pd.read_csv(file).set_index(
@@ -288,7 +301,7 @@ def _update_index_for_overwrite(
                 ~multi_index_match(overlap_file_data, data_to_write.index)
             ]
 
-            # Ensure we use an index we haven't already used
+            # Ensure we use a file ID we haven't already used
             data_not_being_overwritten_file_id = (
                 max(file_map_out.index.max(), file_map.index.max()) + 1
             )
@@ -303,10 +316,10 @@ def _update_index_for_overwrite(
                 data_not_being_overwritten_file_path
             )
 
+            # Update the file ids of the data we're keeping
             data_not_being_overwritten_idx = multi_index_match(
                 file_ids_out, data_not_being_overwritten.index
             )
-            # Update the file ids of the data we're keeping
             file_ids_out.loc[data_not_being_overwritten_idx] = (
                 data_not_being_overwritten_file_id
             )
@@ -316,9 +329,5 @@ def _update_index_for_overwrite(
             os.remove(file)
 
         index_out = file_ids_out.reset_index()
-
-    else:
-        index_out = file_ids_existing[~remove_loc].reset_index()
-        file_map_out = file_map
 
     return index_out, file_map_out

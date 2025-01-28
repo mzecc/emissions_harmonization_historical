@@ -496,7 +496,7 @@ def test_regroup(tmpdir):
         ["scenario", "variable"],
         ["variable", "run"],
     ):
-        db.regroup(new_grouping, progress=True)
+        db.regroup(new_grouping)
 
         # Make sure data unchanged
         pd.testing.assert_frame_equal(
