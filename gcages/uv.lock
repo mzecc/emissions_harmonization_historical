@@ -912,6 +912,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aneris-iamc", version = "0.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "aneris-iamc", version = "0.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "filelock" },
     { name = "loguru" },
     { name = "openscm-runner" },
     { name = "openscm-units" },
@@ -1241,6 +1242,7 @@ tests-min = [
 [package.metadata]
 requires-dist = [
     { name = "aneris-iamc", specifier = ">=0.3.0" },
+    { name = "filelock", specifier = ">=3.16.1" },
     { name = "gcages", extras = ["plots"], marker = "extra == 'full'" },
     { name = "loguru" },
     { name = "matplotlib", marker = "extra == 'plots'", specifier = ">=3.7.1" },

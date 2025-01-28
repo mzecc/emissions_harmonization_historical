@@ -10,6 +10,7 @@ requires-python = ">=3.9"
 dependencies = [
     # TODO: add min pins here
     "aneris-iamc>=0.3.0",
+    "filelock>=3.16.1",
     "loguru",
     "openscm-runner>=0.13.0",
     "openscm-units",
