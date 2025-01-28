@@ -499,8 +499,9 @@ def test_regroup(tmpdir):
         db.regroup(new_grouping, progress=True)
 
         # Make sure data unchanged
-        # TODO: add no order check
-        pd.testing.assert_frame_equal(db.load(out_columns_type=float), all_dat)
+        pd.testing.assert_frame_equal(
+            db.load(out_columns_type=float), all_dat, check_like=True
+        )
         # Testing implementation but ok as a helper for now
         assert (
             len(list(db.db_dir.glob("*.csv")))

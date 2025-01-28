@@ -187,7 +187,7 @@ class GCDB:
         with lock_context_manager:
             all_dat = self.load(progress=progress, lock_context_manager=nullcontext())
 
-            # self.delete(lock_context_manager=nullcontext())
+            self.delete(lock_context_manager=nullcontext())
 
             grouper = all_dat.groupby(new_groups)
             if progress:
