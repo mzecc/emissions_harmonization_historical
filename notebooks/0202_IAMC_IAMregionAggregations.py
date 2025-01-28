@@ -96,7 +96,7 @@ for _, row in region_mapping.iterrows():
 
 # Concatenate all aggregated DataFrames
 history_for_all_iamc_regions = pix.concat(agg_data, ignore_index=True)
-columns_order = ["model", "scenario", "variable", "region", "unit", *numeric_datacols]
+columns_order = ["model", "scenario", "region", "variable", "unit", *numeric_datacols]
 history_for_all_iamc_regions = history_for_all_iamc_regions[columns_order]
 
 # %%
@@ -131,7 +131,7 @@ for r in [
 
     # reorder columns
     columns = list(region_df.columns)
-    columns.insert(3, columns.pop(columns.index("region")))
+    columns.insert(2, columns.pop(columns.index("region")))
 
     # Reassign the DataFrame to the new column order
     region_df = region_df[columns]
