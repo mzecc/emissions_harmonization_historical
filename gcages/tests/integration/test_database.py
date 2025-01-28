@@ -15,7 +15,7 @@ import pandas as pd
 import pandas_indexing as pix
 import pytest
 
-from gcages.database import GCDB, AlreadyInDBError
+from gcages.database import GCDB, AlreadyInDBError, EmptyDBError
 
 
 def create_test_df(
@@ -350,4 +350,25 @@ def test_load_with_loc(tmpdir):
         pd.testing.assert_frame_equal(loaded, exp)
 
 
-# - test deletion
+def test_deletion(tmpdir):
+    db = GCDB(Path(tmpdir))
+
+    db.save(
+        create_test_df(
+            n_scenarios=10,
+            n_variables=3,
+            n_runs=3,
+            timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+            units="Mt",
+        )
+    )
+
+    assert isinstance(db.load(), pd.DataFrame)
+
+    db.delete()
+
+    with pytest.raises(EmptyDBError):
+        db.load_metadata()
+
+    with pytest.raises(EmptyDBError):
+        db.load()

@@ -42,6 +42,24 @@ class AlreadyInDBError(ValueError):
         super().__init__(error_msg)
 
 
+class EmptyDBError(ValueError):
+    """
+    Raised when trying to access data from a database that is empty
+    """
+
+    def __init__(self, db: GCDB) -> None:
+        """
+        Initialise the error
+
+        Parameters
+        ----------
+        db
+            The database
+        """
+        error_msg = f"The database is empty: {db=}"
+        super().__init__(error_msg)
+
+
 @define
 class GCDB:
     """
@@ -67,6 +85,10 @@ class GCDB:
     def index_file_lock(self) -> Path:
         return filelock.FileLock(self.index_file_lock_path)
 
+    def delete(self) -> None:
+        for f in self.db_dir.glob("*.csv"):
+            os.remove(f)
+
     def get_new_data_file_path(self, file_id: int) -> Path:
         file_path = self.db_dir / f"{file_id}.csv"
         if file_path.exists():
@@ -81,7 +103,9 @@ class GCDB:
         lock_acquire_timeout: float = 10.0,
         progress: bool = False,
     ) -> pd.DataFrame:
-        # TODO: add locators
+        if not self.index_file.exists():
+            raise EmptyDBError(self)
+
         with self.index_file_lock.acquire(timeout=lock_acquire_timeout):
             index = pd.MultiIndex.from_frame(pd.read_csv(self.index_file)).to_frame()
 
@@ -110,6 +134,9 @@ class GCDB:
         return res
 
     def load_metadata(self, lock_acquire_timeout: float = 10.0) -> pd.MultiIndex:
+        if not self.index_file.exists():
+            raise EmptyDBError(self)
+
         with self.index_file_lock.acquire(timeout=lock_acquire_timeout):
             index = pd.MultiIndex.from_frame(pd.read_csv(self.index_file))
 
