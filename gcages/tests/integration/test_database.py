@@ -350,7 +350,7 @@ def test_load_with_loc(tmpdir):
         pd.testing.assert_frame_equal(loaded, exp)
 
 
-def test_load_with_index(tmpdir):
+def test_load_with_index_all(tmpdir):
     db = GCDB(tmpdir)
 
     full_db = create_test_df(
@@ -364,37 +364,78 @@ def test_load_with_index(tmpdir):
     for _, pdf in full_db.groupby(["scenario"]):
         db.save(pdf)
 
-    for idx in [
-        full_db.index,
-        full_db.index[:5],
-        full_db.loc[pix.isin(scenario=["scenario_1", "scenario_3"])].pix.unique(
-            ["scenario", "variable"]
-        ),
-        full_db.loc[pix.isin(scenario=["scenario_1", "scenario_3"])].pix.unique(
-            ["scenario"]
-        ),
-        full_db.loc[pix.isin(run=[0, 2])].pix.unique(["run"]),
-        # Levels that aren't next to each other
-        full_db.loc[
-            pix.isin(scenario=["scenario_1", "scenario_3"]) & pix.isin(run=[1, 2])
-        ].pix.unique(["scenario", "run"]),
-    ]:
-        if isinstance(idx, pd.MultiIndex):
-            idx_reordered = full_db.index.reorder_levels(
-                [*idx.names, *(set(full_db.index.names) - {*idx.names})]
-            )
-            rows_to_get = idx_reordered.isin(idx)
-            exp = full_db.loc[rows_to_get]
+    idx = full_db.index
+    exp = full_db
 
+    loaded = db.load(idx)
+
+    pd.testing.assert_frame_equal(loaded, exp)
+
+
+@pytest.mark.parametrize(
+    "slice",
+    (slice(None, None, None), slice(None, 3, None), slice(2, 4, None), slice(1, 15, 2)),
+)
+def test_load_with_index_slice(tmpdir, slice):
+    db = GCDB(tmpdir)
+
+    full_db = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    for _, pdf in full_db.groupby(["scenario"]):
+        db.save(pdf)
+
+    idx = full_db.index[slice]
+    exp = full_db[slice]
+
+    loaded = db.load(idx)
+
+    pd.testing.assert_frame_equal(loaded, exp)
+
+
+@pytest.mark.parametrize(
+    "levels",
+    (
+        pytest.param(["scenario"], id="first_level"),
+        pytest.param(["variable"], id="not_first_level"),
+        pytest.param(["scenario", "variable"], id="multi_level_in_order"),
+        pytest.param(["scenario", "variable"], id="multi_level_non_adjacent"),
+        pytest.param(["variable", "scenario"], id="multi_level_out_of_order"),
+        pytest.param(["run", "variable"], id="multi_level_out_of_order_not_first"),
+    ),
+)
+def test_load_with_pix_unique_levels(tmpdir, levels):
+    db = GCDB(tmpdir)
+
+    full_db = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    for _, pdf in full_db.groupby(["scenario"]):
+        db.save(pdf)
+
+    locator = None
+    for level in levels:
+        if locator is None:
+            locator = pix.isin(**{level: full_db.pix.unique(level)[:2]})
         else:
-            exp = full_db[full_db.index.isin(idx.values, level=idx.name)]
+            locator &= pix.isin(**{level: full_db.pix.unique(level)[:2]})
 
-        if exp.empty:
-            raise AssertionError
+    exp = full_db.loc[locator]
+    idx = exp.pix.unique(levels)
 
-        loaded = db.load(idx)
+    loaded = db.load(idx)
 
-        pd.testing.assert_frame_equal(loaded, exp)
+    pd.testing.assert_frame_equal(loaded, exp)
 
 
 def test_deletion(tmpdir):

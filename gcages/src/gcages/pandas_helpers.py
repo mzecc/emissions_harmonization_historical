@@ -10,6 +10,7 @@ import pandas as pd
 
 
 def multi_index_lookup(df: pd.DataFrame, idx: pd.MultiIndex) -> pd.DataFrame:
+    # The fact that you need this suggests there is a bug in pandas to me.
     idx_reordered = df.index.reorder_levels(
         [*idx.names, *(set(df.index.names) - {*idx.names})]
     )
