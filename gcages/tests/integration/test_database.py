@@ -212,6 +212,16 @@ def test_save_overwrite_force_half_overlap(tmpdir):
     original = cdf(n_scenarios=6)
     db.save(original)
 
+    # As a helper, check we've got the number of files we expect.
+    # This is testing implementation, so could be removed in future.
+    # Expect to have the index file plus the file map file plus written file.
+    db_files = list(db.db_dir.glob("*.csv"))
+    assert set([f.name for f in db_files]) == {
+        "0.csv",
+        "index.csv",
+        "filemap.csv",
+    }
+
     # Make sure that our data saved correctly
     db_metadata = db.load_metadata()
     metadata_compare = db_metadata
@@ -230,11 +240,17 @@ def test_save_overwrite_force_half_overlap(tmpdir):
 
     # As a helper, check we've got the number of files we expect.
     # This is testing implementation, so could be removed in future.
-    # Expect to have the index file plus the new file plus the newly written file
+    # Expect to have the index file plus the file map file plus the newly written file
+    # plus the re-written data file
     # (to handle the need to split the original data so we can keep only what we need),
     # but not the original file.
     db_files = list(db.db_dir.glob("*.csv"))
-    assert set([f.name for f in db_files]) == {"1.csv", "2.csv", "index.csv"}
+    assert set([f.name for f in db_files]) == {
+        "1.csv",
+        "2.csv",
+        "index.csv",
+        "filemap.csv",
+    }
 
     # Check that the data was overwritten with new data
     overlap_idx = original.index.isin(original_overwrite.index)
@@ -256,7 +272,7 @@ def test_save_overwrite_force_half_overlap(tmpdir):
         update_exp.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(update_exp, loaded)
 
@@ -340,7 +356,7 @@ def test_load_with_loc(tmpdir):
         ),
         pix.isin(scenario=["scenario_1", "scenario_3"], variable=["variable_2"]),
     ]:
-        loaded = db.load(selector)
+        loaded = db.load(selector, out_columns_type=float)
         exp = full_db.loc[selector]
 
         pd.testing.assert_frame_equal(loaded, exp)
@@ -363,7 +379,7 @@ def test_load_with_index_all(tmpdir):
     idx = full_db.index
     exp = full_db
 
-    loaded = db.load(idx)
+    loaded = db.load(idx, out_columns_type=float)
 
     pd.testing.assert_frame_equal(loaded, exp)
 
@@ -389,7 +405,7 @@ def test_load_with_index_slice(tmpdir, slice):
     idx = full_db.index[slice]
     exp = full_db[slice]
 
-    loaded = db.load(idx)
+    loaded = db.load(idx, out_columns_type=float)
 
     pd.testing.assert_frame_equal(loaded, exp)
 
@@ -429,7 +445,7 @@ def test_load_with_pix_unique_levels(tmpdir, levels):
     exp = full_db.loc[locator]
     idx = exp.pix.unique(levels)
 
-    loaded = db.load(idx)
+    loaded = db.load(idx, out_columns_type=float)
 
     pd.testing.assert_frame_equal(loaded, exp)
 
@@ -471,9 +487,9 @@ def test_regroup(tmpdir):
 
     db.save(all_dat)
 
-    pd.testing.assert_frame_equal(db.load(), all_dat)
+    pd.testing.assert_frame_equal(db.load(out_columns_type=float), all_dat)
     # Testing implementation but ok as a helper for now
-    assert len(list(db.db_dir.glob("*.csv"))) == 2
+    assert len(list(db.db_dir.glob("*.csv"))) == 3
 
     for new_grouping in (
         ["scenario"],
@@ -484,9 +500,9 @@ def test_regroup(tmpdir):
 
         # Make sure data unchanged
         # TODO: add no order check
-        pd.testing.assert_frame_equal(db.load(), all_dat)
+        pd.testing.assert_frame_equal(db.load(out_columns_type=float), all_dat)
         # Testing implementation but ok as a helper for now
         assert (
             len(list(db.db_dir.glob("*.csv")))
-            == 1 + all_dat.pix.unique(new_grouping).shape[0]
+            == 2 + all_dat.pix.unique(new_grouping).shape[0]
         )

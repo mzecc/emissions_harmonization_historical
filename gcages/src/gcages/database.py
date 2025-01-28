@@ -238,19 +238,13 @@ class GCDB:
                         msg = "Should have already raised above"
                         raise AssertionError(msg)
 
-                    index_db_keep, file_map_updated = _update_index_for_overwrite(
+                    index_db_keep, file_map = _update_index_for_overwrite(
                         db=self,
                         file_ids_existing=index_db.set_index(metadata.names)["file_id"],
                         data_to_write=data,
                         already_in_db=already_in_db,
                         file_map=file_map,
                     )
-
-                    files_ids_to_remove = set(index_db["file_id"]).difference(
-                        set(index_db_keep["file_id"])
-                    )
-                    for fidtr in files_ids_to_remove:
-                        os.remove(file_map_updated.pop(fidtr))
 
                     index = pd.concat([index_db_keep, index_data])
 
@@ -285,24 +279,43 @@ def _update_index_for_overwrite(
         file_ids_out = file_ids_existing.copy()
         file_map_out = file_map.copy()
         for ofid in file_ids_overlap:
-            breakpoint()
             file = file_map_out.pop(ofid)
             overlap_file_data = pd.read_csv(file).set_index(
                 file_ids_existing.index.names
             )
 
-            non_overlap_data = overlap_file_data.loc[
+            data_not_being_overwritten = overlap_file_data.loc[
                 ~multi_index_match(overlap_file_data, data_to_write.index)
             ]
-            file_id = max(file_map_out.index.max(), file_map.index.max()) + 1
-            non_overlap_data_file_path = db.get_new_data_file_path(file_id=file_id)
-            non_overlap_data.to_csv(non_overlap_data_file_path)
-            file_map_out[file_id] = non_overlap_data_file_path
-            # TODO: update the file_id information in file_ids_out
-            explode
-            # TODO: find and fix the bug in here.
-            # Test: create with everything, then try and overwrite with different grouping.
-            file_ids_out.loc[~overlap_idxs] = non_overlap_data_file_path
+
+            # Ensure we use an index we haven't already used
+            data_not_being_overwritten_file_id = (
+                max(file_map_out.index.max(), file_map.index.max()) + 1
+            )
+            data_not_being_overwritten_file_path = db.get_new_data_file_path(
+                file_id=data_not_being_overwritten_file_id
+            )
+
+            # Re-write the data we want to keep
+            data_not_being_overwritten.to_csv(data_not_being_overwritten_file_path)
+            # Update the file map (already popped the old file above)
+            file_map_out[data_not_being_overwritten_file_id] = (
+                data_not_being_overwritten_file_path
+            )
+
+            data_not_being_overwritten_idx = multi_index_match(
+                file_ids_out, data_not_being_overwritten.index
+            )
+            # Update the file ids of the data we're keeping
+            file_ids_out.loc[data_not_being_overwritten_idx] = (
+                data_not_being_overwritten_file_id
+            )
+            # Remove the rows that still refer to the data we're dropping
+            file_ids_out = file_ids_out.loc[file_ids_out != ofid]
+            # Remove the file that contained the data
+            os.remove(file)
+
+        index_out = file_ids_out.reset_index()
 
     else:
         index_out = file_ids_existing[~remove_loc].reset_index()
