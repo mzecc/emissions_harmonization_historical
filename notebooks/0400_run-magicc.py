@@ -14,9 +14,6 @@
 
 # %% [markdown]
 # # Run MAGICC
-#
-# TODO: see if we want to also include running FaIR
-# here or in another notebook.
 
 # %% [markdown]
 # ## Imports
@@ -66,6 +63,7 @@ complete_scenarios_file
 # ## Set up runner
 
 # %%
+# AR6-like
 # Needed for 7.5.3 on a mac
 os.environ["DYLD_LIBRARY_PATH"] = "/opt/homebrew/opt/gfortran/lib/gcc/current/"
 scm_runner = AR6SCMRunner.from_ar6_like_config(
@@ -82,9 +80,74 @@ scm_runner = AR6SCMRunner.from_ar6_like_config(
     n_processes=multiprocessing.cpu_count(),
 )
 
-# Depends on use case, but this is fine for
+# Depends on use case, but this is fine for now
 scm_runner.output_variables = ("Surface Air Temperature Change",)
 scm_runner
+
+# %%
+# magicc_exe_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.6.0a3" / "bin" / "magicc-darwin-arm64"
+# magicc_expected_version = "v7.6.0a3"
+# probabilistic_distribution_file = (
+#     DATA_ROOT.parents[0] / "magicc" / "magicc-v7.6.0a3" / "configs" / "magicc-ar7-fast-track-drawnset-v0-3-0.json"
+# )
+# startyear = 1750
+# endyear = 2100
+# output_variables = ("Surface Air Temperature Change",)
+# out_dynamic_vars = [f"DAT_{v}" for v in convert_openscm_runner_output_names_to_magicc_output_names(output_variables)]
+
+
+# os.environ["MAGICC_EXECUTABLE_7"] = str(magicc_exe_path)
+# if openscm_runner.adapters.MAGICC7.get_version() != magicc_expected_version:
+#     raise AssertionError(openscm_runner.adapters.MAGICC7.get_version())
+
+
+# with open(probabilistic_distribution_file) as fh:
+#     cfgs_raw = json.load(fh)
+
+# base_cfgs = [
+#     {
+#         "run_id": c["paraset_id"],
+#         **{k.lower(): v for k, v in c["nml_allcfgs"].items()},
+#     }
+#     for c in cfgs_raw["configurations"]
+# ]
+
+
+# common_cfg = {
+#     "startyear": startyear,
+#     "endyear": endyear,
+#     "out_dynamic_vars": out_dynamic_vars,
+#     "out_ascii_binary": "BINARY",
+#     "out_binary_format": 2,
+# }
+
+
+# run_config = [
+#     {
+#         **common_cfg,
+#         **base_cfg,
+#     }
+#     for base_cfg in base_cfgs
+# ]
+
+# scm_runner = AR6SCMRunner(
+#     climate_models_cfgs={"MAGICC7": run_config},
+#     output_variables=output_variables,
+#     force_interpolate_to_yearly=True,
+#     db=GCDB(
+#         DATA_ROOT
+#         / "climate-assessment-workflow"
+#         / "scm-output"
+#         / "ar7-ft-magicc"
+#         / f"{SCENARIO_TIME_ID}_{HARMONISATION_ID}_{INFILLING_SILICONE_ID}_{INFILLING_WMO_ID}_{INFILLING_LEFTOVERS_ID}_{magicc_expected_version.replace('.', '-')}_{probabilistic_distribution_file.stem}"  # noqa: E501
+#     ),
+#     run_checks=False,  # TODO: turn on
+#     n_processes=multiprocessing.cpu_count(),
+# )
+
+# # Depends on use case, but this is fine for now
+# scm_runner.output_variables=("Surface Air Temperature Change",)
+# scm_runner
 
 # %% [markdown]
 # ## Set up post-processor
@@ -149,27 +212,26 @@ scenarios_raw
 # selected_scenarios
 
 # %%
-selected_scenarios_idx = pd.MultiIndex.from_tuples(
-    (
-        ("MESSAGEix-GLOBIOM 2.1-M-R12", "SSP5 - High Emissions"),
-        ("IMAGE 3.4", "SSP5 - High Emissions"),
-        ("AIM 3.0", "SSP2 - Medium-Low Emissions"),
-        ("WITCH 6.0", "SSP2 - Low Emissions"),
-        ("REMIND-MAgPIE 3.4-4.8", "SSP2 - Low Overshoot_b"),
-        ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP5 - Low Overshoot"),
-        ("COFFEE 1.5", "SSP2 - Medium Emissions"),
-        ("GCAM 7.1 scenarioMIP", "SSP2 - Medium Emissions"),
-        ("IMAGE 3.4", "SSP2 - Very Low Emissions"),
-        ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP1 - Very Low Emissions"),
-    ),
-    name=["model", "scenario"],
-)
-selected_scenarios_idx
+# selected_scenarios_idx = pd.MultiIndex.from_tuples(
+#     (
+#         ('MESSAGEix-GLOBIOM 2.1-M-R12', 'SSP5 - High Emissions'),
+#         ('IMAGE 3.4', 'SSP5 - High Emissions'),
+#         ('AIM 3.0', 'SSP2 - Medium-Low Emissions'),
+#         ('WITCH 6.0', 'SSP2 - Low Emissions'),
+#         ('REMIND-MAgPIE 3.4-4.8', 'SSP2 - Low Overshoot_b'),
+#         ('MESSAGEix-GLOBIOM-GAINS 2.1-M-R12', 'SSP5 - Low Overshoot'),
+#         ('COFFEE 1.5', 'SSP2 - Medium Emissions'),
+#         ('GCAM 7.1 scenarioMIP', 'SSP2 - Medium Emissions'),
+#         ("IMAGE 3.4", "SSP2 - Very Low Emissions"),
+#         ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP1 - Very Low Emissions"),
+#     ),
+#     name=["model", "scenario"],
+# )
+# scenarios_run = scenarios_raw[scenarios_raw.index.isin(selected_scenarios_idx)]
 
-# %%
-scenarios_run = scenarios_raw[scenarios_raw.index.isin(selected_scenarios_idx)]
 scenarios_run = scenarios_raw.loc[pix.ismatch(scenario="*Very Low*")]
-scenarios_run
+
+scenarios_run.pix.unique(["model", "scenario"]).to_frame(index=False)
 
 
 # %% [markdown]
@@ -227,17 +289,20 @@ if ar6_harmonisation_points.shape[0] != expected_n_variables:
 ar6_harmonisation_points
 
 # %%
-# Also have to add AR6 historical values in 2015,
-# because we haven't recalibrated MAGICC.
 a, b = ar6_harmonisation_points.reset_index(["model", "scenario"], drop=True).align(scenarios_run)
 scenarios_run = pix.concat([a.to_frame(), b], axis="columns").sort_index(axis="columns")
+
+if scenarios_run.isnull().any().any():
+    if not scm_runner.force_interpolate_to_yearly:
+        raise AssertionError
+
 scenarios_run
 
 # %% [markdown]
 # ## Run
 
 # %%
-res_full = scm_runner(scenarios_run, batch_size_scenarios=2)
+res_full = scm_runner(scenarios_run, batch_size_scenarios=5)
 res_full
 
 # %%
@@ -326,6 +391,31 @@ eoc_warming_quantiles = (
     .sort_values(by=0.5)
 )
 eoc_warming_quantiles
+
+# %%
+category_join = (
+    post_processed.index.to_frame(index=False)[["model", "scenario", "category"]]
+    .drop_duplicates()
+    .sort_values("category")
+    .set_index(["model", "scenario"])
+)
+peak_warming_quantiles_join = peak_warming_quantiles[[0.33, 0.5, 0.67]].copy().round(3)
+peak_warming_quantiles_join.columns = peak_warming_quantiles_join.columns.map(lambda x: f"Peak {x * 100:.1f}th")
+
+eoc_quantiles_join = eoc_warming_quantiles[[0.5]].copy().round(3)
+eoc_quantiles_join.columns = eoc_quantiles_join.columns.map(lambda x: f"2100 {x * 100:.1f}th")
+
+pd.concat(
+    [
+        category_join,
+        peak_warming_quantiles_join,
+        eoc_quantiles_join,
+    ],
+    axis="columns",
+).sort_values(["category", "Peak 50.0th"])
+
+# %%
+category_join.groupby(["model"]).value_counts().sort_index()
 
 
 # %%
