@@ -23,7 +23,7 @@ data/global/edgar/data_raw/
 data/global/rcmip/data_raw
 
 # GCB raw data
-data/global/gcb/data_raw
+data/global/gcb/data_raw/*
 
 # CEDS data
 data/national/ceds/data_raw
@@ -173,3 +173,6 @@ dmypy.json
 
 # Mac stuff
 *.DS_Store
+
+# Do not ignore
+!data/global/gcb/data_raw/README.txt
