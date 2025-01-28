@@ -215,6 +215,7 @@ adam_et_al_2024
 edgar = load_csv(
     DATA_ROOT / "global" / "edgar" / "processed" / f"edgar_cmip7_global_{EDGAR_PROCESSING_ID}.csv",
 ).pix.assign(scenario=HISTORY_SCENARIO_NAME)
+edgar
 
 # %%
 gcb_afolu = load_csv(
@@ -236,6 +237,7 @@ velders_et_al_2022
 wmo_2022 = load_csv(
     DATA_ROOT / "global" / "wmo-2022" / "processed" / f"wmo-2022_cmip7_global_{WMO_2022_PROCESSING_ID}.csv"
 ).pix.assign(scenario=HISTORY_SCENARIO_NAME)
+wmo_2022
 
 # %%
 all_sources = pix.concat(
@@ -276,7 +278,7 @@ global_variable_sources = {
     "Emissions|NH3": "CEDS-BB4CMIP",
     "Emissions|NOx": "CEDS-BB4CMIP",
     "Emissions|OC": "CEDS-BB4CMIP",
-    "Emissions|SF6": "WMO 2022",
+    "Emissions|SF6": "EDGAR", # Zeb had put "WMO 2022", but this is not in the currently available data
     "Emissions|Sulfur": "CEDS-BB4CMIP",
     "Emissions|VOC": "CEDS-BB4CMIP",
 }
