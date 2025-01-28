@@ -38,6 +38,44 @@ def get_temperatures_in_line_with_assessment(
     return res
 
 
+def categorise_scenarios(
+    temperatures_in_line_with_assessment: pd.DataFrame,
+) -> pd.DataFrame:
+    peak_warming_quantiles = (
+        temperatures_in_line_with_assessment.max(axis="columns")
+        .groupby(["model", "scenario"])
+        .quantile([0.33, 0.5, 0.67])
+        .unstack()
+    )
+    eoc_warming_quantiles = (
+        temperatures_in_line_with_assessment[2100]
+        .groupby(["model", "scenario"])
+        .quantile([0.5])
+        .unstack()
+    )
+    categories = pd.Series(
+        "C8: exceed warming of 4°C (>=50%)",
+        index=peak_warming_quantiles.index,
+        name="category_name",
+    )
+    categories[peak_warming_quantiles[0.5] < 4.0] = "C7: limit warming to 4°C (>50%)"  # noqa: PLR2004
+    categories[peak_warming_quantiles[0.5] < 3.0] = "C6: limit warming to 3°C (>50%)"  # noqa: PLR2004
+    categories[peak_warming_quantiles[0.5] < 2.5] = "C5: limit warming to 2.5°C (>50%)"  # noqa: PLR2004
+    categories[peak_warming_quantiles[0.5] < 2.0] = "C4: limit warming to 2°C (>50%)"  # noqa: PLR2004
+    categories[peak_warming_quantiles[0.67] < 2.0] = "C3: limit warming to 2°C (>67%)"  # noqa: PLR2004
+    categories[
+        (peak_warming_quantiles[0.33] > 1.5) & (eoc_warming_quantiles[0.5] < 1.5)  # noqa: PLR2004
+    ] = "C2: return warming to 1.5°C (>50%) after a high overshoot"
+    categories[
+        (peak_warming_quantiles[0.33] <= 1.5) & (eoc_warming_quantiles[0.5] < 1.5)  # noqa: PLR2004
+    ] = "C1: limit warming to 1.5°C (>50%) with no or limited overshoot"
+
+    out = categories.to_frame()
+    out["category"] = out["category_name"].apply(lambda x: x.split(":")[0])
+
+    return out
+
+
 @define
 class AR6PostProcessor:
     """
@@ -113,6 +151,8 @@ class AR6PostProcessor:
             assessment_pre_industrial_period=self.gsat_assessment_pre_industrial_period,
         ).pix.assign(variable="AR6 climate diagnostics|Surface Temperature (GSAT)")
 
+        categories = categorise_scenarios(temperatures_in_line_with_assessment)
+
         temperatures_in_line_with_assessment_percentiles = (
             temperatures_in_line_with_assessment.groupby(
                 ["climate_model", "model", "scenario", "variable", "region", "unit"]
@@ -142,12 +182,17 @@ class AR6PostProcessor:
         )
 
         out_l = [
-            # temperatures_in_line_with_assessment,
             temperatures_in_line_with_assessment_percentiles,
         ]
 
         out = pix.concat(out_l)
+
+        categories_aligned = categories.align(out)[0].dropna(how="all", axis="columns")
+        out = pd.concat([out, categories_aligned], axis="columns").set_index(
+            categories_aligned.columns.tolist(), append=True
+        )
         out.columns = out.columns.astype(int)
+
         # TODO:
         #   - enable optional checks for:
         #       - input and output scenarios are the same

@@ -259,6 +259,31 @@ def get_ar6_temperature_outputs(
     return res
 
 
+@functools.cache
+def get_ar6_metadata_outputs(test_data_dir: Path) -> pd.DataFrame:
+    """
+    Get metadata from AR6
+
+    Parameters
+    ----------
+    test_data_dir
+        Test data directory where the data is saved
+
+    Returns
+    -------
+    :
+        Metadata from AR6
+    """
+    filename = "AR6_Scenarios_Database_metadata_indicators_v1.1_meta.csv"
+
+    res = load_timeseries_csv(
+        test_data_dir / filename,
+        index_columns=["model", "scenario"],
+    )
+
+    return res
+
+
 def assert_frame_equal(
     res: pd.DataFrame, exp: pd.DataFrame, rtol: float = 1e-8, **kwargs: Any
 ) -> None:

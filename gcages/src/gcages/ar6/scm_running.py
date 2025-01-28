@@ -127,6 +127,7 @@ def run_scm(
 
         scenarios = scenarios.T.interpolate("index").T
 
+    mod_scens_to_run = scenarios.pix.unique(["model", "scenario"])
     for climate_model, cfg in tqdman.tqdm(
         climate_models_cfgs.items(), desc="Climate models"
     ):
@@ -141,7 +142,6 @@ def run_scm(
         else:
             cfg_use = cfg
 
-        mod_scens_to_run = scenarios.pix.unique(["model", "scenario"])
         if batch_size_scenarios is None:
             scenario_batches = [scenarios]
         else:
