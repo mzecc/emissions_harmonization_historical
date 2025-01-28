@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 import pandas_indexing as pix  # type: ignore
 
+from gcages.io import load_timeseries_csv
+
 if TYPE_CHECKING:
     import _pytest
 
@@ -113,10 +115,11 @@ def get_ar6_all_emissions(
     filename_emissions = filename_emissions.replace("/", "_").replace(" ", "_")
     emissions_file = test_data_dir / filename_emissions
 
-    res = pd.read_csv(emissions_file)
-    res.columns = res.columns.str.lower()
-    res = res.set_index(["model", "scenario", "variable", "region", "unit"])
-    res.columns = res.columns.astype(int)
+    res = load_timeseries_csv(
+        emissions_file,
+        index_columns=["model", "scenario", "variable", "region", "unit"],
+        out_column_type=int,
+    )
 
     return res
 
@@ -215,6 +218,42 @@ def get_ar6_infilled_emissions(
     )
     res: pd.DataFrame = all_emissions.loc[pix.ismatch(variable="**Infilled**")].dropna(
         how="all", axis="columns"
+    )
+
+    return res
+
+
+@functools.cache
+def get_ar6_temperature_outputs(
+    model: str, scenario: str, test_data_dir: Path
+) -> pd.DataFrame:
+    """
+    Get temperature outputs we've downloaded from AR6 for a given model-scenario
+
+    Parameters
+    ----------
+    model
+        Model
+
+    scenario
+        Scenario
+
+    test_data_dir
+        Test data directory where the data is saved
+
+    Returns
+    -------
+    :
+        All temperature outputs we've downloaded from AR6 for `model`-`scenario`
+    """
+    filename_temperatures = f"ar6_scenarios__{model}__{scenario}__temperatures.csv"
+    filename_temperatures = filename_temperatures.replace("/", "_").replace(" ", "_")
+    temperatures_file = test_data_dir / filename_temperatures
+
+    res = load_timeseries_csv(
+        temperatures_file,
+        index_columns=["model", "scenario", "variable", "region", "unit"],
+        out_column_type=int,
     )
 
     return res

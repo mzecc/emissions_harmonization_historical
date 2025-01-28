@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import multiprocessing
 import os
+import tempfile
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -15,12 +16,13 @@ import numpy as np
 import openscm_runner.adapters
 import openscm_runner.run
 import pandas as pd
-import pandas_indexing as pix  # noqa: F401
+import pandas_indexing as pix
 import pymagicc.definitions
 import scmdata
 import tqdm.autonotebook as tqdman
 from attrs import define
 
+from gcages.database import GCDB, EmptyDBError
 from gcages.units_helpers import strip_pint_incompatible_characters_from_units
 
 
@@ -104,12 +106,19 @@ def convert_openscm_runner_output_names_to_magicc_output_names(
 
 def run_scm(
     scenarios: pd.DataFrame,
+    # TODO: replace the type hint below with a Protocol instead
     climate_models_cfgs: dict[str, list[dict[str, Any]]],
     output_variables: tuple[str, ...],
     n_processes: int,
+    db: GCDB | None = None,
     batch_size_scenarios: int | None = None,
     force_interpolate_to_yearly: bool = True,
 ) -> pd.DataFrame:
+    if db is None:
+        db_use = GCDB(Path(tempfile.mkdtemp()))
+    else:
+        db_use = db
+
     if force_interpolate_to_yearly:
         # Interpolate to ensure no nans.
         for y in range(scenarios.columns.min(), scenarios.columns.max() + 1):
@@ -127,41 +136,60 @@ def run_scm(
             last_year = scenarios.columns.max()
             scenarios[last_year + magicc_extra_years] = scenarios[last_year]
             cfg_use = [{**c, "endyear": scenarios.columns.max()} for c in cfg]
-            os.environ["MAGICC_WORKER_NUMBER"] = n_processes
+            os.environ["MAGICC_WORKER_NUMBER"] = str(n_processes)
 
         else:
             cfg_use = cfg
 
-        # Batching here
+        mod_scens_to_run = scenarios.pix.unique(["model", "scenario"])
         if batch_size_scenarios is None:
             scenario_batches = [scenarios]
         else:
-            mod_scens = scenarios.pix.unique(["model", "scenario"])
             scenario_batches = []
-            for i in range(batch_size_scenarios, mod_scens.size):
-                breakpoint()
+            for i in range(0, mod_scens_to_run.size, batch_size_scenarios):
+                start = i
+                stop = min(i + batch_size_scenarios, mod_scens_to_run.shape[0])
+                scenario_batches.append(
+                    scenarios[scenarios.index.isin(mod_scens_to_run[start:stop])]
+                )
 
         for scenario_batch in tqdman.tqdm(scenario_batches, desc="Scenario batch"):
-            # Add db checking here
-            assert (
-                False
-            ), "Up to DB implementation (test independently first, then use here)"
-            mod_scen_in_db = db.metadata.pix.unique(["model", "scenario"])
-            not_run = scenario_batch[~scenario_batch.index.isin(mod_scen_in_db)]
+            try:
+                existing_metadata = db_use.load_metadata()
+
+                db_mod_scen = existing_metadata.pix.unique(["model", "scenario"])
+                already_run_idx = scenario_batch.index.isin(db_mod_scen)
+                scenario_batch_to_run = scenario_batch[~already_run_idx]
+
+                already_run_mod_scen = scenario_batch.index[already_run_idx].pix.unique(
+                    ["model", "scenario"]
+                )
+                if not already_run_mod_scen.empty:
+                    print(
+                        f"Not re-running already run scenarios:\n{already_run_mod_scen}"
+                    )
+
+            except EmptyDBError:
+                scenario_batch_to_run = scenario_batch
 
             batch_res = openscm_runner.run.run(
-                scenarios=scmdata.ScmRun(scenario_batch, copy_data=True),
+                scenarios=scmdata.ScmRun(scenario_batch_to_run, copy_data=True),
                 climate_models_cfgs={climate_model: cfg_use},
                 output_variables=output_variables,
             ).timeseries(time_axis="year")
+
             if climate_model == "MAGICC7":
                 # Chop off the extra years
                 batch_res = batch_res.iloc[:, :-magicc_extra_years]
+                # Chop out regional results
+                batch_res = batch_res.loc[pix.isin(region=["World"])]
 
-            assert False, "Up to DB implementation"
-            # db.save(batch_res)
+            db_use.save(batch_res)
 
-    res = db.load()
+    res = db_use.load(mod_scens_to_run)
+
+    if db is None:
+        db_use.delete()
 
     return res
 
@@ -185,6 +213,18 @@ class AR6SCMRunner:
     Variables to include in the output
     """
 
+    force_interpolate_to_yearly: bool = True
+    """
+    Should we interpolate scenarios we run to yearly steps before running the SCMs.
+    """
+
+    db: GCDB | None = None
+    """
+    Database in which to store the runs
+
+    If not supplied, a default temporary database will be used.
+    """
+
     run_checks: bool = True
     """
     If `True`, run checks on both input and output data
@@ -202,7 +242,9 @@ class AR6SCMRunner:
     Set to 1 to process in serial.
     """
 
-    def __call__(self, in_emissions: pd.DataFrame) -> pd.DataFrame:
+    def __call__(
+        self, in_emissions: pd.DataFrame, batch_size_scenarios: int | None = None
+    ) -> pd.DataFrame:
         """
         Run the simple climate model
 
@@ -210,6 +252,14 @@ class AR6SCMRunner:
         ----------
         in_emissions
             Emissions to run
+
+        batch_size_scenarios
+            The number of scenarios to run at once.
+
+            If not supplied, all scenarios are run simultaneously.
+            For a large number of scenarios, this may lead to you running out of memory.
+            Setting `batch_size_scenarios=1` means each scenario will be run separately,
+            which is slower but you (almost definitely) won't run out of memory.
 
         Returns
         -------
@@ -256,11 +306,21 @@ class AR6SCMRunner:
             climate_models_cfgs=self.climate_models_cfgs,
             output_variables=self.output_variables,
             n_processes=self.n_processes,
+            db=self.db,
+            batch_size_scenarios=batch_size_scenarios,
+            force_interpolate_to_yearly=self.force_interpolate_to_yearly,
         )
 
         # Apply AR6 naming scheme
         out: pd.DataFrame = scm_results.pix.format(
             variable="AR6 climate diagnostics|{variable}"
+        )
+        out = out.pix.assign(
+            variable=out.index.get_level_values("variable")
+            .str.replace(
+                "Surface Air Temperature Change", "Raw Surface Temperature (GSAT)"
+            )
+            .values,
         )
 
         # TODO:
@@ -274,6 +334,7 @@ class AR6SCMRunner:
         cls,
         magicc_exe_path: Path,
         magicc_prob_distribution_path: Path,
+        db: GCDB | None = None,
         run_checks: bool = True,
         n_processes: int = multiprocessing.cpu_count(),
     ) -> AR6SCMRunner:
@@ -291,6 +352,11 @@ class AR6SCMRunner:
             Path to the MAGICC probabilistic distribution.
 
             This should be the AR6 probabilistic distribution.
+
+        db
+            Database to use for storing results.
+
+            If not supplied, a default temporary database will be used.
 
         run_checks
             Should checks of the input and output data be performed?
@@ -413,6 +479,7 @@ class AR6SCMRunner:
         return cls(
             climate_models_cfgs={"MAGICC7": run_config},
             output_variables=openscm_runner_output_variables,
+            db=db,
             run_checks=run_checks,
             n_processes=n_processes,
         )

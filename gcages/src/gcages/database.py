@@ -98,7 +98,7 @@ class GCDB:
 
     def load(
         self,
-        selector: pix.selectors.Selector | None = None,
+        selector: pd.Index | pd.MultiIndex | pix.selectors.Selector | None = None,
         *,
         lock_acquire_timeout: float = 10.0,
         progress: bool = False,
@@ -111,6 +111,19 @@ class GCDB:
 
         if selector is None:
             index_to_load = index
+
+        elif isinstance(selector, pd.MultiIndex):
+            idx_reordered = index.index.reorder_levels(
+                [*selector.names, *(set(index.index.names) - {*selector.names})]
+            )
+            rows_to_get = idx_reordered.isin(selector)
+            index_to_load = index[rows_to_get]
+
+        elif isinstance(selector, pd.Index):
+            index_to_load = index[
+                index.index.isin(selector.values, level=selector.name)
+            ]
+
         else:
             index_to_load = index.loc[selector]
 
@@ -128,6 +141,17 @@ class GCDB:
 
         if selector is None:
             res = loaded
+
+        elif isinstance(selector, pd.MultiIndex):
+            idx_reordered = loaded.index.reorder_levels(
+                [*selector.names, *(set(loaded.index.names) - {*selector.names})]
+            )
+            rows_to_get = idx_reordered.isin(selector)
+            res = loaded[rows_to_get]
+
+        elif isinstance(selector, pd.Index):
+            res = loaded[loaded.index.isin(selector.values, level=selector.name)]
+
         else:
             res = loaded.loc[selector]
 

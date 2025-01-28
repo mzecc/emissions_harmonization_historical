@@ -350,6 +350,53 @@ def test_load_with_loc(tmpdir):
         pd.testing.assert_frame_equal(loaded, exp)
 
 
+def test_load_with_index(tmpdir):
+    db = GCDB(tmpdir)
+
+    full_db = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    for _, pdf in full_db.groupby(["scenario"]):
+        db.save(pdf)
+
+    for idx in [
+        full_db.index,
+        full_db.index[:5],
+        full_db.loc[pix.isin(scenario=["scenario_1", "scenario_3"])].pix.unique(
+            ["scenario", "variable"]
+        ),
+        full_db.loc[pix.isin(scenario=["scenario_1", "scenario_3"])].pix.unique(
+            ["scenario"]
+        ),
+        full_db.loc[pix.isin(run=[0, 2])].pix.unique(["run"]),
+        # Levels that aren't next to each other
+        full_db.loc[
+            pix.isin(scenario=["scenario_1", "scenario_3"]) & pix.isin(run=[1, 2])
+        ].pix.unique(["scenario", "run"]),
+    ]:
+        if isinstance(idx, pd.MultiIndex):
+            idx_reordered = full_db.index.reorder_levels(
+                [*idx.names, *(set(full_db.index.names) - {*idx.names})]
+            )
+            rows_to_get = idx_reordered.isin(idx)
+            exp = full_db.loc[rows_to_get]
+
+        else:
+            exp = full_db[full_db.index.isin(idx.values, level=idx.name)]
+
+        if exp.empty:
+            raise AssertionError
+
+        loaded = db.load(idx)
+
+        pd.testing.assert_frame_equal(loaded, exp)
+
+
 def test_deletion(tmpdir):
     db = GCDB(Path(tmpdir))
 

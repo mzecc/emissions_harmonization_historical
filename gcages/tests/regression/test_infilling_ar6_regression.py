@@ -34,7 +34,7 @@ infilling_cases = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.slow
+@pytest.mark.superslow
 @infilling_cases
 def test_infilling_single_model_scenario(model, scenario):
     harmonised = get_ar6_harmonised_emissions(
@@ -71,6 +71,7 @@ def test_infilling_single_model_scenario(model, scenario):
     assert_frame_equal(res, exp)
 
 
+@pytest.mark.slow
 def test_infilling_ips_simultaneously():
     harmonised = pd.concat(
         [
@@ -114,7 +115,7 @@ def test_infilling_ips_simultaneously():
     assert_frame_equal(res, exp)
 
 
-@pytest.mark.slow
+@pytest.mark.superslow
 def test_infilling_all_simultaneously():
     model_scenarios = get_all_model_scenarios(MODEL_SCENARIO_COMBOS_FILE).values
 
