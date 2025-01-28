@@ -76,6 +76,10 @@ class GCDB:
         return self.db_dir / "index.csv"
 
     @property
+    def file_map_file(self) -> Path:
+        return self.db_dir / "filemap.csv"
+
+    @property
     def index_file_lock_path(self) -> Path:
         return f"{self.index_file}.lock"
 
@@ -108,7 +112,7 @@ class GCDB:
         *,
         lock_context_manager: contextlib.AbstractContextManager | None = None,
         progress: bool = False,
-        out_columns_type: type = float,
+        out_columns_type: type | None = None,
     ) -> pd.DataFrame:
         if not self.index_file.exists():
             raise EmptyDBError(self)
@@ -133,9 +137,10 @@ class GCDB:
 
         with lock_context_manager:
             index = pd.MultiIndex.from_frame(pd.read_csv(self.index_file)).to_frame()
+            file_map = pd.read_csv(self.file_map_file, index_col="file_id")["file_path"]
 
             index_to_load = idx_obj(index)
-            files_to_load = index_to_load["filepath"].unique()
+            files_to_load = file_map[index_to_load["file_id"].unique()]
 
             if progress:
                 import tqdm.autonotebook as tqdman
@@ -144,11 +149,11 @@ class GCDB:
 
             data_l = [pd.read_csv(f) for f in files_to_load]
 
-        loaded = pix.concat(data_l).set_index(index.index.droplevel("filepath").names)
-        # Don't love this, but fine for now while we don't have datetime columns
-        loaded.columns = loaded.columns.astype(out_columns_type)
+        loaded = pix.concat(data_l).set_index(index.index.droplevel("file_id").names)
 
         res = idx_obj(loaded)
+        if out_columns_type is not None:
+            res.columns = res.columns.astype(out_columns_type)
 
         return res
 
@@ -166,7 +171,7 @@ class GCDB:
         with lock_context_manager:
             db_index = pd.read_csv(self.index_file)
 
-        res = pd.MultiIndex.from_frame(db_index).droplevel("filepath")
+        res = pd.MultiIndex.from_frame(db_index).droplevel("file_id")
         return res
 
     def regroup(
@@ -209,89 +214,98 @@ class GCDB:
 
         with lock_context_manager:
             if self.index_file.exists():
-                db_index_existing = pd.read_csv(self.index_file)
-                metadata = pd.MultiIndex.from_frame(db_index_existing).droplevel(
-                    "filepath"
-                )
+                index_db = pd.read_csv(self.index_file)
+                metadata = pd.MultiIndex.from_frame(index_db).droplevel("file_id")
+                file_map = pd.read_csv(self.file_map_file, index_col="file_id")[
+                    "file_path"
+                ]
 
                 already_in_db = multi_index_lookup(data, metadata)
                 if not already_in_db.empty and not allow_overwrite:
                     raise AlreadyInDBError(already_in_db=already_in_db)
 
-                # TODO: update here to make file numbering simpler and db smaller
-                # file_id = index_existing["file_id"].max() + 1
-                file_id = len(db_index_existing["filepath"].unique())
+                file_id = index_db["file_id"].max() + 1
                 data_file_path = self.get_new_data_file_path(file_id=file_id)
                 index_data = data.index.to_frame(index=False)
-                index_data["filepath"] = data_file_path
+                index_data["file_id"] = file_id
+                file_map[file_id] = data_file_path
 
                 if already_in_db.empty:
                     # No clashes, so we can simply join
-                    index = pd.concat([db_index_existing, index_data])
+                    index = pd.concat([index_db, index_data])
                 else:
                     if not allow_overwrite:  # pragma: no cover
                         msg = "Should have already raised above"
                         raise AssertionError(msg)
 
-                    index_existing_keep = _update_index_for_overwrite(
+                    index_db_keep, file_map_updated = _update_index_for_overwrite(
                         db=self,
-                        filepaths_existing=db_index_existing.set_index(metadata.names)[
-                            "filepath"
-                        ],
+                        file_ids_existing=index_db.set_index(metadata.names)["file_id"],
                         data_to_write=data,
                         already_in_db=already_in_db,
-                        file_id_base=file_id,
+                        file_map=file_map,
                     )
 
-                    files_to_remove = set(db_index_existing["filepath"]).difference(
-                        set(index_existing_keep["filepath"])
+                    files_ids_to_remove = set(index_db["file_id"]).difference(
+                        set(index_db_keep["file_id"])
                     )
-                    for ftr in files_to_remove:
-                        os.remove(ftr)
+                    for fidtr in files_ids_to_remove:
+                        os.remove(file_map_updated.pop(fidtr))
 
-                    index = pd.concat([index_existing_keep, index_data])
+                    index = pd.concat([index_db_keep, index_data])
 
             else:
                 # index file doesn't exist i.e. we're starting from nothing
-                data_file_path = self.get_new_data_file_path(file_id=0)
+                file_id = 0
+                data_file_path = self.get_new_data_file_path(file_id=file_id)
                 index = data.index.to_frame(index=False)
-                index["filepath"] = data_file_path
+                index["file_id"] = file_id
+                file_map = pd.Series({file_id: data_file_path}, name="file_path")
+                file_map.index.name = "file_id"
 
             index.to_csv(self.index_file, index=False)
+            file_map.to_csv(self.file_map_file)
             data.to_csv(data_file_path)
 
 
 def _update_index_for_overwrite(
     db: GCDB,
-    filepaths_existing: pd.Series[Path],
+    file_ids_existing: pd.Series[int],
     data_to_write: pd.DataFrame,
     already_in_db: pd.DataFrame,
-    file_id_base: int,
-) -> pd.MultiIndex:
-    # TODO: use multi_index_lookup
-    remove_loc = multi_index_match(filepaths_existing, data_to_write.index)
+    file_map: pd.Series[Path],
+) -> tuple[pd.MultiIndex, pd.Series[Path]]:
+    remove_loc = multi_index_match(file_ids_existing, data_to_write.index)
 
-    filepaths_remove = set(filepaths_existing[remove_loc])
-    filepaths_keep = set(filepaths_existing[~remove_loc])
-    filepaths_overlap = filepaths_remove.intersection(filepaths_keep)
+    file_ids_remove = set(file_ids_existing[remove_loc])
+    file_ids_keep = set(file_ids_existing[~remove_loc])
+    file_ids_overlap = file_ids_remove.intersection(file_ids_keep)
 
-    filepaths_out = filepaths_existing.copy()
-    if filepaths_overlap:
-        for i, file in enumerate(filepaths_overlap):
+    if file_ids_overlap:
+        file_ids_out = file_ids_existing.copy()
+        file_map_out = file_map.copy()
+        for ofid in file_ids_overlap:
+            breakpoint()
+            file = file_map_out.pop(ofid)
             overlap_file_data = pd.read_csv(file).set_index(
-                filepaths_existing.index.names
+                file_ids_existing.index.names
             )
-            # TODO: use multi_index_lookup
-            overlap_idxs = overlap_file_data.index.isin(data_to_write.index)
-            non_overlap_data = overlap_file_data[~overlap_idxs]
-            non_overlap_data_file_path = db.get_new_data_file_path(
-                file_id=file_id_base + i + 1
-            )
+
+            non_overlap_data = overlap_file_data.loc[
+                ~multi_index_match(overlap_file_data, data_to_write.index)
+            ]
+            file_id = max(file_map_out.index.max(), file_map.index.max()) + 1
+            non_overlap_data_file_path = db.get_new_data_file_path(file_id=file_id)
             non_overlap_data.to_csv(non_overlap_data_file_path)
+            file_map_out[file_id] = non_overlap_data_file_path
+            # TODO: update the file_id information in file_ids_out
+            explode
             # TODO: find and fix the bug in here.
             # Test: create with everything, then try and overwrite with different grouping.
-            filepaths_out.loc[~overlap_idxs] = non_overlap_data_file_path
+            file_ids_out.loc[~overlap_idxs] = non_overlap_data_file_path
 
-    index_out = filepaths_out[~remove_loc].reset_index()
+    else:
+        index_out = file_ids_existing[~remove_loc].reset_index()
+        file_map_out = file_map
 
-    return index_out
+    return index_out, file_map_out

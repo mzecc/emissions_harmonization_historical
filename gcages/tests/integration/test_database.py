@@ -82,7 +82,7 @@ def test_save_and_load(tmpdir):
         start.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(start, loaded)
 
@@ -111,7 +111,7 @@ def test_save_multiple_and_load(tmpdir):
         all_saved.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(all_saved, loaded)
 
@@ -160,7 +160,7 @@ def test_save_overwrite_force(tmpdir):
         original.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(original, loaded)
 
@@ -174,7 +174,7 @@ def test_save_overwrite_force(tmpdir):
     # This is testing implementation, so could be removed in future.
     # Expect to have the index file plus the new file, but not the original file.
     db_files = list(db.db_dir.glob("*.csv"))
-    assert set([f.name for f in db_files]) == {"1.csv", "index.csv"}
+    assert set([f.name for f in db_files]) == {"1.csv", "index.csv", "filemap.csv"}
 
     # Check that the data was overwritten with new data
     try:
@@ -193,7 +193,7 @@ def test_save_overwrite_force(tmpdir):
         updated.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(updated, loaded)
 
@@ -219,7 +219,7 @@ def test_save_overwrite_force_half_overlap(tmpdir):
         original.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(original, loaded)
 
