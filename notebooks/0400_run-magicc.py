@@ -22,24 +22,16 @@
 # ## Imports
 
 # %%
-import json
 import multiprocessing
 import os
 
 import numpy as np
-import openscm_runner
-import openscm_runner.adapters
-import openscm_runner.run
 import pandas as pd
 import pandas_indexing as pix
 import pint
-import pymagicc.definitions
-import scmdata
-
-from gcages.database import GCDB
-from gcages.ar6 import AR6SCMRunner, AR6PostProcessor
-from gcages.ar6.scm_running import transform_iamc_to_openscm_runner_variable
+from gcages.ar6 import AR6PostProcessor, AR6SCMRunner
 from gcages.ar6.post_processing import get_temperatures_in_line_with_assessment
+from gcages.database import GCDB
 
 from emissions_harmonization_historical.constants import (
     DATA_ROOT,
@@ -89,7 +81,9 @@ scm_runner = AR6SCMRunner.from_ar6_like_config(
     run_checks=False,  # TODO: turn on
     n_processes=multiprocessing.cpu_count(),
 )
-# TODO: reduce the amount of stuff we save here
+
+# Depends on use case, but this is fine for
+scm_runner.output_variables = ("Surface Air Temperature Change",)
 scm_runner
 
 # %% [markdown]
@@ -157,14 +151,14 @@ scenarios_raw
 # %%
 selected_scenarios_idx = pd.MultiIndex.from_tuples(
     (
-        ('MESSAGEix-GLOBIOM 2.1-M-R12', 'SSP5 - High Emissions'),
-        ('IMAGE 3.4', 'SSP5 - High Emissions'),
-        ('AIM 3.0', 'SSP2 - Medium-Low Emissions'),
-        ('WITCH 6.0', 'SSP2 - Low Emissions'),
-        ('REMIND-MAgPIE 3.4-4.8', 'SSP2 - Low Overshoot_b'),
-        ('MESSAGEix-GLOBIOM-GAINS 2.1-M-R12', 'SSP5 - Low Overshoot'),
-        ('COFFEE 1.5', 'SSP2 - Medium Emissions'),
-        ('GCAM 7.1 scenarioMIP', 'SSP2 - Medium Emissions'),
+        ("MESSAGEix-GLOBIOM 2.1-M-R12", "SSP5 - High Emissions"),
+        ("IMAGE 3.4", "SSP5 - High Emissions"),
+        ("AIM 3.0", "SSP2 - Medium-Low Emissions"),
+        ("WITCH 6.0", "SSP2 - Low Emissions"),
+        ("REMIND-MAgPIE 3.4-4.8", "SSP2 - Low Overshoot_b"),
+        ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP5 - Low Overshoot"),
+        ("COFFEE 1.5", "SSP2 - Medium Emissions"),
+        ("GCAM 7.1 scenarioMIP", "SSP2 - Medium Emissions"),
         ("IMAGE 3.4", "SSP2 - Very Low Emissions"),
         ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP1 - Very Low Emissions"),
     ),
@@ -182,6 +176,7 @@ scenarios_run
 # ### Hack in values from 2015, as that is what MAGICCv7 needs
 #
 # Obviously delete if not running MAGICCv7.
+
 
 # %%
 def transform_rcmip_to_iamc_variable(v):
@@ -213,8 +208,7 @@ rcmip_clean.columns = rcmip_clean.columns.str.lower()
 rcmip_clean = rcmip_clean.set_index(["model", "scenario", "region", "variable", "unit", "mip_era", "activity_id"])
 rcmip_clean.columns = rcmip_clean.columns.astype(int)
 rcmip_clean = rcmip_clean.pix.assign(
-    variable=rcmip_clean.index.get_level_values("variable")
-    .map(transform_rcmip_to_iamc_variable)
+    variable=rcmip_clean.index.get_level_values("variable").map(transform_rcmip_to_iamc_variable)
 )
 ar6_harmonisation_points = rcmip_clean.loc[
     pix.ismatch(mip_era="CMIP6")
@@ -252,11 +246,7 @@ post_processed
 
 # %%
 temperature_match_historical_assessment = get_temperatures_in_line_with_assessment(
-    res_full.loc[
-        pix.isin(
-            variable=["AR6 climate diagnostics|Raw Surface Temperature (GSAT)"]
-        )
-    ],
+    res_full.loc[pix.isin(variable=["AR6 climate diagnostics|Raw Surface Temperature (GSAT)"])],
     assessment_median=post_processor.gsat_assessment_median,
     assessment_time_period=post_processor.gsat_assessment_time_period,
     assessment_pre_industrial_period=post_processor.gsat_assessment_pre_industrial_period,
@@ -280,7 +270,7 @@ scenarios_plt = scenarios_run.copy()
 for y in range(scenarios_plt.columns.min(), scenarios_plt.columns.max()):
     if y not in scenarios_plt:
         scenarios_plt[y] = np.nan
-        
+
 scenarios_plt = scenarios_plt.sort_index(axis="columns").T.interpolate("index").T
 scenarios_plt
 
@@ -311,9 +301,7 @@ ax.set_ylim(ymin=0)
 
 # %%
 # Really want warming decomposition here
-sulfur_emms = (
-    scenarios_plt.loc[pix.ismatch(variable="**Sulfur"), 2020:].reset_index("region", drop=True).T
-)
+sulfur_emms = scenarios_plt.loc[pix.ismatch(variable="**Sulfur"), 2020:].reset_index("region", drop=True).T
 
 ax = sulfur_emms.plot()
 ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
