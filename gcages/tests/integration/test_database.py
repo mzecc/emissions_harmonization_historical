@@ -9,6 +9,7 @@ import itertools
 import filelock
 import numpy as np
 import pandas as pd
+import pandas_indexing as pix
 import pytest
 
 from gcages.database import GCDB
@@ -82,6 +83,35 @@ def test_save_and_load(tmpdir):
     pd.testing.assert_frame_equal(start, loaded)
 
 
+def test_save_multiple_and_load(tmpdir):
+    db = GCDB(tmpdir)
+
+    all_saved_l = []
+    for units in ["Mt", "Gt", "Tt"]:
+        to_save = create_test_df(
+            n_scenarios=10,
+            n_variables=1,
+            n_runs=3,
+            timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+            units=units,
+        )
+
+        db.save(to_save)
+        all_saved_l.append(to_save)
+
+    all_saved = pix.concat(all_saved_l)
+
+    db_metadata = db.load_metadata()
+    metadata_compare = db_metadata
+    pd.testing.assert_index_equal(
+        all_saved.index, metadata_compare, exact="equiv", check_order=False
+    )
+
+    loaded = db.load()
+
+    pd.testing.assert_frame_equal(all_saved, loaded)
+
+
 def test_locking_load(tmpdir):
     db = GCDB(tmpdir)
 
@@ -143,7 +173,6 @@ def test_locking_save(tmpdir):
             db.save("not_used", lock_acquire_timeout=0.1)
 
 
-# - test multi-saving then loading
 # - test overwrite-saving
 # - test partial loading
 # - test metadata loading

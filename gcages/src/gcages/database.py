@@ -77,16 +77,28 @@ class GCDB:
     def save(self, data: pd.DataFrame, lock_acquire_timeout: int = 10.0) -> None:
         # Save entire frame into single file.
         # If user wants things broken up,
-        # they should do that at their level.
+        # they should do that before calling `save`.
         with self.index_file_lock.acquire(timeout=lock_acquire_timeout):
             if self.index_file.exists():
-                index = pd.read_csv(self.index_file)
-                # Check for overlaps
-                # add new metadata to index
+                index_existing = pd.read_csv(self.index_file)
+                metadata_existing = pd.MultiIndex.from_frame(
+                    index_existing.drop("filepath", axis="columns")
+                )
+                already_in_db = data.index.isin(metadata_existing)
+                if already_in_db.any():
+                    raise NotImplementedError
+
+                data_file_path = self.get_new_data_file_path(
+                    file_id=len(index_existing["filepath"].unique())
+                )
+                index_data = data.index.to_frame(index=False)
+                index_data["filepath"] = data_file_path
+
+                index = pd.concat([index_existing, index_data])
 
             else:
-                index = data.index.to_frame(index=False)
                 data_file_path = self.get_new_data_file_path(file_id=0)
+                index = data.index.to_frame(index=False)
                 index["filepath"] = data_file_path
 
             index.to_csv(self.index_file, index=False)
