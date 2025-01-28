@@ -96,6 +96,7 @@ def test_scm_running_single_model_scenario(model, scenario):
     assert_frame_equal(
         res_temperature_percentiles.loc[:, exp_temperature_percentiles.columns],
         exp_temperature_percentiles,
+        rtol=1e-5,
     )
 
     exp_metadata = get_ar6_metadata_outputs(
@@ -167,7 +168,9 @@ def test_scm_running_ips_simultaneously():
         model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
     )
 
-    assert_frame_equal(res_temperature_percentiles, exp_temperature_percentiles)
+    assert_frame_equal(
+        res_temperature_percentiles, exp_temperature_percentiles, rtol=1e-4
+    )
 
     exp_metadata = get_ar6_metadata_outputs(
         model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR

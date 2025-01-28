@@ -116,7 +116,7 @@ class AR6PostProcessor:
         temperatures_in_line_with_assessment_percentiles = (
             temperatures_in_line_with_assessment.groupby(
                 ["climate_model", "model", "scenario", "variable", "region", "unit"]
-            ).quantile([0.05, 0.1, 0.167, 0.33, 0.5, 0.67, 0.833, 0.9, 0.95])
+            ).quantile([0.05, 0.1, 1 / 6, 0.33, 0.5, 0.67, 5 / 6, 0.9, 0.95])
         )
         temperatures_in_line_with_assessment_percentiles.index.names = [
             *temperatures_in_line_with_assessment_percentiles.index.names[:-1],

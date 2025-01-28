@@ -166,8 +166,11 @@ def run_scm(
                 )
                 if not already_run_mod_scen.empty:
                     print(
-                        f"Not re-running already run scenarios:\n{already_run_mod_scen}"
+                        f"Not re-running already run scenarios:\n{already_run_mod_scen.to_frame(index=False)}"
                     )
+
+                if scenario_batch_to_run.empty:
+                    continue
 
             except EmptyDBError:
                 scenario_batch_to_run = scenario_batch
