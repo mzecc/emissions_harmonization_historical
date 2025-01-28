@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import itertools
 import re
+from contextlib import nullcontext
 from functools import partial
 from pathlib import Path
 
@@ -132,7 +133,7 @@ def test_save_overwrite_error(tmpdir):
     to_save = pix.concat([dup, cdf(units="km")])
 
     error_msg = re.escape(
-        f"The following rows are already in the database:\n{dup.index}"
+        f"The following rows are already in the database:\n{dup.index.to_frame(index=False)}"
     )
     with pytest.raises(AlreadyInDBError, match=error_msg):
         db.save(to_save)
@@ -260,8 +261,29 @@ def test_save_overwrite_force_half_overlap(tmpdir):
     pd.testing.assert_frame_equal(update_exp, loaded)
 
 
-def test_locking_load(tmpdir):
-    db = GCDB(tmpdir)
+@pytest.mark.parametrize(
+    "meth, args",
+    (
+        ("delete", []),
+        ("load", []),
+        ("load_metadata", []),
+        ("regroup", [["scenarios"]]),
+        (
+            "save",
+            [
+                create_test_df(
+                    n_scenarios=1,
+                    n_runs=1,
+                    n_variables=1,
+                    units="t",
+                    timepoints=np.array([1.2]),
+                )
+            ],
+        ),
+    ),
+)
+def test_locking(tmpdir, meth, args):
+    db = GCDB(Path(tmpdir))
 
     # Put some data in the db so there's something to lock
     db.save(
@@ -274,51 +296,25 @@ def test_locking_load(tmpdir):
         )
     )
 
-    # Acquire the lock already here
+    # Acquire the lock
     with db.index_file_lock:
-        # We can't re-acquire it to load
+        # Check that we can't re-acquire the lock to use the method
         with pytest.raises(filelock.Timeout):
-            db.load(lock_acquire_timeout=0.0)
-
-        with pytest.raises(filelock.Timeout):
-            db.load(lock_acquire_timeout=0.1)
-
-
-def test_locking_load_metadata(tmpdir):
-    db = GCDB(tmpdir)
-
-    # Put some data in the db so there's something to lock
-    db.save(
-        create_test_df(
-            n_scenarios=1,
-            n_variables=1,
-            n_runs=1,
-            timepoints=np.array([10.0]),
-            units="Mt",
-        )
-    )
-
-    # Acquire the lock already here
-    with db.index_file_lock:
-        # We can't re-acquire it to load
-        with pytest.raises(filelock.Timeout):
-            db.load_metadata(lock_acquire_timeout=0.0)
+            getattr(db, meth)(
+                # Can't use defaults here as default is no timeout
+                lock_context_manager=db.index_file_lock.acquire(timeout=0.0),
+                *args,
+            )
 
         with pytest.raises(filelock.Timeout):
-            db.load_metadata(lock_acquire_timeout=0.1)
+            getattr(db, meth)(
+                # Can't use defaults here as default is no timeout
+                lock_context_manager=db.index_file_lock.acquire(timeout=0.1),
+                *args,
+            )
 
-
-def test_locking_save(tmpdir):
-    db = GCDB(tmpdir)
-
-    # Acquire the lock already here
-    with db.index_file_lock:
-        # We can't re-acquire it to load
-        with pytest.raises(filelock.Timeout):
-            db.save("not_used", lock_acquire_timeout=0.0)
-
-        with pytest.raises(filelock.Timeout):
-            db.save("not_used", lock_acquire_timeout=0.1)
+        # Unless we pass in a different context manager
+        getattr(db, meth)(lock_context_manager=nullcontext(), *args)
 
 
 def test_load_with_loc(tmpdir):
@@ -460,3 +456,37 @@ def test_deletion(tmpdir):
 
     with pytest.raises(EmptyDBError):
         db.load()
+
+
+def test_regroup(tmpdir):
+    db = GCDB(Path(tmpdir))
+
+    all_dat = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    db.save(all_dat)
+
+    pd.testing.assert_frame_equal(db.load(), all_dat)
+    # Testing implementation but ok as a helper for now
+    assert len(list(db.db_dir.glob("*.csv"))) == 2
+
+    for new_grouping in (
+        ["scenario"],
+        ["scenario", "variable"],
+        ["variable", "run"],
+    ):
+        db.regroup(new_grouping, progress=True)
+
+        # Make sure data unchanged
+        # TODO: add no order check
+        pd.testing.assert_frame_equal(db.load(), all_dat)
+        # Testing implementation but ok as a helper for now
+        assert (
+            len(list(db.db_dir.glob("*.csv")))
+            == 1 + all_dat.pix.unique(new_grouping).shape[0]
+        )

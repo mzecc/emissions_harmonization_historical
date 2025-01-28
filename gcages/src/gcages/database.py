@@ -6,16 +6,17 @@ Super simple, mainly designed as a caching helper for simple climate model runs
 
 from __future__ import annotations
 
+import contextlib
 import os
+from contextlib import nullcontext
 from pathlib import Path
 
 import filelock
-import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 from attrs import define
 
-from gcages.pandas_helpers import multi_index_lookup
+from gcages.pandas_helpers import multi_index_lookup, multi_index_match
 
 
 class AlreadyInDBError(ValueError):
@@ -23,23 +24,18 @@ class AlreadyInDBError(ValueError):
     Raised when saving data would overwrite data which is already in the database
     """
 
-    def __init__(
-        self, data: pd.DataFrame, already_in_db: np.typing.NDArray[np.bool]
-    ) -> None:
+    def __init__(self, already_in_db: pd.DataFrame) -> None:
         """
         Initialise the error
 
         Parameters
         ----------
-        data
-            Data that we are trying to save
-
         already_in_db
-            Rows that are already in the database
+            data that is already in the database
         """
         error_msg = (
             "The following rows are already in the database:\n"
-            f"{data.index[already_in_db]}"
+            f"{already_in_db.index.to_frame(index=False)}"
         )
         super().__init__(error_msg)
 
@@ -87,9 +83,17 @@ class GCDB:
     def index_file_lock(self) -> Path:
         return filelock.FileLock(self.index_file_lock_path)
 
-    def delete(self) -> None:
-        for f in self.db_dir.glob("*.csv"):
-            os.remove(f)
+    def delete(
+        self,
+        *,
+        lock_context_manager: contextlib.AbstractContextManager | None = None,
+    ) -> None:
+        if lock_context_manager is None:
+            lock_context_manager = self.index_file_lock.acquire()
+
+        with lock_context_manager:
+            for f in self.db_dir.glob("*.csv"):
+                os.remove(f)
 
     def get_new_data_file_path(self, file_id: int) -> Path:
         file_path = self.db_dir / f"{file_id}.csv"
@@ -102,105 +106,144 @@ class GCDB:
         self,
         selector: pd.Index | pd.MultiIndex | pix.selectors.Selector | None = None,
         *,
-        lock_acquire_timeout: float = 10.0,
+        lock_context_manager: contextlib.AbstractContextManager | None = None,
         progress: bool = False,
+        out_columns_type: type = float,
     ) -> pd.DataFrame:
         if not self.index_file.exists():
             raise EmptyDBError(self)
 
-        with self.index_file_lock.acquire(timeout=lock_acquire_timeout):
+        if lock_context_manager is None:
+            lock_context_manager = self.index_file_lock.acquire()
+
+        def idx_obj(inobj):
+            if selector is None:
+                res = inobj
+
+            elif isinstance(selector, pd.MultiIndex):
+                res = multi_index_lookup(inobj, selector)
+
+            elif isinstance(selector, pd.Index):
+                res = inobj[inobj.index.isin(selector.values, level=selector.name)]
+
+            else:
+                res = inobj.loc[selector]
+
+            return res
+
+        with lock_context_manager:
             index = pd.MultiIndex.from_frame(pd.read_csv(self.index_file)).to_frame()
 
-        if selector is None:
-            index_to_load = index
+            index_to_load = idx_obj(index)
+            files_to_load = index_to_load["filepath"].unique()
 
-        elif isinstance(selector, pd.MultiIndex):
-            index_to_load = multi_index_lookup(index, selector)
+            if progress:
+                import tqdm.autonotebook as tqdman
 
-        elif isinstance(selector, pd.Index):
-            index_to_load = index[
-                index.index.isin(selector.values, level=selector.name)
-            ]
+                files_to_load = tqdman.tqdm(files_to_load)
 
-        else:
-            index_to_load = index.loc[selector]
+            data_l = [pd.read_csv(f) for f in files_to_load]
 
-        files_to_load = index_to_load["filepath"].unique()
-
-        if progress:
-            import tqdm.autonotebook as tqdman
-
-            files_to_load = tqdman.tqdm(files_to_load)
-
-        data_l = [pd.read_csv(f) for f in files_to_load]
         loaded = pix.concat(data_l).set_index(index.index.droplevel("filepath").names)
         # Don't love this, but fine for now while we don't have datetime columns
-        loaded.columns = loaded.columns.astype(float)
+        loaded.columns = loaded.columns.astype(out_columns_type)
 
-        if selector is None:
-            res = loaded
-
-        elif isinstance(selector, pd.MultiIndex):
-            res = multi_index_lookup(loaded, selector)
-
-        elif isinstance(selector, pd.Index):
-            res = loaded[loaded.index.isin(selector.values, level=selector.name)]
-
-        else:
-            res = loaded.loc[selector]
+        res = idx_obj(loaded)
 
         return res
 
-    def load_metadata(self, lock_acquire_timeout: float = 10.0) -> pd.MultiIndex:
+    def load_metadata(
+        self,
+        *,
+        lock_context_manager: contextlib.AbstractContextManager | None = None,
+    ) -> pd.MultiIndex:
         if not self.index_file.exists():
             raise EmptyDBError(self)
 
-        with self.index_file_lock.acquire(timeout=lock_acquire_timeout):
-            index = pd.MultiIndex.from_frame(pd.read_csv(self.index_file))
+        if lock_context_manager is None:
+            lock_context_manager = self.index_file_lock.acquire()
 
-        res = index.droplevel("filepath")
+        with lock_context_manager:
+            db_index = pd.read_csv(self.index_file)
+
+        res = pd.MultiIndex.from_frame(db_index).droplevel("filepath")
         return res
+
+    def regroup(
+        self,
+        new_groups: list[str],
+        *,
+        progress: bool = False,
+        lock_context_manager: contextlib.AbstractContextManager | None = None,
+    ) -> None:
+        if lock_context_manager is None:
+            lock_context_manager = self.index_file_lock.acquire()
+
+        with lock_context_manager:
+            all_dat = self.load(progress=progress, lock_context_manager=nullcontext())
+
+            # self.delete(lock_context_manager=nullcontext())
+
+            grouper = all_dat.groupby(new_groups)
+            if progress:
+                import tqdm.autonotebook as tqdman
+
+                grouper = tqdman.tqdm(grouper)
+
+            for _, df in grouper:
+                self.save(df, allow_overwrite=True, lock_context_manager=nullcontext())
 
     def save(
         self,
         data: pd.DataFrame,
-        lock_acquire_timeout: int = 10.0,
+        *,
         allow_overwrite: bool = False,
+        lock_context_manager: contextlib.AbstractContextManager | None = None,
     ) -> None:
         # Save entire frame into single file.
         # If user wants things broken up,
         # they should do that before calling `save`.
-        with self.index_file_lock.acquire(timeout=lock_acquire_timeout):
-            if self.index_file.exists():
-                index_existing = pd.read_csv(self.index_file)
-                metadata_existing = pd.MultiIndex.from_frame(
-                    index_existing.drop("filepath", axis="columns")
-                )
-                already_in_db = data.index.isin(metadata_existing)
-                if already_in_db.any() and not allow_overwrite:
-                    raise AlreadyInDBError(data=data, already_in_db=already_in_db)
 
-                file_id = len(index_existing["filepath"].unique())
+        if lock_context_manager is None:
+            lock_context_manager = self.index_file_lock.acquire()
+
+        with lock_context_manager:
+            if self.index_file.exists():
+                db_index_existing = pd.read_csv(self.index_file)
+                metadata = pd.MultiIndex.from_frame(db_index_existing).droplevel(
+                    "filepath"
+                )
+
+                already_in_db = multi_index_lookup(data, metadata)
+                if not already_in_db.empty and not allow_overwrite:
+                    raise AlreadyInDBError(already_in_db=already_in_db)
+
+                # TODO: update here to make file numbering simpler and db smaller
+                # file_id = index_existing["file_id"].max() + 1
+                file_id = len(db_index_existing["filepath"].unique())
                 data_file_path = self.get_new_data_file_path(file_id=file_id)
                 index_data = data.index.to_frame(index=False)
                 index_data["filepath"] = data_file_path
 
-                if already_in_db.any():
+                if already_in_db.empty:
+                    # No clashes, so we can simply join
+                    index = pd.concat([db_index_existing, index_data])
+                else:
                     if not allow_overwrite:  # pragma: no cover
                         msg = "Should have already raised above"
                         raise AssertionError(msg)
 
                     index_existing_keep = _update_index_for_overwrite(
                         db=self,
-                        filepaths_existing=index_existing.set_index(
-                            metadata_existing.names
-                        )["filepath"],
+                        filepaths_existing=db_index_existing.set_index(metadata.names)[
+                            "filepath"
+                        ],
                         data_to_write=data,
                         already_in_db=already_in_db,
                         file_id_base=file_id,
                     )
 
-                    files_to_remove = set(index_existing["filepath"]).difference(
+                    files_to_remove = set(db_index_existing["filepath"]).difference(
                         set(index_existing_keep["filepath"])
                     )
                     for ftr in files_to_remove:
@@ -208,10 +251,8 @@ class GCDB:
 
                     index = pd.concat([index_existing_keep, index_data])
 
-                else:
-                    index = pd.concat([index_existing, index_data])
-
             else:
+                # index file doesn't exist i.e. we're starting from nothing
                 data_file_path = self.get_new_data_file_path(file_id=0)
                 index = data.index.to_frame(index=False)
                 index["filepath"] = data_file_path
@@ -224,10 +265,11 @@ def _update_index_for_overwrite(
     db: GCDB,
     filepaths_existing: pd.Series[Path],
     data_to_write: pd.DataFrame,
-    already_in_db: np.typing.NDArray[np.bool],
+    already_in_db: pd.DataFrame,
     file_id_base: int,
 ) -> pd.MultiIndex:
-    remove_loc = filepaths_existing.index.isin(data_to_write.index[already_in_db])
+    # TODO: use multi_index_lookup
+    remove_loc = multi_index_match(filepaths_existing, data_to_write.index)
 
     filepaths_remove = set(filepaths_existing[remove_loc])
     filepaths_keep = set(filepaths_existing[~remove_loc])
@@ -239,6 +281,7 @@ def _update_index_for_overwrite(
             overlap_file_data = pd.read_csv(file).set_index(
                 filepaths_existing.index.names
             )
+            # TODO: use multi_index_lookup
             overlap_idxs = overlap_file_data.index.isin(data_to_write.index)
             non_overlap_data = overlap_file_data[~overlap_idxs]
             non_overlap_data_file_path = db.get_new_data_file_path(
