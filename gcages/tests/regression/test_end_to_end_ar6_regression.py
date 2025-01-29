@@ -1,5 +1,5 @@
 """
-Regression tests of SCM running compared to AR6
+Regression tests of raw emissions to post-processed output compared to AR6
 """
 
 from __future__ import annotations
@@ -12,26 +12,33 @@ import pandas as pd
 import pandas_indexing as pix
 import pytest
 
-from gcages.ar6 import AR6PostProcessor, AR6SCMRunner
+from gcages.ar6 import (
+    AR6Harmoniser,
+    AR6Infiller,
+    AR6PostProcessor,
+    AR6PreProcessor,
+    AR6SCMRunner,
+)
 from gcages.database import GCDB
 from gcages.testing import (
     AR6_IPS,
     assert_frame_equal,
     create_model_scenario_test_cases,
     get_all_model_scenarios,
-    get_ar6_infilled_emissions,
+    get_ar6_harmonised_emissions,
     get_ar6_metadata_outputs,
+    get_ar6_raw_emissions,
     get_ar6_temperature_outputs,
 )
 
 TEST_DATA_DIR = Path(__file__).parents[1] / "test-data"
-RUN_OUTPUT_DB_DIR = TEST_DATA_DIR / "scm-running-ar6-regression"
+RUN_OUTPUT_DB_DIR = TEST_DATA_DIR / "end-to-end-running-ar6-regression"
 MODEL_SCENARIO_COMBOS_FILE = (
     TEST_DATA_DIR / "ar6_scenarios_raw_model_scenario_combinations.csv"
 )
 
 
-scm_running_cases = pytest.mark.parametrize(
+scenario_cases = pytest.mark.parametrize(
     "model, scenario",
     create_model_scenario_test_cases(
         get_all_model_scenarios(MODEL_SCENARIO_COMBOS_FILE)
@@ -39,14 +46,23 @@ scm_running_cases = pytest.mark.parametrize(
 )
 
 
-def run_checks(infilled: pd.DataFrame) -> None:
-    # Drop out some variables that come from post-processing/aren't used
-    infilled = (
-        infilled.loc[~pix.ismatch(variable="**Kyoto**")]
-        .loc[~pix.ismatch(variable="**F-Gases")]
-        .loc[~pix.ismatch(variable="**HFC")]
-        .loc[~pix.ismatch(variable="**PFC")]
-        .loc[~pix.ismatch(variable="**CO2")]
+@pytest.mark.superslow
+@scenario_cases
+def test_end_to_end_single_model_scenario(model, scenario):
+    raw = get_ar6_raw_emissions(
+        model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
+    )
+    if raw.empty:
+        msg = f"No test data for {model=} {scenario=}?"
+        raise AssertionError(msg)
+
+    pre_processor = AR6PreProcessor.from_ar6_like_config(
+        run_checks=False, n_processes=1
+    )
+    harmoniser = AR6Harmoniser.from_ar6_like_config(run_checks=False, n_processes=1)
+    infiller = AR6Infiller.from_ar6_like_config(
+        run_checks=False,
+        n_processes=1,
     )
 
     if platform.system() == "Darwin":
@@ -71,6 +87,9 @@ def run_checks(infilled: pd.DataFrame) -> None:
         run_checks=False, n_processes=1
     )
 
+    pre_processed = pre_processor(raw)
+    harmonised = harmoniser(pre_processed)
+    infilled = infiller(harmonised)
     scm_results = scm_runner(infilled, batch_size_scenarios=5)
     post_processed = post_processor(scm_results)
 
@@ -121,44 +140,74 @@ def run_checks(infilled: pd.DataFrame) -> None:
 
 
 @pytest.mark.superslow
-@scm_running_cases
-def test_scm_running_single_model_scenario(model, scenario):
-    infilled = get_ar6_infilled_emissions(
-        model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
-    )
-
-    if infilled.empty:
-        msg = f"No test data for {model=} {scenario=}?"
-        raise AssertionError(msg)
-
-    run_checks(infilled)
-
-
-@pytest.mark.superslow
-def test_scm_running_ips_simultaneously():
-    infilled = pd.concat(
+def test_end_to_end_ips_simultaneously():
+    raise NotImplementedError
+    raw = pd.concat(
         [
-            get_ar6_infilled_emissions(
+            get_ar6_raw_emissions(
                 model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
             )
             for model, scenario in AR6_IPS
         ]
     )
 
-    run_checks(infilled)
+    pre_processor = AR6PreProcessor.from_ar6_like_config(run_checks=False)
+    harmoniser = AR6Harmoniser.from_ar6_like_config(run_checks=False)
+
+    pre_processed = pre_processor(raw)
+    res = harmoniser(pre_processed)
+
+    exp = (
+        pd.concat(
+            [
+                get_ar6_harmonised_emissions(
+                    model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
+                )
+                for model, scenario in AR6_IPS
+            ]
+        )
+        .loc[~pix.ismatch(variable="**Kyoto**")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**F-Gases")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
+    )
+
+    assert_frame_equal(res, exp)
 
 
 @pytest.mark.superslow
-def test_scm_running_all_simultaneously():
+def test_end_to_end_all_simultaneously():
+    raise NotImplementedError
     model_scenarios = get_all_model_scenarios(MODEL_SCENARIO_COMBOS_FILE).values
 
-    infilled = pd.concat(
+    raw = pd.concat(
         [
-            get_ar6_infilled_emissions(
+            get_ar6_raw_emissions(
                 model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
             )
             for model, scenario in model_scenarios
         ]
     )
 
-    run_checks(infilled)
+    pre_processor = AR6PreProcessor.from_ar6_like_config(run_checks=False)
+    harmoniser = AR6Harmoniser.from_ar6_like_config(run_checks=False)
+
+    pre_processed = pre_processor(raw)
+    res = harmoniser(pre_processed)
+
+    exp = (
+        pd.concat(
+            [
+                get_ar6_harmonised_emissions(
+                    model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
+                )
+                for model, scenario in model_scenarios
+            ]
+        )
+        .loc[~pix.ismatch(variable="**Kyoto**")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**F-Gases")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
+        .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
+    )
+
+    assert_frame_equal(res, exp)

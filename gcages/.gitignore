@@ -7,6 +7,7 @@ tests/test-data/magicc*
 
 # Regression SCMRun output
 tests/test-data/scm-running-ar6-regression/*
+tests/test-data/end-to-end-running-ar6-regression/*
 
 # Notebooks
 *.ipynb
