@@ -72,9 +72,9 @@ def run_checks(infilled: pd.DataFrame) -> None:
     )
 
     scm_results = scm_runner(infilled, batch_size_scenarios=5)
-    post_processed = post_processor(scm_results)
+    post_processed_timeseries, post_processed_metadata = post_processor(scm_results)
 
-    res_temperature_percentiles = post_processed.loc[
+    res_temperature_percentiles = post_processed_timeseries.loc[
         pix.ismatch(
             variable="AR6 climate diagnostics|Surface Temperature (GSAT)|*|*Percentile"
         )
@@ -87,9 +87,7 @@ def run_checks(infilled: pd.DataFrame) -> None:
     )
 
     assert_frame_equal(
-        res_temperature_percentiles.loc[
-            :, exp_temperature_percentiles.columns
-        ].reset_index(["category", "category_name"], drop=True),
+        res_temperature_percentiles.loc[:, exp_temperature_percentiles.columns],
         exp_temperature_percentiles,
         rtol=1e-5,
     )
@@ -101,9 +99,7 @@ def run_checks(infilled: pd.DataFrame) -> None:
     if exp_metadata.empty:
         raise AssertionError
 
-    res_metadata = post_processed.index.to_frame(index=False).set_index(
-        ["model", "scenario"]
-    )
+    res_metadata = post_processed_metadata
     metadata_compare_cols = ["category", "category_name"]
     exp_metadata_compare = exp_metadata[
         ~exp_metadata["category"].isin(["failed-vetting", "no-climate-assessment"])
