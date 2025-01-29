@@ -12,20 +12,13 @@ import pandas as pd
 import pandas_indexing as pix
 import pytest
 
-from gcages.ar6 import (
-    AR6Harmoniser,
-    AR6Infiller,
-    AR6PostProcessor,
-    AR6PreProcessor,
-    AR6SCMRunner,
-)
+from gcages.ar6 import run_ar6_workflow
 from gcages.database import GCDB
 from gcages.testing import (
     AR6_IPS,
     assert_frame_equal,
     create_model_scenario_test_cases,
     get_all_model_scenarios,
-    get_ar6_harmonised_emissions,
     get_ar6_metadata_outputs,
     get_ar6_raw_emissions,
     get_ar6_temperature_outputs,
@@ -46,25 +39,7 @@ scenario_cases = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.superslow
-@scenario_cases
-def test_end_to_end_single_model_scenario(model, scenario):
-    raw = get_ar6_raw_emissions(
-        model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
-    )
-    if raw.empty:
-        msg = f"No test data for {model=} {scenario=}?"
-        raise AssertionError(msg)
-
-    pre_processor = AR6PreProcessor.from_ar6_like_config(
-        run_checks=False, n_processes=1
-    )
-    harmoniser = AR6Harmoniser.from_ar6_like_config(run_checks=False, n_processes=1)
-    infiller = AR6Infiller.from_ar6_like_config(
-        run_checks=False,
-        n_processes=1,
-    )
-
+def run_checks(raw: pd.DataFrame) -> None:
     if platform.system() == "Darwin":
         if platform.processor() == "arm":
             magicc_exe = TEST_DATA_DIR / "magicc-v7.5.3/bin/magicc-darwin-arm64"
@@ -75,25 +50,19 @@ def test_end_to_end_single_model_scenario(model, scenario):
     else:
         raise NotImplementedError(platform.system())
 
-    scm_runner = AR6SCMRunner.from_ar6_like_config(
-        run_checks=False,
-        n_processes=multiprocessing.cpu_count(),
+    res = run_ar6_workflow(
+        input_emissions=raw,
         magicc_exe_path=magicc_exe,
-        magicc_prob_distribution_path=TEST_DATA_DIR
-        / "magicc-v7.5.3/configs/600-member.json",
-        db=GCDB(RUN_OUTPUT_DB_DIR),
-    )
-    post_processor = AR6PostProcessor.from_ar6_like_config(
-        run_checks=False, n_processes=1
+        magicc_prob_distribution_path=(
+            TEST_DATA_DIR / "magicc-v7.5.3/configs/600-member.json"
+        ),
+        batch_size_scenarios=5,
+        scm_results_db=GCDB(RUN_OUTPUT_DB_DIR),
+        n_processes=multiprocessing.cpu_count(),
+        run_checks=False,  # TODO: turn this back on
     )
 
-    pre_processed = pre_processor(raw)
-    harmonised = harmoniser(pre_processed)
-    infilled = infiller(harmonised)
-    scm_results = scm_runner(infilled, batch_size_scenarios=5)
-    post_processed = post_processor(scm_results)
-
-    res_temperature_percentiles = post_processed.loc[
+    res_temperature_percentiles = res.post_processed_timeseries.loc[
         pix.ismatch(
             variable="AR6 climate diagnostics|Surface Temperature (GSAT)|*|*Percentile"
         )
@@ -102,27 +71,23 @@ def test_end_to_end_single_model_scenario(model, scenario):
         get_ar6_temperature_outputs(
             model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
         ).dropna(axis="columns", how="all")
-        for model, scenario in infilled.pix.unique(["model", "scenario"])
+        for model, scenario in raw.pix.unique(["model", "scenario"])
     )
 
     assert_frame_equal(
-        res_temperature_percentiles.loc[
-            :, exp_temperature_percentiles.columns
-        ].reset_index(["category", "category_name"], drop=True),
+        res_temperature_percentiles.loc[:, exp_temperature_percentiles.columns],
         exp_temperature_percentiles,
         rtol=1e-5,
     )
 
     all_metadata = get_ar6_metadata_outputs(test_data_dir=TEST_DATA_DIR)
     exp_metadata = all_metadata.loc[
-        all_metadata.index.isin(infilled.pix.unique(["model", "scenario"]))
+        all_metadata.index.isin(raw.pix.unique(["model", "scenario"]))
     ]
     if exp_metadata.empty:
         raise AssertionError
 
-    res_metadata = post_processed.index.to_frame(index=False).set_index(
-        ["model", "scenario"]
-    )
+    res_metadata = res.post_processed_scenario_metadata
     metadata_compare_cols = ["category", "category_name"]
     exp_metadata_compare = exp_metadata[
         ~exp_metadata["category"].isin(["failed-vetting", "no-climate-assessment"])
@@ -140,8 +105,20 @@ def test_end_to_end_single_model_scenario(model, scenario):
 
 
 @pytest.mark.superslow
+@scenario_cases
+def test_end_to_end_single_model_scenario(model, scenario):
+    raw = get_ar6_raw_emissions(
+        model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
+    )
+    if raw.empty:
+        msg = f"No test data for {model=} {scenario=}?"
+        raise AssertionError(msg)
+
+    run_checks(raw)
+
+
+@pytest.mark.superslow
 def test_end_to_end_ips_simultaneously():
-    raise NotImplementedError
     raw = pd.concat(
         [
             get_ar6_raw_emissions(
@@ -151,28 +128,7 @@ def test_end_to_end_ips_simultaneously():
         ]
     )
 
-    pre_processor = AR6PreProcessor.from_ar6_like_config(run_checks=False)
-    harmoniser = AR6Harmoniser.from_ar6_like_config(run_checks=False)
-
-    pre_processed = pre_processor(raw)
-    res = harmoniser(pre_processed)
-
-    exp = (
-        pd.concat(
-            [
-                get_ar6_harmonised_emissions(
-                    model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
-                )
-                for model, scenario in AR6_IPS
-            ]
-        )
-        .loc[~pix.ismatch(variable="**Kyoto**")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**F-Gases")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
-    )
-
-    assert_frame_equal(res, exp)
+    run_checks(raw)
 
 
 @pytest.mark.superslow
@@ -189,25 +145,4 @@ def test_end_to_end_all_simultaneously():
         ]
     )
 
-    pre_processor = AR6PreProcessor.from_ar6_like_config(run_checks=False)
-    harmoniser = AR6Harmoniser.from_ar6_like_config(run_checks=False)
-
-    pre_processed = pre_processor(raw)
-    res = harmoniser(pre_processed)
-
-    exp = (
-        pd.concat(
-            [
-                get_ar6_harmonised_emissions(
-                    model=model, scenario=scenario, test_data_dir=TEST_DATA_DIR
-                )
-                for model, scenario in model_scenarios
-            ]
-        )
-        .loc[~pix.ismatch(variable="**Kyoto**")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**F-Gases")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**HFC")]  # Not used downstream
-        .loc[~pix.ismatch(variable="**PFC")]  # Not used downstream
-    )
-
-    assert_frame_equal(res, exp)
+    run_checks(raw)
