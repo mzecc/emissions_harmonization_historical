@@ -187,6 +187,39 @@ def get_ar6_harmonised_emissions(
     return res
 
 
+@functools.cache
+def get_ar6_infilled_emissions(
+    model: str, scenario: str, test_data_dir: Path
+) -> pd.DataFrame:
+    """
+    Get all infilled emissions from AR6 for a given model-scenario
+
+    Parameters
+    ----------
+    model
+        Model
+
+    scenario
+        Scenario
+
+    test_data_dir
+        Test data directory where the data is saved
+
+    Returns
+    -------
+    :
+        All infilled emissions from AR6 for `model`-`scenario`
+    """
+    all_emissions = get_ar6_all_emissions(
+        model=model, scenario=scenario, test_data_dir=test_data_dir
+    )
+    res: pd.DataFrame = all_emissions.loc[pix.ismatch(variable="**Infilled**")].dropna(
+        how="all", axis="columns"
+    )
+
+    return res
+
+
 def assert_frame_equal(
     res: pd.DataFrame, exp: pd.DataFrame, rtol: float = 1e-8, **kwargs: Any
 ) -> None:
