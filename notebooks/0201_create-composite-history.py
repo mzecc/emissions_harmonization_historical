@@ -278,7 +278,7 @@ global_variable_sources = {
     "Emissions|NH3": "CEDS-BB4CMIP",
     "Emissions|NOx": "CEDS-BB4CMIP",
     "Emissions|OC": "CEDS-BB4CMIP",
-    "Emissions|SF6": "EDGAR", # Zeb had put "WMO 2022", but this is not in the currently available data
+    "Emissions|SF6": "WMO 2022",
     "Emissions|Sulfur": "CEDS-BB4CMIP",
     "Emissions|VOC": "CEDS-BB4CMIP",
 }
