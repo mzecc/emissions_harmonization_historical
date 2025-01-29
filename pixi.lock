@@ -5821,7 +5821,7 @@ packages:
   name: emissions-harmonization-historical
   version: 0.1.0
   path: .
-  sha256: eaea92c6c8245344eeb9ce017fd0568512597bbfd3639a797e715b893bfec63e
+  sha256: 44bd7ed545bfe32d76c871850ddb45853439dc587b5a6809ad203d6256342cb3
   requires_dist:
   - pre-commit==3.3.1
   - ptolemy-iamc @ git+https://github.com/gidden/ptolemy.git@015aa843c340bd57464eb7cfd5f3c8e397201266
@@ -5830,7 +5830,7 @@ packages:
   - scmdata>=0.17.0,<0.18
   - nomenclature-iamc>=0.22.1,<0.23
   - xarray-regrid==0.4.0
-  requires_python: ==3.11
+  requires_python: ==3.11.*
   editable: true
 - kind: conda
   name: entrypoints
