@@ -52,7 +52,8 @@ def test_infilling_single_model_scenario(model, scenario):
         raise AssertionError(msg)
 
     infiller = AR6Infiller.from_ar6_like_config(
-        run_checks=False, n_processes=1, magicc_exe_path=1
+        run_checks=False,
+        n_processes=1,
     )
 
     res = infiller(harmonised)
