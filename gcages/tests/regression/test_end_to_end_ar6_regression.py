@@ -57,6 +57,7 @@ def run_checks(raw: pd.DataFrame) -> None:
             TEST_DATA_DIR / "magicc-v7.5.3/configs/600-member.json"
         ),
         batch_size_scenarios=5,
+        scm_output_variables=("Surface Air Temperature Change",),
         scm_results_db=GCDB(RUN_OUTPUT_DB_DIR),
         n_processes=multiprocessing.cpu_count(),
         run_checks=False,  # TODO: turn this back on

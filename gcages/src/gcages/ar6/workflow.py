@@ -13,7 +13,10 @@ from gcages.ar6.harmonisation import AR6Harmoniser
 from gcages.ar6.infilling import AR6Infiller
 from gcages.ar6.post_processing import AR6PostProcessor
 from gcages.ar6.pre_processing import AR6PreProcessor
-from gcages.ar6.scm_running import AR6SCMRunner
+from gcages.ar6.scm_running import (
+    AR6SCMRunner,
+    convert_openscm_runner_output_names_to_magicc_output_names,
+)
 from gcages.database import GCDB
 
 
@@ -57,6 +60,7 @@ def run_ar6_workflow(  # noqa: PLR0913
     magicc_exe_path: Path,
     magicc_prob_distribution_path: Path,
     batch_size_scenarios: int = 4,
+    scm_output_variables: tuple[str, ...] | None = None,
     scm_results_db: GCDB | None = None,
     n_processes: int = 1,
     run_checks: bool = True,
@@ -77,6 +81,9 @@ def run_ar6_workflow(  # noqa: PLR0913
 
     batch_size_scenarios
         Batch size to use when running scenarios
+
+    scm_output_variables
+        SCM variables to output
 
     scm_results_db
         Database in which to save SCM raw results.
@@ -115,6 +122,19 @@ def run_ar6_workflow(  # noqa: PLR0913
         run_checks=run_checks,
         n_processes=n_processes,
     )
+    if scm_output_variables is not None:
+        scm_runner.output_variables = scm_output_variables
+        new_config = [
+            {
+                **c,
+                "out_dynamic_vars": convert_openscm_runner_output_names_to_magicc_output_names(  # noqa: E501
+                    scm_output_variables
+                ),
+            }
+            for c in scm_runner.climate_models_cfgs["MAGICC7"]
+        ]
+        scm_runner.climate_models_cfgs = {"MAGICC7": new_config}
+
     post_processor = AR6PostProcessor.from_ar6_like_config(
         run_checks=run_checks, n_processes=n_processes
     )
