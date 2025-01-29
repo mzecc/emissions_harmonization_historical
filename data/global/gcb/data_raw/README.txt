@@ -1,0 +1,11 @@
+Data from [the 2024 Global Carbon Budget report](https://globalcarbonbudgetdata.org/latest-data.html).
+
+Downloaded from the website above on 28.01.2025:
+* "National_LandUseChange_Carbon_Emissions_2024v1.0.xlsx" -> link: "National land use change carbon emissions v2024 [xlsx]"
+* "National_Fossil_Carbon_Emissions_2024v1.0.xlsx" -> link: "National fossil carbon emissions v2024 [xlsx]"
+* "Global_Carbon_Budget_2024_v1.0.xlsx" -> link: "Global Carbon Budget v2024 [xlsx]"
+* "Global+Carbon+Budget+v2024+Dataset+Descriptions.pdf" -> link: "Dataset descriptions v2024 [pdf]"
+
+Reference
+
+Friedlingstein, P., O'Sullivan, M., Jones, M. W., Andrew, R. M., Hauck, J., Landschützer, P., Le Quéré, C., Li, H., Luijkx, I. T., Olsen, A., Peters, G. P., Peters, W., Pongratz, J., Schwingshackl, C., Sitch, S., Canadell, J. G., Ciais, P., Jackson, R. B., Alin, S. R., Arneth, A., Arora, V., Bates, N. R., Becker, M., Bellouin, N., Berghoff, C. F., Bittig, H. C., Bopp, L., Cadule, P., Campbell, K., Chamberlain, M. A., Chandra, N., Chevallier, F., Chini, L. P., Colligan, T., Decayeux, J., Djeutchouang, L., Dou, X., Duran Rojas, C., Enyo, K., Evans, W., Fay, A., Feely, R. A., Ford, D. J., Foster, A., Gasser, T., Gehlen, M., Gkritzalis, T., Grassi, G., Gregor, L., Gruber, N., Gürses, Ö., Harris, I., Hefner, M., Heinke, J., Hurtt, G. C., Iida, Y., Ilyina, T., Jacobson, A. R., Jain, A., Jarníková, T., Jersild, A., Jiang, F., Jin, Z., Kato, E., Keeling, R. F., Klein Goldewijk, K., Knauer, J., Korsbakken, J. I., Lauvset, S. K., Lefèvre, N., Liu, Z., Liu, J., Ma, L., Maksyutov, S., Marland, G., Mayot, N., McGuire, P., Metzl, N., Monacci, N. M., Morgan, E. J., Nakaoka, S.-I., Neill, C., Niwa, Y., Nützel, T., Olivier, L., Ono, T., Palmer, P. I., Pierrot, D., Qin, Z., Resplandy, L., Roobaert, A., Rosan, T. M., Rödenbeck, C., Schwinger, J., Smallman, T. L., Smith, S., Sospedra-Alfonso, R., Steinhoff, T., Sun, Q., Sutton, A. J., Séférian, R., Takao, S., Tatebe, H., Tian, H., Tilbrook, B., Torres, O., Tourigny, E., Tsujino, H., Tubiello, F., van der Werf, G., Wanninkhof, R., Wang, X., Yang, D., Yang, X., Yu, Z., Yuan, W., Yue, X., Zaehle, S., Zeng, N., and Zeng, J.: Global Carbon Budget 2024, Earth Syst. Sci. Data Discuss. [preprint], https://doi.org/10.5194/essd-2024-519, in review, 2024.
