@@ -42,7 +42,7 @@ raw_data_path = DATA_ROOT / "global/edgar/data_raw/"
 raw_data_path
 
 # %%
-raw_data_file = raw_data_path / "EDGAR_F-gases_1990_2023.zip.unzip/EDGAR_F-gases_1990_2023.xlsx"
+raw_data_file = raw_data_path / "EDGAR_F-gases_1990_2023/EDGAR_F-gases_1990_2023.xlsx"
 raw_data_file
 
 # %%
@@ -93,7 +93,7 @@ global_totals = global_totals.pix.convert_unit({u: u.replace("Gg", "kt") for u i
 global_totals
 
 # %%
-out = global_totals.pix.assign(scenario="history", model="EDGAR", region="World").reorder_levels(
+out = global_totals.pix.assign(scenario="historical", model="EDGAR", region="World").reorder_levels(
     ["model", "scenario", "variable", "region", "unit"]
 )
 out

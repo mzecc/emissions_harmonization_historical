@@ -37,7 +37,7 @@ from emissions_harmonization_historical.io import load_csv
 logging.disable()
 
 # %%
-SCENARIO_TIME_ID = "20250122-140031"
+SCENARIO_TIME_ID = "20250122-194328" # adjust this depending on when you downloaded the scenarios with data/scenarios/data_raw/download-database.py
 
 # %%
 HISTORICAL_GLOBAL_COMPOSITE_PATH = DATA_ROOT / "global-composite" / f"cmip7_history_world_{COMBINED_HISTORY_ID}.csv"
