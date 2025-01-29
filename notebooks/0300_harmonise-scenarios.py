@@ -41,7 +41,7 @@ from emissions_harmonization_historical.io import load_csv
 logging.disable()
 
 # %%
-SCENARIO_TIME_ID = "20250122-140031"
+SCENARIO_TIME_ID = "20250122-194328" # adjust this depending on when you downloaded the scenarios with data/scenarios/data_raw/download-database.py
 
 # %%
 HISTORICAL_GLOBAL_COMPOSITE_PATH = DATA_ROOT / "global-composite" / f"cmip7_history_world_{COMBINED_HISTORY_ID}.csv"
@@ -107,6 +107,7 @@ scenarios_raw_global = scenarios_raw.loc[
     # & pix.isin(variable=history_cut.pix.unique("variable"))
 ]
 scenarios_raw_global
+# TODO: consider cutting off the scenarios in 2100, as that will be their end-point for ScenarioMIP. After that, it is the extensions.
 
 # %%
 # scenarios_raw.loc[pix.ismatch(variable="Emissions|VOC")].pix.unique(["variable", "unit"])
