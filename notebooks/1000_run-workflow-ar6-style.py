@@ -53,6 +53,9 @@ SCENARIO_PATH = DATA_ROOT / "scenarios" / "data_raw"
 SCENARIO_PATH
 
 # %%
+scm_output_variables = ("Surface Air Temperature Change",)
+
+# %%
 batch_size_scenarios = 5
 n_processes = multiprocessing.cpu_count()
 # n_processes = 1
@@ -65,6 +68,10 @@ magicc_prob_distribution_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3
 scm_results_db = GCDB(
     DATA_ROOT / "climate-assessment-workflow" / "scm-output" / "ar6-workflow-magicc" / SCENARIO_TIME_ID
 )
+
+# %%
+# If you need to re-write.
+# scm_results_db.delete()
 
 # %% [markdown]
 # ## Load scenario data
@@ -98,12 +105,45 @@ scenarios_raw_global = scenarios_raw.loc[
 scenarios_raw_global
 
 # %% [markdown]
+# ### Hacky pre-processing
+
+# %%
+# TODO: move this somewhere clearer,
+# probably as a pre-processing check.
+
+# %%
+pre_pre_processed_l = []
+all_nan_or_zero_l = []
+for (model, scenario), msdf in scenarios_raw_global.groupby(["model", "scenario"]):
+    if "Emissions|CO2|Energy and Industrial Processes" not in msdf.pix.unique("variable"):
+        print(
+            f"Excluding {model=} {scenario=} because there are no CO2 fossil emissions."
+            # f"\nAvailable variables: {sorted(msdf.pix.unique('variable').tolist())}.\n"
+        )
+        continue
+
+    all_nan_or_zero = (msdf.isnull() | (msdf == 0.0)).all(axis=1)
+    if all_nan_or_zero.any():
+        all_nan_or_zero_l.append(msdf[all_nan_or_zero])
+
+    msdf_use = msdf[~all_nan_or_zero]
+
+    pre_pre_processed_l.append(msdf_use)
+
+all_nan_or_zero = pix.concat(all_nan_or_zero_l)
+pre_pre_processed = pix.concat(pre_pre_processed_l)
+pre_pre_processed
+
+# %%
+all_nan_or_zero.index.to_frame(index=False).groupby(["model"])["scenario"].value_counts().sort_values()
+
+# %% [markdown]
 # ### Down-select scenarios
 
 # %%
 # Randomly select some scenarios
 # (this is how I generated the hard-coded values in the next cell).
-base = scenarios_raw_global.pix.unique(["model", "scenario"]).to_frame(index=False)
+base = pre_pre_processed.pix.unique(["model", "scenario"]).to_frame(index=False)
 base["scenario_group"] = base["scenario"].apply(lambda x: x.split("-")[-1].split("_")[0].strip())
 
 selected_scenarios_l = []
@@ -155,13 +195,13 @@ selected_scenarios_idx = pd.MultiIndex.from_tuples(
     ),
     name=["model", "scenario"],
 )
-scenarios_run = scenarios_raw_global[scenarios_raw_global.index.isin(selected_scenarios_idx)]
+scenarios_run = pre_pre_processed[pre_pre_processed.index.isin(selected_scenarios_idx)]
 
-# scenarios_run = scenarios_raw_global.loc[pix.ismatch(scenario="*Very Low*")]
+# scenarios_run = pre_pre_processed.loc[pix.ismatch(scenario="*Very Low*")]
 
 # %%
 # To run all, just uncomment the below
-scenarios_run = scenarios_raw_global
+scenarios_run = pre_pre_processed
 
 # %%
 scenarios_run.pix.unique(["model", "scenario"]).to_frame(index=False)
@@ -172,6 +212,7 @@ res = run_ar6_workflow(
     magicc_exe_path=magicc_exe_path,
     magicc_prob_distribution_path=magicc_prob_distribution_path,
     batch_size_scenarios=batch_size_scenarios,
+    scm_output_variables=scm_output_variables,
     scm_results_db=scm_results_db,
     n_processes=n_processes,
     run_checks=False,  # TODO: turn this back on
