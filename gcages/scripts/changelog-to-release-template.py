@@ -33,7 +33,9 @@ def main() -> None:
             continue
 
         if not grab_notes:
-            if line.startswith("## Global Climate Assessment of Global Emission Scenarios"):
+            if line.startswith(
+                "## Global Climate Assessment of Global Emission Scenarios"
+            ):
                 grab_notes = True
 
             continue

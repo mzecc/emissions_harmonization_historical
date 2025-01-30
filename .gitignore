@@ -2,6 +2,7 @@
 *.pdf
 
 # Processed data
+data/climate-assessment-workflow
 data/national/ceds/processed
 data/national/gfed/processed
 data/national/gfed-bb4cmip/processed
@@ -12,6 +13,9 @@ data/global/velders-et-al-2022/processed/
 data/global/wmo-2022/processed
 data/combined-processed-output
 data/global-composite
+
+# MAGICC stuff
+magicc
 
 # Raw WMO data
 data/global/wmo-2022/data_raw
