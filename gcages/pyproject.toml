@@ -10,9 +10,12 @@ requires-python = ">=3.9"
 dependencies = [
     # TODO: add min pins here
     "aneris-iamc>=0.3.0",
+    "filelock>=3.16.1",
     "loguru",
+    "openscm-runner>=0.13.0",
     "openscm-units",
     "pandas",
+    "pymagicc>=2.1.5",
     "scipy",
     "silicone>=1.3.0",
     "tqdm",
@@ -298,6 +301,10 @@ formats = "ipynb,py:percent"
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "superslow: marks tests as super slow i.e. taking multiple minutes to run (deselect with '-m \"not superslow\"')",
 ]
 
 [tool.ruff]

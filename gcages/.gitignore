@@ -1,5 +1,12 @@
 # Raw scenario database file
 tests/test-data/AR6_Scenarios_Database_World_ALL_CLIMATE_v1.1.csv
+tests/test-data/AR6_Scenarios_Database_metadata_indicators_v1.1.xlsx
+
+# MAGICC stuff
+tests/test-data/magicc*
+
+# Regression SCMRun output
+tests/test-data/scm-running-ar6-regression/*
 
 # Notebooks
 *.ipynb
