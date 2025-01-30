@@ -436,7 +436,7 @@ for model, mdf in pix.concat(
         palette={**palette, "history": "black"},
         style="stage",
     )
-    fg.fig.suptitle(model, y=1.01)
+    fg.figure.suptitle(model, y=1.01)
     plt.show()
     # break
 
