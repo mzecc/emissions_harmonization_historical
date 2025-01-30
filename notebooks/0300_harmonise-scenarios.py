@@ -116,6 +116,7 @@ scenarios_raw_global = scenarios_raw.loc[
     # & pix.isin(variable=history_cut.pix.unique("variable"))
 ]
 scenarios_raw_global
+# TODO: consider cutting off the scenarios in 2100, as that will be their end-point for ScenarioMIP. After that, it is the extensions.
 
 # %%
 # What are we still missing.

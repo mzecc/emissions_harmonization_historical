@@ -50,7 +50,7 @@ def run_parallel(
     iterable_input: Iterable[U],
     input_desc: str,
     n_processes: int,
-    mp_context: BaseContext | None = multiprocessing.get_context("fork"),
+    mp_context: BaseContext | None = None,
     *args: P.args,
     **kwargs: P.kwargs,
 ) -> tuple[T, ...]:
@@ -80,7 +80,8 @@ def run_parallel(
     mp_context
         Multiprocessing context to use.
 
-        By default, we use a spawn context.
+        By default, we use a fork context if available.
+        If forking is not available, we use the system's default.
         If `None`, we will revert to the default if `n_processes` is greater than 1.
 
         The whole multiprocessing context universe is a bit complex,
@@ -113,7 +114,10 @@ def run_parallel(
 
     else:
         if mp_context is None:
-            mp_context = multiprocessing.get_context("fork")
+            try:
+                mp_context = multiprocessing.get_context("fork")
+            except ValueError:
+                mp_context = multiprocessing.get_context()
 
         logger.info(f"Submitting {input_desc} to {n_processes} parallel processes")
         with concurrent.futures.ProcessPoolExecutor(
