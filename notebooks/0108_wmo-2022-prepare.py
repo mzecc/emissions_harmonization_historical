@@ -52,6 +52,8 @@ var_map = {
 # %%
 res_l = []
 for gdir in raw_data_path.glob("*"):
+    if str(gdir).endswith("README.md"):
+        continue
     outputs_dir = gdir / "outputs"
     emissions_file = list(outputs_dir.glob("*Global_annual_emissions.csv"))
     if not emissions_file:
