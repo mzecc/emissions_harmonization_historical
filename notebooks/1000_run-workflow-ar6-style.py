@@ -24,6 +24,7 @@
 import logging
 import multiprocessing
 import os
+import platform
 import random
 
 import pandas as pd
@@ -63,7 +64,18 @@ n_processes = multiprocessing.cpu_count()
 # %%
 # Needed for 7.5.3 on a mac
 os.environ["DYLD_LIBRARY_PATH"] = "/opt/homebrew/opt/gfortran/lib/gcc/current/"
-magicc_exe_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "bin" / "magicc-darwin-arm64"
+
+if platform.system() == "Darwin":
+    if platform.processor() == "arm":
+        magicc_exe = "magicc-darwin-arm64"
+    else:
+        raise NotImplementedError(platform.processor())
+elif platform.system() == "Windows":
+        magicc_exe = "magicc.exe"
+else:
+    raise NotImplementedError(platform.system())
+
+magicc_exe_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "bin" / magicc_exe
 magicc_prob_distribution_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "configs" / "600-member.json"
 scm_results_db = GCDB(
     DATA_ROOT / "climate-assessment-workflow" / "scm-output" / "ar6-workflow-magicc" / SCENARIO_TIME_ID
