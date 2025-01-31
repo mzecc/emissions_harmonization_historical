@@ -43,10 +43,10 @@ def run_checks(raw: pd.DataFrame) -> None:
     if platform.system() == "Darwin":
         if platform.processor() == "arm":
             magicc_exe = TEST_DATA_DIR / "magicc-v7.5.3/bin/magicc-darwin-arm64"
-
         else:
             raise NotImplementedError(platform.processor())
-
+    elif platform.system() == "Windows":
+            magicc_exe = TEST_DATA_DIR / "magicc-v7.5.3/bin/magicc.exe"
     else:
         raise NotImplementedError(platform.system())
 
