@@ -15,6 +15,8 @@ import pandas as pd
 import pandas_indexing as pix
 from attrs import define
 
+from gcages.pandas_helpers import multi_index_lookup
+
 
 class AlreadyInDBError(ValueError):
     """
@@ -113,11 +115,7 @@ class GCDB:
             index_to_load = index
 
         elif isinstance(selector, pd.MultiIndex):
-            idx_reordered = index.index.reorder_levels(
-                [*selector.names, *(set(index.index.names) - {*selector.names})]
-            )
-            rows_to_get = idx_reordered.isin(selector)
-            index_to_load = index[rows_to_get]
+            index_to_load = multi_index_lookup(index, selector)
 
         elif isinstance(selector, pd.Index):
             index_to_load = index[
@@ -143,11 +141,7 @@ class GCDB:
             res = loaded
 
         elif isinstance(selector, pd.MultiIndex):
-            idx_reordered = loaded.index.reorder_levels(
-                [*selector.names, *(set(loaded.index.names) - {*selector.names})]
-            )
-            rows_to_get = idx_reordered.isin(selector)
-            res = loaded[rows_to_get]
+            res = multi_index_lookup(loaded, selector)
 
         elif isinstance(selector, pd.Index):
             res = loaded[loaded.index.isin(selector.values, level=selector.name)]
@@ -251,6 +245,8 @@ def _update_index_for_overwrite(
                 file_id=file_id_base + i + 1
             )
             non_overlap_data.to_csv(non_overlap_data_file_path)
+            # TODO: find and fix the bug in here.
+            # Test: create with everything, then try and overwrite with different grouping.
             filepaths_out.loc[~overlap_idxs] = non_overlap_data_file_path
 
     index_out = filepaths_out[~remove_loc].reset_index()

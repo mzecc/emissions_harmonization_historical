@@ -20,9 +20,10 @@ import pandas_indexing as pix
 import pymagicc.definitions
 import scmdata
 import tqdm.autonotebook as tqdman
-from attrs import define
+from attrs import define, field
 
 from gcages.database import GCDB, EmptyDBError
+from gcages.pandas_helpers import multi_index_lookup
 from gcages.units_helpers import strip_pint_incompatible_characters_from_units
 
 
@@ -113,6 +114,7 @@ def run_scm(
     db: GCDB | None = None,
     batch_size_scenarios: int | None = None,
     force_interpolate_to_yearly: bool = True,
+    force_rerun: bool = False,
 ) -> pd.DataFrame:
     if db is None:
         db_use = GCDB(Path(tempfile.mkdtemp()))
@@ -125,7 +127,7 @@ def run_scm(
             if y not in scenarios:
                 scenarios[y] = np.nan
 
-        scenarios = scenarios.T.interpolate("index").T
+        scenarios = scenarios.sort_index(axis="columns").T.interpolate("index").T
 
     mod_scens_to_run = scenarios.pix.unique(["model", "scenario"])
     for climate_model, cfg in tqdman.tqdm(
@@ -134,9 +136,10 @@ def run_scm(
         if climate_model == "MAGICC7":
             # Avoid MAGICC's last year jump
             magicc_extra_years = 3
-            last_year = scenarios.columns.max()
-            scenarios[last_year + magicc_extra_years] = scenarios[last_year]
-            cfg_use = [{**c, "endyear": scenarios.columns.max()} for c in cfg]
+            cfg_use = [
+                {**c, "endyear": scenarios.columns.max() + magicc_extra_years}
+                for c in cfg
+            ]
             os.environ["MAGICC_WORKER_NUMBER"] = str(n_processes)
 
         else:
@@ -149,31 +152,56 @@ def run_scm(
             for i in range(0, mod_scens_to_run.size, batch_size_scenarios):
                 start = i
                 stop = min(i + batch_size_scenarios, mod_scens_to_run.shape[0])
+
                 scenario_batches.append(
-                    scenarios[scenarios.index.isin(mod_scens_to_run[start:stop])]
+                    multi_index_lookup(scenarios, mod_scens_to_run[start:stop])
                 )
 
         for scenario_batch in tqdman.tqdm(scenario_batches, desc="Scenario batch"):
-            try:
-                existing_metadata = db_use.load_metadata()
+            if force_rerun:
+                run_all = True
 
+            else:
+                try:
+                    existing_metadata = db_use.load_metadata()
+                    run_all = False
+
+                except EmptyDBError:
+                    run_all = True
+
+            if run_all:
+                scenario_batch_to_run = scenario_batch
+
+            else:
                 db_mod_scen = existing_metadata.pix.unique(["model", "scenario"])
-                already_run_idx = scenario_batch.index.isin(db_mod_scen)
-                scenario_batch_to_run = scenario_batch[~already_run_idx]
 
-                already_run_mod_scen = scenario_batch.index[already_run_idx].pix.unique(
-                    ["model", "scenario"]
-                )
+                already_run = multi_index_lookup(scenario_batch, db_mod_scen)
+                scenario_batch_to_run = scenario_batch.loc[
+                    scenario_batch.index.difference(already_run.index)
+                ]
+
+                already_run_mod_scen = already_run.pix.unique(["model", "scenario"])
                 if not already_run_mod_scen.empty:
                     print(
-                        f"Not re-running already run scenarios:\n{already_run_mod_scen.to_frame(index=False)}"
+                        "Not re-running already run scenarios:\n"
+                        f"{already_run_mod_scen.to_frame(index=False)}"
                     )
 
                 if scenario_batch_to_run.empty:
                     continue
 
-            except EmptyDBError:
-                scenario_batch_to_run = scenario_batch
+            if climate_model == "MAGICC7":
+                # Avoid MAGICC's last year jump
+                scenario_batch_to_run = scenario_batch_to_run.copy()
+                last_year = scenario_batch_to_run.columns.max()
+                scenario_batch_to_run[last_year + magicc_extra_years] = (
+                    scenario_batch_to_run[last_year]
+                )
+                scenario_batch_to_run = (
+                    scenario_batch_to_run.sort_index(axis="columns")
+                    .T.interpolate("index")
+                    .T
+                )
 
             batch_res = openscm_runner.run.run(
                 scenarios=scmdata.ScmRun(scenario_batch_to_run, copy_data=True),
@@ -187,7 +215,8 @@ def run_scm(
                 # Chop out regional results
                 batch_res = batch_res.loc[pix.isin(region=["World"])]
 
-            db_use.save(batch_res)
+            for _, df in batch_res.groupby(["model", "scenario", "variable", "region"]):
+                db_use.save(df)
 
     res = db_use.load(mod_scens_to_run)
 
@@ -206,7 +235,14 @@ class AR6SCMRunner:
     initialise using [`from_ar6_like_config`][(c)]
     """
 
-    climate_models_cfgs: dict[str, list[dict[str, Any]]]
+    climate_models_cfgs: dict[str, list[dict[str, Any]]] = field(
+        repr=lambda x: ", ".join(
+            (
+                f"{climate_model}: {len(cfgs)} configurations"
+                for climate_model, cfgs in x.items()
+            )
+        )
+    )
     """
     Climate models to run and the configuration to use with them
     """
@@ -246,7 +282,10 @@ class AR6SCMRunner:
     """
 
     def __call__(
-        self, in_emissions: pd.DataFrame, batch_size_scenarios: int | None = None
+        self,
+        in_emissions: pd.DataFrame,
+        batch_size_scenarios: int | None = None,
+        force_rerun: bool = False,
     ) -> pd.DataFrame:
         """
         Run the simple climate model
@@ -263,6 +302,9 @@ class AR6SCMRunner:
             For a large number of scenarios, this may lead to you running out of memory.
             Setting `batch_size_scenarios=1` means each scenario will be run separately,
             which is slower but you (almost definitely) won't run out of memory.
+
+        force_rerun
+            Force scenarios to re-run (i.e. disable caching).
 
         Returns
         -------
@@ -312,6 +354,7 @@ class AR6SCMRunner:
             db=self.db,
             batch_size_scenarios=batch_size_scenarios,
             force_interpolate_to_yearly=self.force_interpolate_to_yearly,
+            force_rerun=force_rerun,
         )
 
         # Apply AR6 naming scheme
@@ -473,16 +516,11 @@ class AR6SCMRunner:
         if len(run_config) != magicc_full_distribution_n_config:
             raise AssertionError(len(run_config))
 
-        openscm_runner_output_variables = (
-            convert_openscm_runner_output_names_to_magicc_output_names(
-                common_cfg["out_dynamic_vars"]
-            )
-        )
-
         return cls(
             climate_models_cfgs={"MAGICC7": run_config},
-            output_variables=openscm_runner_output_variables,
+            output_variables=output_variables,
             db=db,
             run_checks=run_checks,
             n_processes=n_processes,
+            force_interpolate_to_yearly=True,
         )
