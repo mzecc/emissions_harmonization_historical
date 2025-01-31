@@ -159,14 +159,6 @@ df_lu_global = df_lu.rename(columns={"Global": "World"})[["World"]]
 df_lu_global
 
 # %%
-# # Chris' old scaling of countries based on global data?
-# for i in range(100):
-#     df_lu_extended.iloc[i, 1:] = (
-#         df_lu_extended.iloc[100, 1:]
-#         * df_lu_extended.iloc[i, 0]
-#         / df_lu_extended.iloc[100, 0]
-#     )
-# %%
 out_units = "Mt CO2/yr"
 conversion_factor = openscm_units.unit_registry.Quantity(1, raw_units).to(out_units).m
 conversion_factor

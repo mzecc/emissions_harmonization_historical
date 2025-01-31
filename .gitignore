@@ -24,13 +24,13 @@ data/global/esgf
 data/global/wmo-2022/data_raw
 
 # EDGAR data
-data/global/edgar/data_raw/
+# data/global/edgar/data_raw/ # does not have a DOI for the specific data, so we include it here for full transparency
 
 # RCMIP data
 data/global/rcmip/data_raw
 
 # GCB raw data
-data/global/gcb/data_raw
+# data/global/gcb/data_raw/* # does not have a DOI for the specific data, so we include it here for full transparency
 
 # CEDS data
 data/national/ceds/data_raw

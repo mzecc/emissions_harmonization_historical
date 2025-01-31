@@ -24,6 +24,7 @@
 import logging
 import multiprocessing
 import os
+import platform
 
 import pandas as pd
 import pandas_indexing as pix
@@ -119,7 +120,18 @@ n_processes = multiprocessing.cpu_count()
 # %%
 # Needed for 7.5.3 on a mac
 os.environ["DYLD_LIBRARY_PATH"] = "/opt/homebrew/opt/gfortran/lib/gcc/current/"
-magicc_exe_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "bin" / "magicc-darwin-arm64"
+
+if platform.system() == "Darwin":
+    if platform.processor() == "arm":
+        magicc_exe = "magicc-darwin-arm64"
+    else:
+        raise NotImplementedError(platform.processor())
+elif platform.system() == "Windows":
+    magicc_exe = "magicc.exe"
+else:
+    raise NotImplementedError(platform.system())
+
+magicc_exe_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "bin" / magicc_exe
 magicc_prob_distribution_path = DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "configs" / "600-member.json"
 scm_results_db = GCDB(OUTPUT_PATH_MAGICC / "db")
 
@@ -239,6 +251,7 @@ pre_pre_processed
 # %%
 # # Randomly select some scenarios
 # # (this is how I generated the hard-coded values in the next cell).
+# import random
 # base = pre_pre_processed.pix.unique(["model", "scenario"]).to_frame(index=False)
 # base["scenario_group"] = base["scenario"].apply(lambda x: x.split("-")[-1].split("_")[0].strip())
 
