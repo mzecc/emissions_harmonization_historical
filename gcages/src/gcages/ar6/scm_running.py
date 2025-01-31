@@ -105,9 +105,8 @@ def convert_openscm_runner_output_names_to_magicc_output_names(
     return tuple(res_l)
 
 
-def run_scm(
+def run_scm(  # noqa: PLR0913
     scenarios: pd.DataFrame,
-    # TODO: replace the type hint below with a Protocol instead
     climate_models_cfgs: dict[str, list[dict[str, Any]]],
     output_variables: tuple[str, ...],
     n_processes: int,
@@ -264,6 +263,11 @@ class AR6SCMRunner:
     If not supplied, a default temporary database will be used.
     """
 
+    res_column_type: type = int
+    """
+    Type to cast the result's column type to
+    """
+
     run_checks: bool = True
     """
     If `True`, run checks on both input and output data
@@ -368,6 +372,7 @@ class AR6SCMRunner:
             )
             .values,
         )
+        out.columns = out.columns.astype(self.res_column_type)
 
         # TODO:
         #   - enable optional checks for:
@@ -523,4 +528,5 @@ class AR6SCMRunner:
             run_checks=run_checks,
             n_processes=n_processes,
             force_interpolate_to_yearly=True,
+            res_column_type=int,
         )

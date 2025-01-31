@@ -17,6 +17,30 @@ def get_temperatures_in_line_with_assessment(
     assessment_time_period: tuple[int, ...],
     assessment_pre_industrial_period: tuple[int, ...],
 ) -> pd.DataFrame:
+    """
+    Get temperatures in line with the historical assessment
+
+    Parameters
+    ----------
+    raw_temperatures
+        Raw temperatures
+
+    assessment_median
+        Median of the assessment to match
+
+    assessment_time_period
+        Time period over which the assessment applies
+
+    assessment_pre_industrial_period
+        Pre-industrial period used for the assessment
+
+
+    Returns
+    -------
+    :
+        Temperatures,
+        adjusted so their medians are in line with the historical assessment.
+    """
     rel_pi_temperatures = raw_temperatures.subtract(
         raw_temperatures.loc[:, list(assessment_pre_industrial_period)].mean(
             axis="columns"
@@ -26,7 +50,7 @@ def get_temperatures_in_line_with_assessment(
     mod_scen_medians = (
         rel_pi_temperatures.loc[:, list(assessment_time_period)]
         .mean(axis="columns")
-        .groupby(["model", "scenario"])
+        .groupby(["climate_model", "model", "scenario"])
         .median()
     )
     res = (
@@ -41,6 +65,22 @@ def get_temperatures_in_line_with_assessment(
 def categorise_scenarios(
     temperatures_in_line_with_assessment: pd.DataFrame,
 ) -> pd.DataFrame:
+    """
+    Categorise scenarios
+
+    Parameters
+    ----------
+    temperatures_in_line_with_assessment
+        Temperatures in line with the historical assessment
+
+    Returns
+    -------
+    :
+        Scenario categorisation
+    """
+    if len(temperatures_in_line_with_assessment.pix.unique("climate_model")) > 1:
+        raise NotImplementedError
+
     peak_warming_quantiles = (
         temperatures_in_line_with_assessment.max(axis="columns")
         .groupby(["model", "scenario"])
@@ -117,7 +157,7 @@ class AR6PostProcessor:
     Set to 1 to process in serial.
     """
 
-    def __call__(self, in_df: pd.DataFrame) -> pd.DataFrame:
+    def __call__(self, in_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Do the post-processing
 
@@ -128,9 +168,12 @@ class AR6PostProcessor:
 
         Returns
         -------
-        :
+        timeseries, metadata :
             Post-processed results
+
+            These are both timeseries as well as scenario-level metadata.
         """
+        # TODO: check the return type rendering
         if self.run_checks:
             raise NotImplementedError
 
@@ -181,23 +224,23 @@ class AR6PostProcessor:
             )
         )
 
-        out_l = [
+        timeseries_l = [
             temperatures_in_line_with_assessment_percentiles,
         ]
 
-        out = pix.concat(out_l)
+        timeseries = pix.concat(timeseries_l)
+        timeseries.columns = timeseries.columns.astype(int)
 
-        categories_aligned = categories.align(out)[0].dropna(how="all", axis="columns")
-        out = pd.concat([out, categories_aligned], axis="columns").set_index(
-            categories_aligned.columns.tolist(), append=True
-        )
-        out.columns = out.columns.astype(int)
+        metadata_l = [
+            categories,
+        ]
+        metadata = pix.concat(metadata_l)
 
         # TODO:
         #   - enable optional checks for:
         #       - input and output scenarios are the same
 
-        return out
+        return timeseries, metadata
 
     @classmethod
     def from_ar6_like_config(
