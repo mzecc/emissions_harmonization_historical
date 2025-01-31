@@ -116,6 +116,7 @@ scenarios_raw_global = scenarios_raw.loc[
     # & pix.isin(variable=history_cut.pix.unique("variable"))
 ]
 scenarios_raw_global
+# TODO: consider cutting off the scenarios in 2100, as that will be their end-point for ScenarioMIP. After that, it is the extensions.
 
 # %%
 # What are we still missing.
@@ -435,7 +436,7 @@ for model, mdf in pix.concat(
         palette={**palette, "history": "black"},
         style="stage",
     )
-    fg.fig.suptitle(model, y=1.01)
+    fg.figure.suptitle(model, y=1.01)
     plt.show()
     # break
 

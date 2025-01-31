@@ -25,6 +25,7 @@ import os
 import numpy as np
 import pandas as pd
 import pandas_indexing as pix
+import platform
 import pint
 from gcages.ar6 import AR6PostProcessor, AR6SCMRunner
 from gcages.ar6.post_processing import get_temperatures_in_line_with_assessment
@@ -66,8 +67,20 @@ complete_scenarios_file
 # AR6-like
 # Needed for 7.5.3 on a mac
 os.environ["DYLD_LIBRARY_PATH"] = "/opt/homebrew/opt/gfortran/lib/gcc/current/"
+
+if platform.system() == "Darwin":
+    if platform.processor() == "arm":
+        magicc_exe = "magicc-darwin-arm64"
+    else:
+        raise NotImplementedError(platform.processor())
+elif platform.system() == "Windows":
+        magicc_exe = "magicc.exe"
+else:
+    raise NotImplementedError(platform.system())
+
+
 scm_runner = AR6SCMRunner.from_ar6_like_config(
-    magicc_exe_path=DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "bin" / "magicc-darwin-arm64",
+    magicc_exe_path=DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "bin" / magicc_exe,
     magicc_prob_distribution_path=DATA_ROOT.parents[0] / "magicc" / "magicc-v7.5.3" / "configs" / "600-member.json",
     db=GCDB(
         DATA_ROOT
