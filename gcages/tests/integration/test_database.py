@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import itertools
 import re
+from contextlib import nullcontext
 from functools import partial
 from pathlib import Path
 
@@ -81,7 +82,7 @@ def test_save_and_load(tmpdir):
         start.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(start, loaded)
 
@@ -110,7 +111,7 @@ def test_save_multiple_and_load(tmpdir):
         all_saved.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(all_saved, loaded)
 
@@ -132,7 +133,7 @@ def test_save_overwrite_error(tmpdir):
     to_save = pix.concat([dup, cdf(units="km")])
 
     error_msg = re.escape(
-        f"The following rows are already in the database:\n{dup.index}"
+        f"The following rows are already in the database:\n{dup.index.to_frame(index=False)}"
     )
     with pytest.raises(AlreadyInDBError, match=error_msg):
         db.save(to_save)
@@ -159,7 +160,7 @@ def test_save_overwrite_force(tmpdir):
         original.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(original, loaded)
 
@@ -173,7 +174,7 @@ def test_save_overwrite_force(tmpdir):
     # This is testing implementation, so could be removed in future.
     # Expect to have the index file plus the new file, but not the original file.
     db_files = list(db.db_dir.glob("*.csv"))
-    assert set([f.name for f in db_files]) == {"1.csv", "index.csv"}
+    assert set([f.name for f in db_files]) == {"1.csv", "index.csv", "filemap.csv"}
 
     # Check that the data was overwritten with new data
     try:
@@ -192,7 +193,7 @@ def test_save_overwrite_force(tmpdir):
         updated.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(updated, loaded)
 
@@ -211,6 +212,16 @@ def test_save_overwrite_force_half_overlap(tmpdir):
     original = cdf(n_scenarios=6)
     db.save(original)
 
+    # As a helper, check we've got the number of files we expect.
+    # This is testing implementation, so could be removed in future.
+    # Expect to have the index file plus the file map file plus written file.
+    db_files = list(db.db_dir.glob("*.csv"))
+    assert set([f.name for f in db_files]) == {
+        "0.csv",
+        "index.csv",
+        "filemap.csv",
+    }
+
     # Make sure that our data saved correctly
     db_metadata = db.load_metadata()
     metadata_compare = db_metadata
@@ -218,7 +229,7 @@ def test_save_overwrite_force_half_overlap(tmpdir):
         original.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(original, loaded)
 
@@ -229,11 +240,17 @@ def test_save_overwrite_force_half_overlap(tmpdir):
 
     # As a helper, check we've got the number of files we expect.
     # This is testing implementation, so could be removed in future.
-    # Expect to have the index file plus the new file plus the newly written file
+    # Expect to have the index file plus the file map file plus the newly written file
+    # plus the re-written data file
     # (to handle the need to split the original data so we can keep only what we need),
     # but not the original file.
     db_files = list(db.db_dir.glob("*.csv"))
-    assert set([f.name for f in db_files]) == {"1.csv", "2.csv", "index.csv"}
+    assert set([f.name for f in db_files]) == {
+        "1.csv",
+        "2.csv",
+        "index.csv",
+        "filemap.csv",
+    }
 
     # Check that the data was overwritten with new data
     overlap_idx = original.index.isin(original_overwrite.index)
@@ -255,13 +272,34 @@ def test_save_overwrite_force_half_overlap(tmpdir):
         update_exp.index, metadata_compare, exact="equiv", check_order=False
     )
 
-    loaded = db.load()
+    loaded = db.load(out_columns_type=float)
 
     pd.testing.assert_frame_equal(update_exp, loaded)
 
 
-def test_locking_load(tmpdir):
-    db = GCDB(tmpdir)
+@pytest.mark.parametrize(
+    "meth, args",
+    (
+        ("delete", []),
+        ("load", []),
+        ("load_metadata", []),
+        ("regroup", [["scenarios"]]),
+        (
+            "save",
+            [
+                create_test_df(
+                    n_scenarios=1,
+                    n_runs=1,
+                    n_variables=1,
+                    units="t",
+                    timepoints=np.array([1.2]),
+                )
+            ],
+        ),
+    ),
+)
+def test_locking(tmpdir, meth, args):
+    db = GCDB(Path(tmpdir))
 
     # Put some data in the db so there's something to lock
     db.save(
@@ -274,51 +312,25 @@ def test_locking_load(tmpdir):
         )
     )
 
-    # Acquire the lock already here
+    # Acquire the lock
     with db.index_file_lock:
-        # We can't re-acquire it to load
+        # Check that we can't re-acquire the lock to use the method
         with pytest.raises(filelock.Timeout):
-            db.load(lock_acquire_timeout=0.0)
-
-        with pytest.raises(filelock.Timeout):
-            db.load(lock_acquire_timeout=0.1)
-
-
-def test_locking_load_metadata(tmpdir):
-    db = GCDB(tmpdir)
-
-    # Put some data in the db so there's something to lock
-    db.save(
-        create_test_df(
-            n_scenarios=1,
-            n_variables=1,
-            n_runs=1,
-            timepoints=np.array([10.0]),
-            units="Mt",
-        )
-    )
-
-    # Acquire the lock already here
-    with db.index_file_lock:
-        # We can't re-acquire it to load
-        with pytest.raises(filelock.Timeout):
-            db.load_metadata(lock_acquire_timeout=0.0)
+            getattr(db, meth)(
+                # Can't use defaults here as default is no timeout
+                lock_context_manager=db.index_file_lock.acquire(timeout=0.0),
+                *args,
+            )
 
         with pytest.raises(filelock.Timeout):
-            db.load_metadata(lock_acquire_timeout=0.1)
+            getattr(db, meth)(
+                # Can't use defaults here as default is no timeout
+                lock_context_manager=db.index_file_lock.acquire(timeout=0.1),
+                *args,
+            )
 
-
-def test_locking_save(tmpdir):
-    db = GCDB(tmpdir)
-
-    # Acquire the lock already here
-    with db.index_file_lock:
-        # We can't re-acquire it to load
-        with pytest.raises(filelock.Timeout):
-            db.save("not_used", lock_acquire_timeout=0.0)
-
-        with pytest.raises(filelock.Timeout):
-            db.save("not_used", lock_acquire_timeout=0.1)
+        # Unless we pass in a different context manager
+        getattr(db, meth)(lock_context_manager=nullcontext(), *args)
 
 
 def test_load_with_loc(tmpdir):
@@ -344,13 +356,13 @@ def test_load_with_loc(tmpdir):
         ),
         pix.isin(scenario=["scenario_1", "scenario_3"], variable=["variable_2"]),
     ]:
-        loaded = db.load(selector)
+        loaded = db.load(selector, out_columns_type=float)
         exp = full_db.loc[selector]
 
         pd.testing.assert_frame_equal(loaded, exp)
 
 
-def test_load_with_index(tmpdir):
+def test_load_with_index_all(tmpdir):
     db = GCDB(tmpdir)
 
     full_db = create_test_df(
@@ -364,37 +376,78 @@ def test_load_with_index(tmpdir):
     for _, pdf in full_db.groupby(["scenario"]):
         db.save(pdf)
 
-    for idx in [
-        full_db.index,
-        full_db.index[:5],
-        full_db.loc[pix.isin(scenario=["scenario_1", "scenario_3"])].pix.unique(
-            ["scenario", "variable"]
-        ),
-        full_db.loc[pix.isin(scenario=["scenario_1", "scenario_3"])].pix.unique(
-            ["scenario"]
-        ),
-        full_db.loc[pix.isin(run=[0, 2])].pix.unique(["run"]),
-        # Levels that aren't next to each other
-        full_db.loc[
-            pix.isin(scenario=["scenario_1", "scenario_3"]) & pix.isin(run=[1, 2])
-        ].pix.unique(["scenario", "run"]),
-    ]:
-        if isinstance(idx, pd.MultiIndex):
-            idx_reordered = full_db.index.reorder_levels(
-                [*idx.names, *(set(full_db.index.names) - {*idx.names})]
-            )
-            rows_to_get = idx_reordered.isin(idx)
-            exp = full_db.loc[rows_to_get]
+    idx = full_db.index
+    exp = full_db
 
+    loaded = db.load(idx, out_columns_type=float)
+
+    pd.testing.assert_frame_equal(loaded, exp)
+
+
+@pytest.mark.parametrize(
+    "slice",
+    (slice(None, None, None), slice(None, 3, None), slice(2, 4, None), slice(1, 15, 2)),
+)
+def test_load_with_index_slice(tmpdir, slice):
+    db = GCDB(tmpdir)
+
+    full_db = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    for _, pdf in full_db.groupby(["scenario"]):
+        db.save(pdf)
+
+    idx = full_db.index[slice]
+    exp = full_db[slice]
+
+    loaded = db.load(idx, out_columns_type=float)
+
+    pd.testing.assert_frame_equal(loaded, exp)
+
+
+@pytest.mark.parametrize(
+    "levels",
+    (
+        pytest.param(["scenario"], id="first_level"),
+        pytest.param(["variable"], id="not_first_level"),
+        pytest.param(["scenario", "variable"], id="multi_level_in_order"),
+        pytest.param(["scenario", "variable"], id="multi_level_non_adjacent"),
+        pytest.param(["variable", "scenario"], id="multi_level_out_of_order"),
+        pytest.param(["run", "variable"], id="multi_level_out_of_order_not_first"),
+    ),
+)
+def test_load_with_pix_unique_levels(tmpdir, levels):
+    db = GCDB(tmpdir)
+
+    full_db = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    for _, pdf in full_db.groupby(["scenario"]):
+        db.save(pdf)
+
+    locator = None
+    for level in levels:
+        if locator is None:
+            locator = pix.isin(**{level: full_db.pix.unique(level)[:2]})
         else:
-            exp = full_db[full_db.index.isin(idx.values, level=idx.name)]
+            locator &= pix.isin(**{level: full_db.pix.unique(level)[:2]})
 
-        if exp.empty:
-            raise AssertionError
+    exp = full_db.loc[locator]
+    idx = exp.pix.unique(levels)
 
-        loaded = db.load(idx)
+    loaded = db.load(idx, out_columns_type=float)
 
-        pd.testing.assert_frame_equal(loaded, exp)
+    pd.testing.assert_frame_equal(loaded, exp)
 
 
 def test_deletion(tmpdir):
@@ -419,3 +472,38 @@ def test_deletion(tmpdir):
 
     with pytest.raises(EmptyDBError):
         db.load()
+
+
+def test_regroup(tmpdir):
+    db = GCDB(Path(tmpdir))
+
+    all_dat = create_test_df(
+        n_scenarios=10,
+        n_variables=3,
+        n_runs=3,
+        timepoints=np.array([2010.0, 2020.0, 2025.0, 2030.0]),
+        units="Mt",
+    )
+
+    db.save(all_dat)
+
+    pd.testing.assert_frame_equal(db.load(out_columns_type=float), all_dat)
+    # Testing implementation but ok as a helper for now
+    assert len(list(db.db_dir.glob("*.csv"))) == 3
+
+    for new_grouping in (
+        ["scenario"],
+        ["scenario", "variable"],
+        ["variable", "run"],
+    ):
+        db.regroup(new_grouping)
+
+        # Make sure data unchanged
+        pd.testing.assert_frame_equal(
+            db.load(out_columns_type=float), all_dat, check_like=True
+        )
+        # Testing implementation but ok as a helper for now
+        assert (
+            len(list(db.db_dir.glob("*.csv")))
+            == 2 + all_dat.pix.unique(new_grouping).shape[0]
+        )

@@ -5,7 +5,7 @@ authors = [
     { name = "Zebedee Nicholls", email = "zebedee.nicholls@climate-energy-college.org"},
     { name = "Chris Smith", email = "chrisroadmap@gmail.com"}
 ]
-requires-python = "==3.11"
+requires-python = "==3.11.*"
 dependencies = [
     "pre-commit==3.3.1",
     "ptolemy-iamc @ git+https://github.com/gidden/ptolemy.git@015aa843c340bd57464eb7cfd5f3c8e397201266",

@@ -62,7 +62,7 @@ harmonised
 
 # %%
 all_iam_variables = harmonised.pix.unique("variable")
-all_iam_variables
+sorted(all_iam_variables)
 
 # %%
 variables_to_infill_l = []

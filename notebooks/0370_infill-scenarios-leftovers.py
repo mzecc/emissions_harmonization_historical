@@ -162,8 +162,8 @@ follow_leaders_mm = {
     "Emissions|HFC|HFC365mfc": "Emissions|HFC|HFC134a",
     "Emissions|Montreal Gases|CH2Cl2": "Emissions|HFC|HFC134a",
     "Emissions|Montreal Gases|CHCl3": "Emissions|C2F6",
-    # "Emissions|Montreal Gases|CH3Br": "Emissions|C2F6",
-    # "Emissions|Montreal Gases|CH3Cl": "Emissions|CF4",
+    "Emissions|Montreal Gases|CH3Br": "Emissions|C2F6",
+    "Emissions|Montreal Gases|CH3Cl": "Emissions|CF4",
     "Emissions|NF3": "Emissions|SF6",
     "Emissions|Montreal Gases|Halon1202": "Emissions|Montreal Gases|Halon1211",
 }
