@@ -212,8 +212,8 @@ scenarios_run = pre_pre_processed[pre_pre_processed.index.isin(selected_scenario
 # scenarios_run = pre_pre_processed.loc[pix.ismatch(scenario="*Very Low*")]
 
 # %%
-# To run all, just uncomment the below
-scenarios_run = pre_pre_processed
+# To run all, just uncomment the line below
+# scenarios_run = pre_pre_processed
 
 # %%
 scenarios_run.pix.unique(["model", "scenario"]).to_frame(index=False)
