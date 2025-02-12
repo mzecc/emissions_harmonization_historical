@@ -98,11 +98,11 @@ iso3_list = idxr.iso.to_numpy()
 # this makes me run out of ram
 # country_emissions = ((emissions * idxr).sum(["lat", "lon"]).compute())
 
-# gases = ["bc", "ch4", "co", "nh3", "nmvocs", "nox", "oc", "so2"]
-# years = np.arange(2000, 2026)
-gases = ["bc", "ch4", "nh3"]
-years = np.arange(2000, 2003)  # for quick debugging
-
+gases = ["bc", "ch4", "co", "nh3", "nmvocs", "nox", "oc", "so2"]
+years = np.arange(2000, 2026)
+# gases = ["bc", "ch4", "nh3"]
+# years = np.arange(2000, 2003)  # for quick debugging
+#
 for i, gas in enumerate(gases):
     for j, y in enumerate(years):
         folderName = "CAMS-GLOB-ANT_Glb_0.1x0.1_anthro_" + gas + "_v6.2_yearly"
@@ -162,10 +162,10 @@ for i, gas in enumerate(gases):
 #
 # # %% [markdown]
 # import CAMS-GLOB-AIR
-# gases_air = ["bc", "co", "nh3", "nmvoc", "nox", "oc", "so2"]
-# years_air = np.arange(2000, 2023)
-gases_air = ["bc", "co", "nh3"]
-years_air = np.arange(2000, 2003)
+gases_air = ["bc", "co", "nh3", "nmvoc", "nox", "oc", "so2"]
+years_air = np.arange(2000, 2023)
+# gases_air = ["bc", "co", "nh3"]
+# years_air = np.arange(2000, 2003)
 
 print("Importing CAMS-GLOB-AIR data")
 for i, gas in enumerate(gases_air):
@@ -177,6 +177,9 @@ for i, gas in enumerate(gases_air):
         print(fullName)
         cams_data_file = Path(cams_data_folder, fullName)
         emissions = xr.open_dataset(cams_data_file)
+        # nox has the "level" coordinate, but it seems spurious
+        if "level" in list(emissions.coords):
+            emissions = emissions.drop_vars("level")
         # todo: compute world value before aligning
         world_emissions_air_yr = emissions.sum(["lat", "lon"])
         # air emissions are already on the same grid as idxr: no need to coarsen,
@@ -230,8 +233,10 @@ country_emissions_df["scenario"] = "historical"  # this is debatable: CAMS has s
 world_emissions_df["scenario"] = "historical"
 
 # now pivot to have years as columns, as required
-country_emissions_df = country_emissions_df.pivot(columns="time", index=("variable", "gas", "iso"), values="emissions")
-world_emissions_df = world_emissions_df.pivot(columns="time", index=("variable", "gas"), values="emissions")
+country_emissions_df = country_emissions_df.pivot(
+    columns="time", index=("variable", "gas", "iso", "scenario"), values="emissions"
+)
+world_emissions_df = world_emissions_df.pivot(columns="time", index=("variable", "gas", "scenario"), values="emissions")
 
 # add units
 gas_names = ["BC", "CH4", "CO", "NH3", "NMVOC", "NOx", "OC", "SO2"]
@@ -277,9 +282,16 @@ country_emissions_df = country_emissions_df.reset_index().replace({"sector": sec
 world_emissions_df = world_emissions_df.reset_index().replace({"sector": sector_mapping})
 
 # rename to IAMC-style variable names
-country_emissions_df["variable"] = "Emissions|" + country_emissions_df["gas"] + "|" + country_emissions_df["sector"]
-country_emissions_df["variable"] = "Emissions|" + country_emissions_df["gas"] + "|" + country_emissions_df["sector"]
+country_emissions_df.insert(
+    2, "variable", "Emissions|" + country_emissions_df["gas"] + "|" + country_emissions_df["sector"]
+)
+world_emissions_df.insert(1, "variable", "Emissions|" + world_emissions_df["gas"] + "|" + world_emissions_df["sector"])
 
+country_emissions_df = country_emissions_df.drop(columns=["sector", "gas"])
+world_emissions_df = world_emissions_df.drop(columns=["sector", "gas"])
+
+country_emissions_df = country_emissions_df.set_index(["variable", "country", "scenario", "unit"])
+world_emissions_df = world_emissions_df.set_index(["variable", "scenario", "unit"])
 
 country_emissions_df.to_csv(cams_country_proc_file)
 world_emissions_df.to_csv(cams_world_proc_file)
