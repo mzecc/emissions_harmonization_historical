@@ -1,0 +1,285 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.16.4
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
+# %%
+# import external packages and functions
+from pathlib import Path
+
+# just for debugging
+import numpy as np
+import pandas as pd
+import pandas_indexing as pix
+import xarray as xr
+from pandas_indexing import set_openscm_registry_as_default
+
+from emissions_harmonization_historical.constants import DATA_ROOT
+
+# set unit registry
+ur = set_openscm_registry_as_default()
+pix.units.set_openscm_registry_as_default()
+
+# %%
+gfed_data_folder = DATA_ROOT / Path("national", "gfed", "data_raw")
+gfed_data_aux_folder = DATA_ROOT / Path("national", "gfed", "data_aux")
+
+cams_data_folder = DATA_ROOT / Path("national", "cams", "data_raw")
+
+cams_country_temp_file = DATA_ROOT / Path("national", "cams", "processed", "cams_country_temporaryfile.csv")
+cams_world_temp_file = DATA_ROOT / Path("national", "cams", "processed", "cams_world_temporaryfile.csv")
+
+cams_country_proc_file = DATA_ROOT / Path("national", "cams", "processed", "cams_country.csv")
+cams_world_proc_file = DATA_ROOT / Path("national", "cams", "processed", "cams_world.csv")
+
+# use the iso mask from gfed
+isomask = Path(gfed_data_aux_folder, "iso_mask.nc")
+# idxr = xr.open_dataarray(isomask, chunks={"iso": 1})
+idxr = xr.open_dataarray(isomask)
+
+# %% [markdown]
+# The CAMS emissions are given as absolute values on each cell (Tg=Mt), not as surface concentrations.
+
+# %%
+iso3_list = idxr.iso.to_numpy()
+
+
+# %%
+# this is too ram intensive
+# for i, reg in enumerate(iso3_list):
+#    print(reg)
+#    if i==0:
+#        idxr_ceds = idxr.sel(iso=reg).interp(lon=emissions.lon, lat=emissions.lat, method="nearest")
+#    else:
+#        idxr_ceds = xr.concat(
+#            [idxr_ceds, idxr.sel(iso=reg).interp(lon=emissions.lon, lat=emissions.lat, method="nearest")],
+#            dim="iso")
+
+# %%
+# this works and gives results consistent with the R script,
+# but it is extremely slow. the slow part is computation, not interp!
+# for i, reg in enumerate(iso3_list):
+#     print(reg)
+#     t0 = perf_counter()
+#     idxr_cams = idxr.sel(iso=reg).interp(lon=emissions.lon,
+#                                          lat=emissions.lat,
+#                                          method="nearest")
+#     print("time for interp ", perf_counter()-t0)
+#     t0 = perf_counter()
+#     country_emissions_reg = (
+#         (emissions*idxr_cams).sum(["lat", "lon"])
+#     ).compute()
+#     print("time for computations ", perf_counter()-t0)
+#     t0 = perf_counter()
+#     if i==0:
+#         country_emissions = country_emissions_reg
+#     else:
+#         country_emissions = xr.concat([country_emissions,
+#                                        country_emissions_reg], dim="iso")
+#     print("time for concatenation ", perf_counter()-t0)
+
+
+# %% [markdown]
+# another approach: coarsen emissions and use untouched idxr
+# import CAMS-GLOB-ANT
+
+
+# %%
+# this makes me run out of ram
+# country_emissions = ((emissions * idxr).sum(["lat", "lon"]).compute())
+
+# gases = ["bc", "ch4", "co", "nh3", "nmvocs", "nox", "oc", "so2"]
+# years = np.arange(2000, 2026)
+gases = ["bc", "ch4", "nh3"]
+years = np.arange(2000, 2003)  # for quick debugging
+
+for i, gas in enumerate(gases):
+    for j, y in enumerate(years):
+        folderName = "CAMS-GLOB-ANT_Glb_0.1x0.1_anthro_" + gas + "_v6.2_yearly"
+        fileName = "CAMS-GLOB-ANT_Glb_0.1x0.1_anthro_" + gas + "_v6.2_yearly_" + str(y) + ".nc"
+        fullName = folderName + "/" + fileName
+        print(fullName)
+        cams_data_file = Path(cams_data_folder, fullName)
+        emissions = xr.open_dataset(cams_data_file)
+        # compute world total for ships
+        world_emissions_shp_yr = emissions["shp"].sum(["lat", "lon"])
+        # coarsen to the resolution of the iso3 mask
+        # we need to go from a 0.1x0.1 grid to a 0.5x0.5 grid
+        emissions = emissions.coarsen(lat=5, lon=5, boundary="trim").sum()
+        print("coarsened")
+        # align grids by interpolation (is this ok?)
+        emissions = emissions.interp(lon=idxr.lon, lat=idxr.lat, method="linear")
+        print("interpolated")
+        for k, reg in enumerate(iso3_list):
+            country_emissions_reg = (emissions * idxr.sel(iso=reg)).sum(["lat", "lon"])
+            if k == 0:
+                # if the array does not exist, create it
+                country_emissions_yr = country_emissions_reg
+            else:
+                country_emissions_yr = xr.concat([country_emissions_yr, country_emissions_reg], dim="iso")
+        if j == 0:
+            country_emissions_gas = country_emissions_yr
+            world_emissions_shp_gas = world_emissions_shp_yr
+        else:
+            country_emissions_gas = xr.concat([country_emissions_gas, country_emissions_yr], dim="time")
+            world_emissions_shp_gas = xr.concat([world_emissions_shp_gas, world_emissions_shp_yr], dim="time")
+        del country_emissions_yr
+        del world_emissions_shp_yr
+        # print("time for concatenation ", perf_counter()-t0)
+    # turn "nmvocs" to "nmvoc" for consistency
+    if gas == "nmvocs":
+        country_emissions_gas = country_emissions_gas.assign_coords(gas="NMVOC")
+        world_emissions_shp_gas = world_emissions_shp_gas.assign_coords(gas="NMVOC")
+    elif gas == "nox":
+        country_emissions_gas = country_emissions_gas.assign_coords(gas="NOx")
+        world_emissions_shp_gas = world_emissions_shp_gas.assign_coords(gas="NOx")
+    else:
+        # default: just convert to uppercase
+        country_emissions_gas = country_emissions_gas.assign_coords(gas=gas.upper())
+        world_emissions_shp_gas = world_emissions_shp_gas.assign_coords(gas=gas.upper())
+    print("assigned")
+    if i == 0:
+        country_emissions = country_emissions_gas
+        world_emissions_shp = world_emissions_shp_gas
+    else:
+        country_emissions = xr.concat([country_emissions, country_emissions_gas], dim="gas")
+        world_emissions_shp = xr.concat([world_emissions_shp, world_emissions_shp_gas], dim="gas")
+    del country_emissions_gas
+    del world_emissions_shp_gas
+
+
+#
+#
+# # %% [markdown]
+# import CAMS-GLOB-AIR
+# gases_air = ["bc", "co", "nh3", "nmvoc", "nox", "oc", "so2"]
+# years_air = np.arange(2000, 2023)
+gases_air = ["bc", "co", "nh3"]
+years_air = np.arange(2000, 2003)
+
+print("Importing CAMS-GLOB-AIR data")
+for i, gas in enumerate(gases_air):
+    for j, y in enumerate(years_air):
+        print(gas, y)
+        folderName = "CAMS-GLOB-AIR_Glb_0.5x0.5_anthro_" + gas + "_v2.1_yearly"
+        fileName = "CAMS-GLOB-AIR_Glb_0.5x0.5_anthro_" + gas + "_v2.1_yearly_" + str(y) + ".nc"
+        fullName = folderName + "/" + fileName
+        print(fullName)
+        cams_data_file = Path(cams_data_folder, fullName)
+        emissions = xr.open_dataset(cams_data_file)
+        # todo: compute world value before aligning
+        world_emissions_air_yr = emissions.sum(["lat", "lon"])
+        # air emissions are already on the same grid as idxr: no need to coarsen,
+        # but idxr is clipping the poles, so we need to align
+        emissions, _ = xr.align(emissions, idxr, join="inner", exclude=["iso", "time"])
+        for k, reg in enumerate(iso3_list):
+            country_emissions_reg = (emissions * idxr.sel(iso=reg)).sum(["lat", "lon"])
+            if k == 0:
+                # if the array does not exist, create it
+                country_emissions_yr = country_emissions_reg
+            else:
+                country_emissions_yr = xr.concat([country_emissions_yr, country_emissions_reg], dim="iso")
+        if j == 0:
+            country_emissions_gas = country_emissions_yr
+            world_emissions_air_gas = world_emissions_air_yr
+        else:
+            country_emissions_gas = xr.concat([country_emissions_gas, country_emissions_yr], dim="time")
+            world_emissions_air_gas = xr.concat([world_emissions_air_gas, world_emissions_air_yr], dim="time")
+        del country_emissions_yr
+        del world_emissions_air_yr
+    if gas == "nox":
+        country_emissions_gas = country_emissions_gas.assign_coords(gas="NOx")
+        world_emissions_air_gas = world_emissions_air_gas.assign_coords(gas="NOx")
+    else:
+        country_emissions_gas = country_emissions_gas.assign_coords(gas=gas.upper())
+        world_emissions_air_gas = world_emissions_air_gas.assign_coords(gas=gas.upper())
+    if i == 0:
+        country_emissions_air = country_emissions_gas
+        world_emissions_air = world_emissions_air_gas
+    else:
+        country_emissions_air = xr.concat([country_emissions_air, country_emissions_gas], dim="gas")
+        world_emissions_air = xr.concat([world_emissions_air, world_emissions_air_gas], dim="gas")
+    del country_emissions_gas
+    del world_emissions_air_gas
+
+country_emissions_air = country_emissions_air.drop_vars("gridcell_area")
+country_emissions = country_emissions.drop_vars("gridcell_area")
+country_emissions = xr.merge([country_emissions, country_emissions_air])
+
+world_emissions = xr.merge([world_emissions_shp, world_emissions_air["avi"]])
+
+country_emissions_df = country_emissions.to_array(name="emissions").to_dataframe().reset_index()
+world_emissions_df = world_emissions.to_array(name="emissions").to_dataframe().reset_index()
+
+# clean up dates to have just years
+country_emissions_df["time"] = country_emissions_df["time"].dt.to_period("Y")
+world_emissions_df["time"] = world_emissions_df["time"].dt.to_period("Y")
+
+# add missing columns
+country_emissions_df["scenario"] = "historical"  # this is debatable: CAMS has some extrapolation
+world_emissions_df["scenario"] = "historical"
+
+# now pivot to have years as columns, as required
+country_emissions_df = country_emissions_df.pivot(columns="time", index=("variable", "gas", "iso"), values="emissions")
+world_emissions_df = world_emissions_df.pivot(columns="time", index=("variable", "gas"), values="emissions")
+
+# add units
+gas_names = ["BC", "CH4", "CO", "NH3", "NMVOC", "NOx", "OC", "SO2"]
+units = pd.MultiIndex.from_tuples([(name, "kt " + name + "/yr") for name in gas_names], names=["gas", "unit"])
+
+country_emissions_df = country_emissions_df.rename_axis(index={"iso": "country", "variable": "sector"}).pix.semijoin(
+    units, how="left"
+)
+world_emissions_df = world_emissions_df.pix.semijoin(units, how="left").rename_axis(index={"variable": "sector"})
+
+# aggregate Serbia and Kosovo as for gfed
+country_combinations = {"srb_ksv": ["srb", "srb (kosovo)"]}
+country_emissions_df = country_emissions_df.pix.aggregate(country=country_combinations)
+
+country_emissions_df.to_csv(cams_country_temp_file)
+world_emissions_df.to_csv(cams_world_temp_file)
+
+# TODO: check! This is a tentative mapping! To which sectors should we map exactly?
+sector_mapping = {
+    "awb": "Agricultural Waste Burning",
+    "com": "Commercial",
+    "ene": "Power generation",
+    "fef": "Fugitives",
+    "ind": "Industrial process",
+    "ref": "Refineries",
+    "res": "Residential",
+    "shp": "Ships",
+    "sum": "Sum Sectors",
+    "swd": "Solid waste and waste water",
+    "tnr": "Off Road transportation",
+    "tro": "Road transportation",
+    "agl": "Agriculture livestock",
+    "ags": "Agriculture soils",
+    "fef_coal": "Fugitive coal",
+    "fef_gas": "Fugitive gas",
+    "fef_oil": "Fugitive oil",
+    "slv": "Solvents",
+    "avi": "Aviation",
+}
+
+# replace the sector mapping
+country_emissions_df = country_emissions_df.reset_index().replace({"sector": sector_mapping})
+world_emissions_df = world_emissions_df.reset_index().replace({"sector": sector_mapping})
+
+# rename to IAMC-style variable names
+country_emissions_df["variable"] = "Emissions|" + country_emissions_df["gas"] + "|" + country_emissions_df["sector"]
+country_emissions_df["variable"] = "Emissions|" + country_emissions_df["gas"] + "|" + country_emissions_df["sector"]
+
+
+country_emissions_df.to_csv(cams_country_proc_file)
+world_emissions_df.to_csv(cams_world_proc_file)
