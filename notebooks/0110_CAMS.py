@@ -98,6 +98,9 @@ iso3_list = idxr.iso.to_numpy()
 # this makes me run out of ram
 # country_emissions = ((emissions * idxr).sum(["lat", "lon"]).compute())
 
+# TODO: the sum sector of CAMS-GLOB-AIR does not contain air and so could
+# be misleading, should we remove it?
+
 gases = ["bc", "ch4", "co", "nh3", "nmvocs", "nox", "oc", "so2"]
 years = np.arange(2000, 2026)
 # gases = ["bc", "ch4", "nh3"]
@@ -217,6 +220,16 @@ for i, gas in enumerate(gases_air):
 
 country_emissions_air = country_emissions_air.drop_vars("gridcell_area")
 country_emissions = country_emissions.drop_vars("gridcell_area")
+
+# make model map
+varlist = list(country_emissions.variables)
+varlist.remove("time")
+varlist.remove("iso")
+varlist.remove("gas")
+models = pd.MultiIndex.from_tuples(
+    [(var, "CAMS-GLOB-ANT-v6.2") for var in varlist] + [("avi", "CAMS-GLOB-AIR-v2.1")], names=["sector", "model"]
+)
+
 country_emissions = xr.merge([country_emissions, country_emissions_air])
 
 world_emissions = xr.merge([world_emissions_shp, world_emissions_air["avi"]])
@@ -247,6 +260,10 @@ country_emissions_df = country_emissions_df.rename_axis(index={"iso": "country",
 )
 world_emissions_df = world_emissions_df.pix.semijoin(units, how="left").rename_axis(index={"variable": "sector"})
 
+# add models
+country_emissions_df = country_emissions_df.pix.semijoin(models, how="left")
+world_emissions_df = world_emissions_df.pix.semijoin(models, how="left")
+
 # aggregate Serbia and Kosovo as for gfed
 country_combinations = {"srb_ksv": ["srb", "srb (kosovo)"]}
 country_emissions_df = country_emissions_df.pix.aggregate(country=country_combinations)
@@ -255,6 +272,7 @@ country_emissions_df.to_csv(cams_country_temp_file)
 world_emissions_df.to_csv(cams_world_temp_file)
 
 # TODO: check! This is a tentative mapping! To which sectors should we map exactly?
+# These are the sector descriptions from eccad
 sector_mapping = {
     "awb": "Agricultural Waste Burning",
     "com": "Commercial",
