@@ -49,57 +49,11 @@ idxr = xr.open_dataarray(isomask)
 
 # %% [markdown]
 # The CAMS emissions are given as absolute values on each cell (Tg=Mt), not as surface concentrations.
+# So they just need to be summed, not averaged. Since the iso3 mask is available at coarser resolution
+# than the data, the data is coarsened to the same resolution.
 
 # %%
 iso3_list = idxr.iso.to_numpy()
-
-
-# %%
-# this is too ram intensive
-# for i, reg in enumerate(iso3_list):
-#    print(reg)
-#    if i==0:
-#        idxr_ceds = idxr.sel(iso=reg).interp(lon=emissions.lon, lat=emissions.lat, method="nearest")
-#    else:
-#        idxr_ceds = xr.concat(
-#            [idxr_ceds, idxr.sel(iso=reg).interp(lon=emissions.lon, lat=emissions.lat, method="nearest")],
-#            dim="iso")
-
-# %%
-# this works and gives results consistent with the R script,
-# but it is extremely slow. the slow part is computation, not interp!
-# for i, reg in enumerate(iso3_list):
-#     print(reg)
-#     t0 = perf_counter()
-#     idxr_cams = idxr.sel(iso=reg).interp(lon=emissions.lon,
-#                                          lat=emissions.lat,
-#                                          method="nearest")
-#     print("time for interp ", perf_counter()-t0)
-#     t0 = perf_counter()
-#     country_emissions_reg = (
-#         (emissions*idxr_cams).sum(["lat", "lon"])
-#     ).compute()
-#     print("time for computations ", perf_counter()-t0)
-#     t0 = perf_counter()
-#     if i==0:
-#         country_emissions = country_emissions_reg
-#     else:
-#         country_emissions = xr.concat([country_emissions,
-#                                        country_emissions_reg], dim="iso")
-#     print("time for concatenation ", perf_counter()-t0)
-
-
-# %% [markdown]
-# another approach: coarsen emissions and use untouched idxr
-# import CAMS-GLOB-ANT
-
-
-# %%
-# this makes me run out of ram
-# country_emissions = ((emissions * idxr).sum(["lat", "lon"]).compute())
-
-# TODO: the sum sector of CAMS-GLOB-AIR does not contain air and so could
-# be misleading, should we remove it?
 
 gases = ["bc", "ch4", "co", "nh3", "nmvocs", "nox", "oc", "so2"]
 years = np.arange(2000, 2026)
@@ -160,11 +114,12 @@ for i, gas in enumerate(gases):
     del country_emissions_gas
     del world_emissions_shp_gas
 
+# %% [markdown]
+# Now the CAMS-GLOB-AIR data is imported.
+#
+# **TODO**: the sum sector of CAMS-GLOB-ANT does not contain air and so could be misleading, should we remove it?
 
-#
-#
-# # %% [markdown]
-# import CAMS-GLOB-AIR
+# %%
 gases_air = ["bc", "co", "nh3", "nmvoc", "nox", "oc", "so2"]
 years_air = np.arange(2000, 2023)
 # gases_air = ["bc", "co", "nh3"]
@@ -218,6 +173,11 @@ for i, gas in enumerate(gases_air):
     del country_emissions_gas
     del world_emissions_air_gas
 
+# %% [markdown]
+# Now that all data have been imported, convert to pandas dataframe and to IAMC style names.
+# Intermediate files are exported for easier import into R for comparison with data aggregated using other methods.
+
+# %%
 country_emissions_air = country_emissions_air.drop_vars("gridcell_area")
 country_emissions = country_emissions.drop_vars("gridcell_area")
 
