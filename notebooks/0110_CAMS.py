@@ -214,8 +214,19 @@ country_emissions_df = country_emissions_df.pivot(
 world_emissions_df = world_emissions_df.pivot(columns="time", index=("variable", "gas", "scenario"), values="emissions")
 
 # add units
-gas_names = ["BC", "CH4", "CO", "NH3", "NMVOC", "NOx", "OC", "SO2"]
-units = pd.MultiIndex.from_tuples([(name, "Mt " + name + "/yr") for name in gas_names], names=["gas", "unit"])
+units = pd.MultiIndex.from_tuples(
+    [
+        ("BC", "Mt BC/yr"),
+        ("CH4", "Mt CH4/yr"),
+        ("CO", "Mt CO/yr"),
+        ("NH3", "Mt NH3/yr"),
+        ("NMVOC", "Mt NMVOC/yr"),
+        ("NOx", "Mt NO/yr"),
+        ("OC", "Mt OC/year"),
+        ("SO2", "Mt SO2/year"),
+    ],
+    names=["gas", "unit"],
+)
 
 country_emissions_df = country_emissions_df.rename_axis(index={"iso": "country", "variable": "sector"}).pix.semijoin(
     units, how="left"
