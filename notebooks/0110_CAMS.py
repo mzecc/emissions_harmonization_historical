@@ -68,6 +68,8 @@ for i, gas in enumerate(gases):
         print(fullName)
         cams_data_file = Path(cams_data_folder, fullName)
         emissions = xr.open_dataset(cams_data_file)
+        # remove the gridcell_area and sum variables
+        emissions = emissions.drop_vars(["gridcell_area", "sum"])
         # compute world total for ships
         world_emissions_shp_yr = emissions["shp"].sum(["lat", "lon"])
         # coarsen to the resolution of the iso3 mask
@@ -135,6 +137,8 @@ for i, gas in enumerate(gases_air):
         print(fullName)
         cams_data_file = Path(cams_data_folder, fullName)
         emissions = xr.open_dataset(cams_data_file)
+        # remove the gridcell_area and sum variables
+        emissions = emissions.drop_vars(["gridcell_area", "sum"])
         # nox has the "level" coordinate, but it seems spurious
         if "level" in list(emissions.coords):
             emissions = emissions.drop_vars("level")
@@ -178,8 +182,6 @@ for i, gas in enumerate(gases_air):
 # Intermediate files are exported for easier import into R for comparison with data aggregated using other methods.
 
 # %%
-country_emissions_air = country_emissions_air.drop_vars("gridcell_area")
-country_emissions = country_emissions.drop_vars("gridcell_area")
 
 # make model map
 varlist = list(country_emissions.variables)
@@ -213,7 +215,7 @@ world_emissions_df = world_emissions_df.pivot(columns="time", index=("variable",
 
 # add units
 gas_names = ["BC", "CH4", "CO", "NH3", "NMVOC", "NOx", "OC", "SO2"]
-units = pd.MultiIndex.from_tuples([(name, "kt " + name + "/yr") for name in gas_names], names=["gas", "unit"])
+units = pd.MultiIndex.from_tuples([(name, "Mt " + name + "/yr") for name in gas_names], names=["gas", "unit"])
 
 country_emissions_df = country_emissions_df.rename_axis(index={"iso": "country", "variable": "sector"}).pix.semijoin(
     units, how="left"
