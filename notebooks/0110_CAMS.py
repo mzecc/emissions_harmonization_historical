@@ -71,7 +71,7 @@ for i, gas in enumerate(gases):
         # remove the gridcell_area and sum variables
         emissions = emissions.drop_vars(["gridcell_area", "sum"])
         # compute world total for ships
-        world_emissions_shp_yr = emissions["shp"].sum(["lat", "lon"])
+        world_emissions_ant_yr = emissions.sum(["lat", "lon"])
         # coarsen to the resolution of the iso3 mask
         # we need to go from a 0.1x0.1 grid to a 0.5x0.5 grid
         emissions = emissions.coarsen(lat=5, lon=5, boundary="trim").sum()
@@ -88,33 +88,33 @@ for i, gas in enumerate(gases):
                 country_emissions_yr = xr.concat([country_emissions_yr, country_emissions_reg], dim="iso")
         if j == 0:
             country_emissions_gas = country_emissions_yr
-            world_emissions_shp_gas = world_emissions_shp_yr
+            world_emissions_ant_gas = world_emissions_ant_yr
         else:
             country_emissions_gas = xr.concat([country_emissions_gas, country_emissions_yr], dim="time")
-            world_emissions_shp_gas = xr.concat([world_emissions_shp_gas, world_emissions_shp_yr], dim="time")
+            world_emissions_ant_gas = xr.concat([world_emissions_ant_gas, world_emissions_ant_yr], dim="time")
         del country_emissions_yr
-        del world_emissions_shp_yr
+        del world_emissions_ant_yr
         # print("time for concatenation ", perf_counter()-t0)
     # turn "nmvocs" to "nmvoc" for consistency
     if gas == "nmvocs":
         country_emissions_gas = country_emissions_gas.assign_coords(gas="NMVOC")
-        world_emissions_shp_gas = world_emissions_shp_gas.assign_coords(gas="NMVOC")
+        world_emissions_ant_gas = world_emissions_ant_gas.assign_coords(gas="NMVOC")
     elif gas == "nox":
         country_emissions_gas = country_emissions_gas.assign_coords(gas="NOx")
-        world_emissions_shp_gas = world_emissions_shp_gas.assign_coords(gas="NOx")
+        world_emissions_ant_gas = world_emissions_ant_gas.assign_coords(gas="NOx")
     else:
         # default: just convert to uppercase
         country_emissions_gas = country_emissions_gas.assign_coords(gas=gas.upper())
-        world_emissions_shp_gas = world_emissions_shp_gas.assign_coords(gas=gas.upper())
+        world_emissions_ant_gas = world_emissions_ant_gas.assign_coords(gas=gas.upper())
     print("assigned")
     if i == 0:
         country_emissions = country_emissions_gas
-        world_emissions_shp = world_emissions_shp_gas
+        world_emissions_ant = world_emissions_ant_gas
     else:
         country_emissions = xr.concat([country_emissions, country_emissions_gas], dim="gas")
-        world_emissions_shp = xr.concat([world_emissions_shp, world_emissions_shp_gas], dim="gas")
+        world_emissions_ant = xr.concat([world_emissions_ant, world_emissions_ant_gas], dim="gas")
     del country_emissions_gas
-    del world_emissions_shp_gas
+    del world_emissions_ant_gas
 
 # %% [markdown]
 # Now the CAMS-GLOB-AIR data is imported.
@@ -137,8 +137,8 @@ for i, gas in enumerate(gases_air):
         print(fullName)
         cams_data_file = Path(cams_data_folder, fullName)
         emissions = xr.open_dataset(cams_data_file)
-        # remove the gridcell_area and sum variables
-        emissions = emissions.drop_vars(["gridcell_area", "sum"])
+        # remove the gridcell_area variable
+        emissions = emissions.drop_vars("gridcell_area")
         # nox has the "level" coordinate, but it seems spurious
         if "level" in list(emissions.coords):
             emissions = emissions.drop_vars("level")
@@ -194,7 +194,7 @@ models = pd.MultiIndex.from_tuples(
 
 country_emissions = xr.merge([country_emissions, country_emissions_air])
 
-world_emissions = xr.merge([world_emissions_shp, world_emissions_air["avi"]])
+world_emissions = xr.merge([world_emissions_ant, world_emissions_air])
 
 country_emissions_df = country_emissions.to_array(name="emissions").to_dataframe().reset_index()
 world_emissions_df = world_emissions.to_array(name="emissions").to_dataframe().reset_index()
