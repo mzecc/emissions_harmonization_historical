@@ -55,7 +55,19 @@ idxr = xr.open_dataarray(isomask)
 # %%
 iso3_list = idxr.iso.to_numpy()
 
-gases = ["bc", "ch4", "co", "nh3", "nmvocs", "nox", "oc", "so2"]
+gases = [
+    "bc",
+    "ch4",
+    "co",
+    "nh3",
+    "nmvocs",
+    "nox",
+    "oc",
+    "so2",
+    "n2o",
+    "co2_excl_short-cycle_org_C",
+    "co2_short-cycle_org_C",
+]
 years = np.arange(2000, 2026)
 # gases = ["bc", "ch4", "nh3"]
 # years = np.arange(2000, 2003)  # for quick debugging
@@ -102,6 +114,12 @@ for i, gas in enumerate(gases):
     elif gas == "nox":
         country_emissions_gas = country_emissions_gas.assign_coords(gas="NOx")
         world_emissions_ant_gas = world_emissions_ant_gas.assign_coords(gas="NOx")
+    elif gas == "co2_excl_short-cycle_org_C":
+        country_emissions_gas = country_emissions_gas.assign_coords(gas="CO2_excl_short-cycle_org_C")
+        world_emissions_ant_gas = world_emissions_ant_gas.assign_coords(gas="CO2_excl_short-cycle_org_C")
+    elif gas == "co2_short-cycle_org_C":
+        country_emissions_gas = country_emissions_gas.assign_coords(gas="CO2_short-cycle_org_C")
+        world_emissions_ant_gas = world_emissions_ant_gas.assign_coords(gas="CO2_short-cycle_org_C")
     else:
         # default: just convert to uppercase
         country_emissions_gas = country_emissions_gas.assign_coords(gas=gas.upper())
@@ -122,7 +140,7 @@ for i, gas in enumerate(gases):
 # **TODO**: the sum sector of CAMS-GLOB-ANT does not contain air and so could be misleading, should we remove it?
 
 # %%
-gases_air = ["bc", "co", "nh3", "nmvoc", "nox", "oc", "so2"]
+gases_air = ["bc", "co", "nh3", "nmvoc", "nox", "oc", "so2", "co2"]
 years_air = np.arange(2000, 2023)
 # gases_air = ["bc", "co", "nh3"]
 # years_air = np.arange(2000, 2003)
@@ -224,6 +242,10 @@ units = pd.MultiIndex.from_tuples(
         ("NOx", "Mt NO/yr"),
         ("OC", "Mt OC/year"),
         ("SO2", "Mt SO2/year"),
+        ("N2O", "Mt N2O/year"),
+        ("CO2", "Mt CO2/year"),
+        ("CO2_excl_short-cycle_org_C", "Mt CO2/year"),
+        ("CO2_short-cycle_org_C", "Mt CO2/year"),
     ],
     names=["gas", "unit"],
 )
