@@ -224,12 +224,15 @@ world_emissions_df["time"] = world_emissions_df["time"].dt.to_period("Y")
 # add missing columns
 country_emissions_df["scenario"] = "historical"  # this is debatable: CAMS has some extrapolation
 world_emissions_df["scenario"] = "historical"
+world_emissions_df["region"] = "World"
 
 # now pivot to have years as columns, as required
 country_emissions_df = country_emissions_df.pivot(
     columns="time", index=("variable", "gas", "iso", "scenario"), values="emissions"
 )
-world_emissions_df = world_emissions_df.pivot(columns="time", index=("variable", "gas", "scenario"), values="emissions")
+world_emissions_df = world_emissions_df.pivot(
+    columns="time", index=("variable", "gas", "scenario", "region"), values="emissions"
+)
 
 # add units
 units = pd.MultiIndex.from_tuples(
@@ -240,17 +243,17 @@ units = pd.MultiIndex.from_tuples(
         ("NH3", "Mt NH3/yr"),
         ("NMVOC", "Mt NMVOC/yr"),
         ("NOx", "Mt NO/yr"),
-        ("OC", "Mt OC/year"),
-        ("SO2", "Mt SO2/year"),
-        ("N2O", "Mt N2O/year"),
-        ("CO2", "Mt CO2/year"),
-        ("CO2_excl_short-cycle_org_C", "Mt CO2/year"),
-        ("CO2_short-cycle_org_C", "Mt CO2/year"),
+        ("OC", "Mt OC/yr"),
+        ("SO2", "Mt SO2/yr"),
+        ("N2O", "Mt N2O/yr"),
+        ("CO2", "Mt CO2/yr"),
+        ("CO2_excl_short-cycle_org_C", "Mt CO2/yr"),
+        ("CO2_short-cycle_org_C", "Mt CO2/yr"),
     ],
     names=["gas", "unit"],
 )
 
-country_emissions_df = country_emissions_df.rename_axis(index={"iso": "country", "variable": "sector"}).pix.semijoin(
+country_emissions_df = country_emissions_df.rename_axis(index={"iso": "region", "variable": "sector"}).pix.semijoin(
     units, how="left"
 )
 world_emissions_df = world_emissions_df.pix.semijoin(units, how="left").rename_axis(index={"variable": "sector"})
@@ -261,7 +264,7 @@ world_emissions_df = world_emissions_df.pix.semijoin(models, how="left")
 
 # aggregate Serbia and Kosovo as for gfed
 country_combinations = {"srb_ksv": ["srb", "srb (kosovo)"]}
-country_emissions_df = country_emissions_df.pix.aggregate(country=country_combinations)
+country_emissions_df = country_emissions_df.pix.aggregate(region=country_combinations)
 
 country_emissions_df.to_csv(cams_country_temp_file)
 world_emissions_df.to_csv(cams_world_temp_file)
@@ -303,8 +306,8 @@ world_emissions_df.insert(1, "variable", "Emissions|" + world_emissions_df["gas"
 country_emissions_df = country_emissions_df.drop(columns=["sector", "gas"])
 world_emissions_df = world_emissions_df.drop(columns=["sector", "gas"])
 
-country_emissions_df = country_emissions_df.set_index(["variable", "country", "scenario", "unit"])
-world_emissions_df = world_emissions_df.set_index(["variable", "scenario", "unit"])
+country_emissions_df = country_emissions_df.set_index(["model", "scenario", "region", "variable", "unit"])
+world_emissions_df = world_emissions_df.set_index(["model", "scenario", "region", "variable", "unit"])
 
 country_emissions_df.to_csv(cams_country_proc_file)
 world_emissions_df.to_csv(cams_world_proc_file)
