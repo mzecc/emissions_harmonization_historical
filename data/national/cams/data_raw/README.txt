@@ -3,10 +3,10 @@ https://eccad.sedoo.fr/#/metadata/479
 https://eccad.sedoo.fr/#/metadata/497
 After accessing the links, press Go to Data, sign in, select CAMS-GLOB-ANT
 v6.2, press Add, go to the Download tab, select the dataset and the relevant
-species (bc, ch4, co, nh3, nmvocs, nox, oc, so2).
+species (bc, ch4, co, nh3, nmvocs, nox, oc, so2, n2o, co2_excl_short-cycle_org_C, co2_short-cycle_org_C).
 For aviation data, select CAMS-GLOB-AIR
 v2.1, press Add, go to the Download tab, select the dataset and the relevant
-species (bc, co, nh3, nmvoc, nox, oc, so2).
+species (bc, co, nh3, nmvoc, nox, oc, so2, co2).
 In the file options, select "1 file per year", "Yearly", "total (Tg)".
 Download the compressed folders and unzip them in this folder.
 
