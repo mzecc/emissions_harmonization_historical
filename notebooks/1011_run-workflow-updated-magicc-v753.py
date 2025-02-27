@@ -49,7 +49,7 @@ logger.disable("gcages")
 
 # %%
 n_processes = multiprocessing.cpu_count()
-run_checks = False  # TODO: turn on
+# run_checks = False  # TODO: turn on
 
 # %%
 INPUT_PATH = DATA_ROOT / "climate-assessment-workflow" / "output" / f"{WORKFLOW_ID}_{SCENARIO_TIME_ID}_updated-workflow"
