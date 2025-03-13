@@ -79,8 +79,10 @@ if platform.system() == "Darwin":
         magicc_exe = "magicc-darwin-arm64"
     else:
         raise NotImplementedError(platform.processor())
+
 elif platform.system() == "Windows":
     magicc_exe = "magicc.exe"
+
 else:
     raise NotImplementedError(platform.system())
 

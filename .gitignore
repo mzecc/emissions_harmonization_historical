@@ -17,6 +17,7 @@ data/global-composite
 
 # Raw scenario data
 data/scenarios/data
+
 # MAGICC stuff
 magicc
 

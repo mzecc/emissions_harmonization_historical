@@ -152,35 +152,41 @@ for our_column, db_column in (
 # ## Number of scenarios in each category
 
 # %%
-fair_v2_2_2_2021_harm_calib_metadata = pd.read_csv(DATA_ROOT / "20250204_categorization-chris.csv").drop(
-    "Unnamed: 0", axis="columns"
-)
-fair_v2_2_2_2021_harm_calib_metadata["workflow"] = "updated-workflow_fair-v2.2.2"
-fair_v2_2_2_2021_harm_calib_metadata = fair_v2_2_2_2021_harm_calib_metadata.set_index(["model", "scenario", "workflow"])
-fair_v2_2_2_2021_harm_calib_metadata = fair_v2_2_2_2021_harm_calib_metadata.rename(
-    {
-        "peak_warming_p33": "Peak warming 33.0",
-        "peak_warming_p50": "Peak warming 50.0",
-        "peak_warming_p67": "Peak warming 67.0",
-        "2100_warming_p50": "EOC warming 50.0",
-    },
-    axis="columns",
-)
-fair_v2_2_2_2021_harm_calib_metadata
-
-# %%
 workflow_map = {
     "ar6-workflow_magiccv7.5.3": "AR6",
     "ar6-workflow_magicc-v7.6.0a3": "AR6_updated-MAGICC",
     # 'updated-workflow_magiccv7.5.3': "AR7FT_AR6-MAGICC",
     "updated-workflow_magicc-v7.6.0a3": "AR7FT-MAGICCv7.6.0a3",
-    "updated-workflow_fair-v2.2.2": "AR7FT-FaIRv2.2.2",
+    # "updated-workflow_fair-v2.2.2": "AR7FT-FaIRv2.2.2",
 }
-tmp = pix.concat([metadata, fair_v2_2_2_2021_harm_calib_metadata])
+col_show_order = ["AR6", "AR6_updated-MAGICC", "AR7FT-MAGICCv7.6.0a3"]
+
+tmp = metadata
+# # If Chris does separate runs, can use this
+# col_show_order = ["AR6", "AR6_updated-MAGICC", "AR7FT-FaIRv2.2.2", "AR7FT-MAGICCv7.6.0a3"]
+# fair_v2_2_2_2021_harm_calib_metadata = pd.read_csv(DATA_ROOT / "20250204_categorization-chris.csv").drop(
+#     "Unnamed: 0", axis="columns"
+# )
+# fair_v2_2_2_2021_harm_calib_metadata["workflow"] = "updated-workflow_fair-v2.2.2"
+# fair_v2_2_2_2021_harm_calib_metadata = fair_v2_2_2_2021_harm_calib_metadata.set_index(
+#    ["model", "scenario", "workflow"]
+# )
+# fair_v2_2_2_2021_harm_calib_metadata = fair_v2_2_2_2021_harm_calib_metadata.rename(
+#     {
+#         "peak_warming_p33": "Peak warming 33.0",
+#         "peak_warming_p50": "Peak warming 50.0",
+#         "peak_warming_p67": "Peak warming 67.0",
+#         "2100_warming_p50": "EOC warming 50.0",
+#     },
+#     axis="columns",
+# )
+# fair_v2_2_2_2021_harm_calib_metadata
+# tmp = pix.concat([tmp, fair_v2_2_2_2021_harm_calib_metadata])
+
 tmp = tmp.pix.assign(scenario_group=tmp.index.get_level_values("scenario").map(get_scenario_group))
 tmp = tmp.pix.assign(workflow=tmp.index.get_level_values("workflow").map(workflow_map))
 
-col_show_order = ["AR6", "AR6_updated-MAGICC", "AR7FT-FaIRv2.2.2", "AR7FT-MAGICCv7.6.0a3"]
+
 disp = (
     tmp.groupby(["scenario_group", "workflow"])["category"]
     .value_counts()
@@ -219,9 +225,14 @@ box_kwargs = dict(saturation=0.6)
 
 fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(8, 9))
 for variable, axes_row in zip(variables, axes):
-    sns_df = (
-        pix.concat([metadata, fair_v2_2_2_2021_harm_calib_metadata])[[variable]].melt(ignore_index=False).reset_index()
-    )
+    tmp = metadata
+    try:
+        tmp = pix.concat([tmp, fair_v2_2_2_2021_harm_calib_metadata])
+    except NameError:
+        # no FaIR data
+        pass
+
+    sns_df = tmp[[variable]].melt(ignore_index=False).reset_index()
     sns_df["scenario_group"] = sns_df["scenario"].apply(get_scenario_group)
     sns_df["workflow"] = sns_df["workflow"].map(workflow_map)
 
@@ -248,7 +259,13 @@ for variable, axes_row in zip(variables, axes):
 fig.tight_layout()
 
 # %%
-metadata_by_workflow = pix.concat([metadata, fair_v2_2_2_2021_harm_calib_metadata]).copy()
+metadata_by_workflow = metadata.copy()
+try:
+    metadata_by_workflow = pix.concat([metadata_by_workflow, fair_v2_2_2_2021_harm_calib_metadata]).copy()
+except NameError:
+    # No FaIR data
+    pass
+
 metadata_by_workflow = metadata_by_workflow.pix.assign(
     workflow=metadata_by_workflow.index.get_level_values("workflow").map(workflow_map)
 )

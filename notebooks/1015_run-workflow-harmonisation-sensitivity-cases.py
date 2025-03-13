@@ -249,5 +249,3 @@ for key, out_path in OUTPUT_PATHS.items():
         print(f"Wrote {full_path}")
         print()
     print()
-
-# %%
