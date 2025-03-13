@@ -14,6 +14,9 @@
 
 # %% [markdown]
 # # Examine climate differences
+#
+# This notebook is a scratch pad.
+# It may have useful bits and pieces, but it's not organised :)
 
 # %% [markdown]
 # ## Imports

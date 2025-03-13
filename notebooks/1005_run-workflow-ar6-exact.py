@@ -261,8 +261,9 @@ db_meta = pd.read_csv(db_meta_file).set_index(["model", "scenario"])
 db_meta
 
 # %% [markdown]
-# Comparing the two makes pretty clear that we can reproduce the database.
-# The big difference is in the pre-processing,
+# Comparing the metadata from our run with the metadata from the scenario explorer/database
+# makes clear that we can reproduce the database.
+# The big difference is in the pre-processing done by the database,
 # which double counts some of the emissions in the scenario.
 
 # %%
