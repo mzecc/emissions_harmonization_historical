@@ -5,12 +5,17 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.16.4
+#       jupytext_version: 1.16.6
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
+
+# %% [markdown]
+# # Prepare CEDS
+#
+# Prepare data from [CEDS](https://github.com/JGCRI/CEDS).
 
 # %%
 # import external packages and functions

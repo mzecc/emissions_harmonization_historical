@@ -5,12 +5,18 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.16.4
+#       jupytext_version: 1.16.6
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
+
+# %% [markdown]
+# # IAMC Region aggregation
+
+# %% [markdown]
+# ## Imports
 
 # %%
 from pathlib import Path
@@ -114,7 +120,7 @@ for r in [
     "IMAGE 3.4|Rest of South America",
     "MESSAGEix-GLOBIOM 2.1-R12|Pacific OECD",
     "REMIND-MAgPIE 3.4-4.8|Latin America and the Caribbean",
-    "WITCH 6.0|United States of America",
+    "WITCH 6.0|United States",
 ]:
     # derive test region from aggregated dataframe
     test_df = history_for_all_iamc_regions[history_for_all_iamc_regions["region"] == r]
