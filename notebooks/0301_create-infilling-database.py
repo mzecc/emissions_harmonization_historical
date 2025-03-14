@@ -32,6 +32,7 @@ from loguru import logger
 
 from emissions_harmonization_historical.constants import (
     DATA_ROOT,
+    HARMONISATION_ID,
     SCENARIO_TIME_ID,
     WORKFLOW_ID,
 )
@@ -53,7 +54,7 @@ OUTPUT_PATH = (
     / "climate-assessment-workflow"
     / "input"
     / f"{WORKFLOW_ID}_{SCENARIO_TIME_ID}_updated-workflow"
-    / f"{WORKFLOW_ID}_{SCENARIO_TIME_ID}_infilling-database.csv"
+    / f"{WORKFLOW_ID}_{SCENARIO_TIME_ID}_{HARMONISATION_ID}_infilling-database.csv"
 )
 OUTPUT_PATH
 
