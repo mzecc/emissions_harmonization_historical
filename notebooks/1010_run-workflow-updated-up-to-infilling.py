@@ -69,9 +69,6 @@ scenarios_raw_global = load_global_scenario_data(
 # ## Run workflow
 
 # %%
-# TODO: try running with single scenario
-
-# %%
 workflow_res = run_workflow_up_to_infilling(
     scenarios_raw_global,
     n_processes=n_processes,
