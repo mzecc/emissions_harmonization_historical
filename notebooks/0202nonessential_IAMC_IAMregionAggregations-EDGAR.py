@@ -52,13 +52,13 @@ edgar_history_file_global = DATA_ROOT / Path("national", "edgar", "processed", f
 # file name for output
 # TODO: add versioning / ID to this file
 iamc_commondefinitions_regions_processed_output_file = DATA_ROOT / Path(
-    "combined-processed-output", f"iamc_regions_edgar_history_{IAMC_REGION_PROCESSING_ID}.csv"
+    "national", "edgar", "processed", f"iamc_regions_edgar_history_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 iamc_commondefinitions_regions_history_missing_iso_vsEDGAR = DATA_ROOT / Path(
-    "combined-processed-output", f"iamc_regions_edgar_missing_iso_vsEDGAR_{IAMC_REGION_PROCESSING_ID}.csv"
+    "national", "edgar", "processed", f"iamc_regions_edgar_missing_iso_vsEDGAR_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 iamc_commondefinitions_regions_history_missing_iso = DATA_ROOT / Path(
-    "combined-processed-output", f"iamc_regions_edgar_missing_iso_{IAMC_REGION_PROCESSING_ID}.csv"
+    "national", "edgar", "processed", f"iamc_regions_edgar_missing_iso_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 
 # %%
