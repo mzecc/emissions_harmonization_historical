@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 
-from emissions_harmonization_historical.constants import COMBINED_HISTORY_ID, DATA_ROOT, IAMC_REGION_PROCESSING_ID
+from emissions_harmonization_historical.constants import EDGAR_PROCESSING_ID, DATA_ROOT, IAMC_REGION_PROCESSING_ID
 from emissions_harmonization_historical.region_mapping import create_region_mapping
 
 # %%
@@ -46,23 +46,26 @@ if not region_file.exists() or force_generation:
     )
 
 # %%
-cmip7_history_file = DATA_ROOT / Path("combined-processed-output", f"cmip7_history_{COMBINED_HISTORY_ID}.csv")
+edgar_history_file_national = DATA_ROOT / Path("national", "edgar", "processed", f"edgar_national_{EDGAR_PROCESSING_ID}.csv")
+edgar_history_file_global = DATA_ROOT / Path("national", "edgar", "processed", f"edgar_global_{EDGAR_PROCESSING_ID}.csv")
 
 # file name for output
 # TODO: add versioning / ID to this file
 iamc_commondefinitions_regions_processed_output_file = DATA_ROOT / Path(
-    "combined-processed-output", f"iamc_regions_cmip7_history_{IAMC_REGION_PROCESSING_ID}.csv"
+    "combined-processed-output", f"iamc_regions_edgar_history_{IAMC_REGION_PROCESSING_ID}.csv"
 )
-iamc_commondefinitions_regions_history_missing_iso_vsCEDSGFED = DATA_ROOT / Path(
-    "combined-processed-output", f"iamc_regions_cmip7_history_missing_iso_vsCEDSGFED_{IAMC_REGION_PROCESSING_ID}.csv"
+iamc_commondefinitions_regions_history_missing_iso_vsEDGAR = DATA_ROOT / Path(
+    "combined-processed-output", f"iamc_regions_edgar_missing_iso_vsEDGAR_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 iamc_commondefinitions_regions_history_missing_iso = DATA_ROOT / Path(
-    "combined-processed-output", f"iamc_regions_cmip7_history_missing_iso_{IAMC_REGION_PROCESSING_ID}.csv"
+    "combined-processed-output", f"iamc_regions_edgar_missing_iso_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 
 # %%
-cmip7_history = pd.read_csv(cmip7_history_file)
-cmip7_history
+edgar_history = pd.concat([pd.read_csv(edgar_history_file_national),
+                           pd.read_csv(edgar_history_file_global)],
+                         ignore_index=True, sort=False)
+edgar_history
 
 # %%
 region_mapping = pd.read_csv(region_mapping_file)
@@ -78,7 +81,7 @@ region_mapping["iso_list"] = region_mapping["iso_list"].apply(
 region_mapping
 
 # %%
-cmip7_history[(cmip7_history["region"].isin(["usa"]))]
+edgar_history[(edgar_history["region"].isin(["usa"]))]
 
 # %%
 agg_data = []
@@ -88,7 +91,7 @@ for _, row in region_mapping.iterrows():
     iso_list = row["iso_list"]
 
     # Filter historical data based on the model and region in iso_list
-    filtered_history = cmip7_history[(cmip7_history["region"].isin(iso_list))]
+    filtered_history = edgar_history[(edgar_history["region"].isin(iso_list))]
 
     # Group by the remaining columns and aggregate the year columns
     numeric_datacols = filtered_history.select_dtypes(include="number").columns
@@ -107,7 +110,7 @@ history_for_all_iamc_regions = history_for_all_iamc_regions[columns_order]
 
 # %%
 # run a few tests to ensure processing went as intended
-pd.testing.assert_index_equal(history_for_all_iamc_regions.columns, cmip7_history.columns, check_order=False)
+pd.testing.assert_index_equal(history_for_all_iamc_regions.columns, edgar_history.columns, check_order=False)
 np.testing.assert_array_equal(history_for_all_iamc_regions["region"].unique(), region_mapping["model_region"].unique())
 
 # %%
@@ -129,7 +132,7 @@ for r in [
     countries = region_mapping.loc[region_mapping["model_region"] == r, "iso_list"]
     test_countries = countries.iloc[0]
 
-    test_data = cmip7_history[(cmip7_history["region"].isin(test_countries))]
+    test_data = edgar_history[(edgar_history["region"].isin(test_countries))]
     region_df = test_data.groupby(["model", "scenario", "variable", "unit"], as_index=False).sum()
 
     # Add a new column 'model_region' with the value region
@@ -158,16 +161,16 @@ iamc_commondefinitions_regions_processed_output_file
 # # Check countries covered by (a) different historical data sources, and (b) different IAMs in common-definitions
 
 # %%
-cmip7_history["model"].unique()
+edgar_history["model"].unique()
 
 # %%
 # extract list of unique iso codes present in respective historical dataset (post-processing)
-hist_sources = cmip7_history["model"].unique()
+hist_sources = edgar_history["model"].unique()
 
 hist_sources_countries = pd.DataFrame(columns=["model", "iso_list"])  # create empty dataframe
 
 for src in hist_sources:
-    df = cmip7_history[cmip7_history["model"] == src]
+    df = edgar_history[edgar_history["model"] == src]
     print(src)
 
     iso_list = sorted(df["region"].unique().tolist())
@@ -183,7 +186,7 @@ hist_sources_countries
 iams = region_mapping["model"].unique()
 
 missing_iso = pd.DataFrame(
-    columns=["model", "iso_list", "missing_vs_ceds", "missing_vs_gfed", "missing_from_ceds", "missing_from_gfed"]
+    columns=["model", "iso_list", "missing_vs_edgar", "missing_from_edgar"]
 )
 
 missing_iso_l = []
@@ -192,22 +195,18 @@ for m in iams:
 
     unique = sorted(list(set([v for sublist in df["iso_list"].tolist() for v in sublist])))
 
-    # compare against ceds and gfed respectively
+    # compare against edgar
     # list the iso codes present in the respective historical dataset but not in the IAM region aggregations
-    missing_vs_ceds = sorted(list(set(hist_sources_countries["iso_list"][0]) - set(unique)))
-    missing_vs_gfed = sorted(list(set(hist_sources_countries["iso_list"][1]) - set(unique)))
-
-    missing_from_ceds = sorted(list(set(unique) - set(hist_sources_countries["iso_list"][0])))
-    missing_from_gfed = sorted(list(set(unique) - set(hist_sources_countries["iso_list"][1])))
-
+    missing_vs_edgar = sorted(list(set(hist_sources_countries["iso_list"][0]) - set(unique)))
+    
+    missing_from_edgar = sorted(list(set(unique) - set(hist_sources_countries["iso_list"][0])))
+    
     temp_df = pd.DataFrame(
         {
             "model": m,
             "iso_list": [unique],
-            "missing_vs_ceds": [missing_vs_ceds],
-            "missing_vs_gfed": [missing_vs_gfed],
-            "missing_from_ceds": [missing_from_ceds],
-            "missing_from_gfed": [missing_from_gfed],
+            "missing_vs_edgar": [missing_vs_edgar],
+            "missing_from_edgar": [missing_from_edgar],
         }
     )
 
@@ -218,7 +217,7 @@ missing_iso = pd.concat(missing_iso_l, ignore_index=True)
 missing_iso
 
 # %%
-missing_iso.to_csv(iamc_commondefinitions_regions_history_missing_iso_vsCEDSGFED, index=False)
+missing_iso.to_csv(iamc_commondefinitions_regions_history_missing_iso_vsEDGAR, index=False)
 
 # %%
 # also provide as differently formatted dataframe
