@@ -49,3 +49,5 @@ WORKFLOW_ID = "0012"
 HISTORY_SCENARIO_NAME = "historical"
 
 EDGAR_PROCESSING_ID = "0010" # processed data received from Steve Smith 
+
+FAO_PROCESSING_ID = "0010" # processed data received from Steve Smith
