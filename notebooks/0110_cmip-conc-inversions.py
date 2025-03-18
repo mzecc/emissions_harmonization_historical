@@ -108,6 +108,7 @@ CMIP7_TO_HERE_VARIABLE_MAP = {
     "sf6": "SF6",
     "so2f2": "SO2F2",
     "ch3ccl3": "CH3CCl3",
+    "ccl4": "CCl4",
 }
 here_to_cmip7_variable_map = {v: k for k, v in CMIP7_TO_HERE_VARIABLE_MAP.items()}
 
@@ -156,6 +157,7 @@ wmo_lifetimes = {
     "CFC114": Q(189, "yr"),
     "CFC115": Q(540, "yr"),
     "CH3CCl3": Q(5, "yr"),
+    "CCl4": Q(30, "yr"),
 }
 molecular_masses = {
     # Gas: molecular mass
@@ -205,6 +207,7 @@ molecular_masses = {
     "CFC114": Q(12.01 + 35.45 + 2 * 19.0 + 12.01 + 35.45 + 2 * 19.0, "gCFC114 / mole"),  # CClF2CClF2
     "CFC115": Q(12.01 + 35.45 + 2 * 19.0 + 12.01 + 3 * 19.0, "gCFC115 / mole"),  # CClF2CF3
     "CH3CCl3": Q(12.01 + 3 * 1.0 + 12.01 + 3 * 35.45, "gCH3CCl3 / mole"),
+    "CCl4": Q(12.01 + 4 * 35.45, "gCCl4 / mole"),
 }
 
 # %%
@@ -238,7 +241,7 @@ out_ts_vars = [
     "Emissions|HFC|HFC32",
     "Emissions|HFC|HFC125",
     "Emissions|HFC|HFC134a",
-    "Emissions|HFC|HFC134a",
+    "Emissions|HFC|HFC143a",
     "Emissions|HFC|HFC152a",
     "Emissions|HFC|HFC227ea",
     "Emissions|HFC|HFC236fa",
@@ -249,12 +252,12 @@ out_ts_vars = [
     "Emissions|SF6",
     "Emissions|SO2F2",
     "Emissions|N2O",  # calculate but not necessarily used (could use PRIMAP instead)
-    "Emissions|HFC|HFC43-10",
-    "Emissions|Montreal Gases|CH3CCl3",  # not in CR data
+    "Emissions|Montreal Gases|CH3CCl3",
     "Emissions|Montreal Gases|CH2Cl2",
     "Emissions|Montreal Gases|CHCl3",
     "Emissions|Montreal Gases|CH3Br",
     "Emissions|Montreal Gases|CH3Cl",
+    "Emissions|Montreal Gases|CCl4",
     "Emissions|Montreal Gases|CFC|CFC11",
     "Emissions|Montreal Gases|CFC|CFC12",
     "Emissions|Montreal Gases|CFC|CFC113",
@@ -263,6 +266,9 @@ out_ts_vars = [
     "Emissions|Montreal Gases|Halon1211",
     "Emissions|Montreal Gases|Halon1301",
     "Emissions|Montreal Gases|Halon2402",
+    "Emissions|Montreal Gases|HCFC22",
+    "Emissions|Montreal Gases|HCFC141b",
+    "Emissions|Montreal Gases|HCFC142b",
 ]
 
 # conc_unit = {"variable: ppt" for variable in out_ts_vars}
