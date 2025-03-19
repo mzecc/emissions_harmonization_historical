@@ -86,8 +86,6 @@ BIOMASS_BURNING_SOURCE = BiomassBurningOption.GFED4_1s
 BIOMASS_BURNING_SOURCE
 
 # %%
-# CS: why are there two output files here?
-
 combined_processed_output_file = DATA_ROOT / Path(
     "combined-processed-output", f"cmip7_history_{COMBINED_HISTORY_ID}.csv"
 )
@@ -158,9 +156,6 @@ combined_processed_output_file
 # because it goes back to 1750,
 # irrespective of what we do above.
 
-# CS edit #1: add PRIMAP for CH4 and N2O for 1750-1969.
-# CS edit #2: use atmospheric inversions to fill species before the obs (WMO/Velders etc)
-
 # %%
 primap_global = load_csv(
     DATA_ROOT / "national/primap-hist/processed" / f"primap-hist-tp_cmip7_global_{PRIMAP_HIST_PROCESSING_ID}.csv"
@@ -216,14 +211,12 @@ use_primap_years = range(1750, 1969 + 1)
 primap_ch4 = primap_global.loc[
     pix.ismatch(variable="Emissions|CH4|Fossil, industrial and agriculture"), use_primap_years
 ]
-# primap_ch4 = primap_ch4.rename(index=lambda x: x.replace(f"|Fossil, industrial and agriculture", ""))
 primap_ch4
 
 # %%
 primap_n2o = primap_global.loc[
     pix.ismatch(variable="Emissions|N2O|Fossil, industrial and agriculture"), use_primap_years
 ]
-# primap_n2o = primap_n2o.rename(index=lambda x: x.replace(f"|Fossil, industrial and agriculture", ""))
 primap_n2o
 
 # %%
@@ -267,9 +260,6 @@ fg = sns.relplot(
 
 for ax in fg.figure.axes:
     ax.set_ylim(0)
-
-# %% [markdown]
-# #### time varying ratios of the difference between the datasets
 
 # %% [markdown]
 # proposed solution: take a linear regression and apply the intercept to scale PRIMAP emissions before 1970

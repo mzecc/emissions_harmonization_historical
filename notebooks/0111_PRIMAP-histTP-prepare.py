@@ -52,7 +52,7 @@ primap
 # %%
 ch4 = primap.loc[
     (primap.entity == "CH4")
-    & (primap.unit == "CH4 * gigagram / a")  # converted with 1000 below
+    & (primap.unit == "CH4 * gigagram / a")  # converted below
     & (primap["scenario (PRIMAP-hist)"] == "HISTTP")
     & (primap["area (ISO3)"] == "EARTH")
     & (primap["category (IPCC2006_PRIMAP)"] == "M.0.EL"),
@@ -69,7 +69,7 @@ n2o = primap.loc[
 ]
 n2o
 
-# %%
+# %% jupyter={"outputs_hidden": true}
 primap_out = pd.concat([ch4, n2o])
 primap_out["model"] = "PRIMAP-HistTP"
 primap_out["scenario"] = "historical"

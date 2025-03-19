@@ -25,9 +25,6 @@
 # Global N2O budget Table 3, where
 # 44 / 28 = 1.57
 # (https://essd.copernicus.org/articles/16/2543/2024/essd-16-2543-2024-supplement.pdf)
-#
-# We calculate 1750 total N2O emissions to be in the region of 19 Tg N2O / yr from the inversion,
-# which is close to the middle of the natural range from GNB (natural sources 11.8 TgN2 / yr = 18.5 Tg N2O / yr).
 
 # %%
 import json
@@ -251,7 +248,7 @@ out_ts_vars = [
     "Emissions|NF3",
     "Emissions|SF6",
     "Emissions|SO2F2",
-    "Emissions|N2O",  # calculate but not necessarily used (could use PRIMAP instead)
+    "Emissions|N2O",
     "Emissions|Montreal Gases|CH3CCl3",
     "Emissions|Montreal Gases|CH2Cl2",
     "Emissions|Montreal Gases|CHCl3",
@@ -391,6 +388,17 @@ background_emissions_d
 # %%
 inverse_info = pix.concat(inverse_info_l)
 inverse_info
+
+# %% [markdown]
+# We calculate 1750 total N2O emissions to be in the region of 19 Tg N2O / yr from the inversion,
+# which is close to the middle of the natural range from GNB (natural sources 11.8 TgN2 / yr = 18.5 Tg N2O / yr).
+# Source: fig. 1 in https://essd.copernicus.org/articles/16/2543/2024/
+
+# %%
+inverse_info.loc[inverse_info.index.get_level_values("variable") == "Emissions|N2O", 1750]
+
+# %%
+inverse_info.loc[pix.ismatch(variable="Atmospheric Concentrations**", model="CMIP-concs")].to_csv(OUT_PATH_CONCS)
 
 # %%
 OUT_PATH_EMMS.parent.mkdir(exist_ok=True, parents=True)
