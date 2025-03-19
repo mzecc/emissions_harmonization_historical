@@ -150,7 +150,7 @@ wmo_lifetimes = {
     "Halon2402": Q(28, "yr"),
     "HCFC22": Q(11.6, "yr"),
     "HCFC141b": Q(8.81, "yr"),
-    "HCFC142b": Q(1.58, "yr"),
+    "HCFC142b": Q(17.1, "yr"),
     "CFC11": Q(52, "yr"),
     "CFC12": Q(102, "yr"),
     "CFC113": Q(93, "yr"),
