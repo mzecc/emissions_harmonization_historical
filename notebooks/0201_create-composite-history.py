@@ -25,9 +25,12 @@
 from enum import StrEnum, auto
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 import seaborn as sns
+from scipy.stats import linregress
 
 from emissions_harmonization_historical.constants import (
     ADAM_ET_AL_2024_PROCESSING_ID,
@@ -39,6 +42,7 @@ from emissions_harmonization_historical.constants import (
     GCB_PROCESSING_ID,
     GFED_PROCESSING_ID,
     HISTORY_SCENARIO_NAME,
+    PRIMAP_HIST_PROCESSING_ID,
     VELDERS_ET_AL_2022_PROCESSING_ID,
     WMO_2022_PROCESSING_ID,
 )
@@ -145,12 +149,18 @@ combined_processed_output_file
 # ## Process global data
 
 # %% [markdown]
-# ### Create CEDS-BB4CMIP composite
+# ### Create PRIMAP-CEDS-BB4CMIP composite
 
 # %%
 # Note that, for now, we use the BB4CMIP data here
 # because it goes back to 1750,
 # irrespective of what we do above.
+
+# %%
+primap_global = load_csv(
+    DATA_ROOT / "national/primap-hist/processed" / f"primap-hist-tp_cmip7_global_{PRIMAP_HIST_PROCESSING_ID}.csv"
+)
+primap_global
 
 # %%
 bb4cmip_global = load_csv(
@@ -195,21 +205,111 @@ biomass_burning_sum = (
 biomass_burning_sum
 
 # %%
-ceds_biomass_burning_composite = (
+use_primap_years = range(1750, 1969 + 1)
+
+# %%
+primap_ch4 = primap_global.loc[
+    pix.ismatch(variable="Emissions|CH4|Fossil, industrial and agriculture"), use_primap_years
+]
+primap_ch4
+
+# %%
+primap_n2o = primap_global.loc[
+    pix.ismatch(variable="Emissions|N2O|Fossil, industrial and agriculture"), use_primap_years
+]
+primap_n2o
+
+# %%
+biomass_burning_sum
+
+# %% [markdown]
+# ### Comparison of CEDS and PRIMAP-Hist-TP
+
+# %%
+tmp = pix.concat(
+    [
+        ceds_sum.rename(index=lambda x: x.replace("Emissions|CH4|CEDSv2024_07_08", "CH4")).loc[
+            pix.isin(variable=["CH4"])
+        ],
+        primap_global.rename(index=lambda x: x.replace("Emissions|CH4|Fossil, industrial and agriculture", "CH4")).loc[
+            pix.isin(variable=["CH4"])
+        ],
+        ceds_sum.rename(index=lambda x: x.replace("Emissions|N2O|CEDSv2024_07_08", "N2O")).loc[
+            pix.isin(variable=["N2O"])
+        ],
+        primap_global.rename(index=lambda x: x.replace("Emissions|N2O|Fossil, industrial and agriculture", "N2O")).loc[
+            pix.isin(variable=["N2O"])
+        ],
+    ]
+).loc[:, 1900:2025]
+pdf = tmp.melt(ignore_index=False, var_name="year").reset_index()
+
+fg = sns.relplot(
+    data=pdf,
+    x="year",
+    y="value",
+    hue="model",
+    style="scenario",
+    col="variable",
+    col_wrap=2,
+    col_order=sorted(pdf["variable"].unique()),
+    facet_kws=dict(sharey=False),
+    kind="line",
+    alpha=0.5,
+)
+
+for ax in fg.figure.axes:
+    ax.set_ylim(0)
+
+# %% [markdown]
+# proposed solution: take a linear regression and apply the intercept to scale PRIMAP emissions before 1970
+
+# %%
+ceds_primap_ch4_ratio = (
+    tmp.loc[pix.isin(variable=["CH4"], model=["CEDSv2024_07_08"]), 1970:2022].values.squeeze()
+    / tmp.loc[pix.isin(variable=["CH4"], model=["PRIMAP-HistTP"]), 1970:2022].values.squeeze()
+)
+plt.plot(ceds_primap_ch4_ratio)
+ch4reg = linregress(np.arange(len(ceds_primap_ch4_ratio)), ceds_primap_ch4_ratio)
+ch4_primap_sf = ch4reg.intercept
+plt.plot(np.arange(len(ceds_primap_ch4_ratio)), ch4reg.intercept + ch4reg.slope * np.arange(len(ceds_primap_ch4_ratio)))
+
+# %%
+ceds_primap_n2o_ratio = (
+    tmp.loc[pix.isin(variable=["N2O"], model=["CEDSv2024_07_08"]), 1970:2022].values.squeeze()
+    / tmp.loc[pix.isin(variable=["N2O"], model=["PRIMAP-HistTP"]), 1970:2022].values.squeeze()
+)
+plt.plot(ceds_primap_n2o_ratio)
+n2oreg = linregress(np.arange(len(ceds_primap_n2o_ratio)), ceds_primap_n2o_ratio)
+n2o_primap_sf = n2oreg.intercept
+plt.plot(np.arange(len(ceds_primap_n2o_ratio)), n2oreg.intercept + n2oreg.slope * np.arange(len(ceds_primap_n2o_ratio)))
+
+# %%
+primap_ch4_scaled = primap_ch4.copy()
+primap_ch4_scaled.loc[:, 1750:1969] = primap_ch4.loc[:, use_primap_years] * ch4_primap_sf
+
+# %%
+primap_n2o_scaled = primap_n2o.copy()
+primap_n2o_scaled.loc[:, 1750:1969] = primap_n2o.loc[:, use_primap_years] * n2o_primap_sf
+
+# %%
+primap_ceds_biomass_burning_composite = (
     pix.concat(
         [
             # Keep CEDS CO2 separate
             ceds_sum.loc[~pix.ismatch(variable="Emissions|CO2**")],
             biomass_burning_sum,
+            primap_ch4_scaled,
+            primap_n2o_scaled,
         ]
     )
     .pix.extract(variable="Emissions|{species}|{source}")
-    .pix.assign(model="CEDS-BB4CMIP")
+    .pix.assign(model="CEDS-BB4CMIP-PRIMAP")
     .groupby([*(set(ceds_sum.index.names) - {"variable"}), "species"])
     .sum(min_count=2)  # will give weird output if any units differ
     .pix.format(variable="Emissions|{species}", drop=True)
 )
-ceds_biomass_burning_composite
+primap_ceds_biomass_burning_composite
 
 # %% [markdown]
 # ### Create our global composite
@@ -255,14 +355,14 @@ wmo_2022
 # %%
 # To create these, run notebook "0110_cmip-conc-inversions"
 cmip_inversions = load_csv(
-    DATA_ROOT / "global" / "esgf" / "CR-CMIP-0-4-0" / f"inverse_emissions_{CMIP_CONCENTRATION_INVERSION_ID}.csv"
+    DATA_ROOT / "global" / "esgf" / "CR-CMIP-1-0-0" / f"inverse_emissions_{CMIP_CONCENTRATION_INVERSION_ID}.csv"
 ).pix.assign(scenario=HISTORY_SCENARIO_NAME)
 
 # %%
 all_sources = pix.concat(
     [
         adam_et_al_2024,
-        ceds_biomass_burning_composite,
+        primap_ceds_biomass_burning_composite,
         ceds_co2,
         cmip_inversions,
         edgar,
@@ -277,19 +377,22 @@ all_sources
 wmo_2022.pix.unique(["model", "variable"]).to_frame(index=False)
 
 # %%
+wmo_2022
+
+# %%
 global_variable_sources = {
-    "Emissions|BC": "CEDS-BB4CMIP",
+    "Emissions|BC": "CEDS-BB4CMIP-PRIMAP",
     "Emissions|CF4": "WMO 2022 AGAGE inversions",
     "Emissions|C2F6": "WMO 2022 AGAGE inversions",
-    "Emissions|C3F8": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|cC4F8": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|C4F10": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|C5F12": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|C7F16": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|C8F18": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|C6F14": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|CH4": "CEDS-BB4CMIP",
-    "Emissions|CO": "CEDS-BB4CMIP",
+    "Emissions|C3F8": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|cC4F8": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|C4F10": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|C5F12": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|C7F16": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|C8F18": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|C6F14": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|CH4": "CEDS-BB4CMIP-PRIMAP",
+    "Emissions|CO": "CEDS-BB4CMIP-PRIMAP",
     "Emissions|CO2|AFOLU": "Global Carbon Budget",
     "Emissions|CO2|Energy and Industrial Processes": ceds_iteration,
     "Emissions|HFC|HFC125": "Velders et al., 2022",
@@ -309,11 +412,11 @@ global_variable_sources = {
     "Emissions|Montreal Gases|CFC|CFC114": "WMO 2022",
     "Emissions|Montreal Gases|CFC|CFC115": "WMO 2022",
     "Emissions|Montreal Gases|CFC|CFC12": "WMO 2022",
-    "Emissions|Montreal Gases|CH2Cl2": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|Montreal Gases|CH3Br": "CR-CMIP-0-4-0-inverse-smooth",
+    "Emissions|Montreal Gases|CH2Cl2": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|Montreal Gases|CH3Br": "CR-CMIP-1-0-0-inverse-smooth",
     "Emissions|Montreal Gases|CH3CCl3": "WMO 2022",
-    "Emissions|Montreal Gases|CH3Cl": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|Montreal Gases|CHCl3": "CR-CMIP-0-4-0-inverse-smooth",
+    "Emissions|Montreal Gases|CH3Cl": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|Montreal Gases|CHCl3": "CR-CMIP-1-0-0-inverse-smooth",
     "Emissions|Montreal Gases|HCFC141b": "WMO 2022",
     "Emissions|Montreal Gases|HCFC142b": "WMO 2022",
     "Emissions|Montreal Gases|HCFC22": "WMO 2022",
@@ -321,15 +424,15 @@ global_variable_sources = {
     "Emissions|Montreal Gases|Halon1211": "WMO 2022",
     "Emissions|Montreal Gases|Halon1301": "WMO 2022",
     "Emissions|Montreal Gases|Halon2402": "WMO 2022",
-    "Emissions|N2O": "CEDS-BB4CMIP",
-    "Emissions|NF3": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|NH3": "CEDS-BB4CMIP",
-    "Emissions|NOx": "CEDS-BB4CMIP",
-    "Emissions|OC": "CEDS-BB4CMIP",
+    "Emissions|N2O": "CEDS-BB4CMIP-PRIMAP",
+    "Emissions|NF3": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|NH3": "CEDS-BB4CMIP-PRIMAP",
+    "Emissions|NOx": "CEDS-BB4CMIP-PRIMAP",
+    "Emissions|OC": "CEDS-BB4CMIP-PRIMAP",
     "Emissions|SF6": "WMO 2022 AGAGE inversions",
-    "Emissions|SO2F2": "CR-CMIP-0-4-0-inverse-smooth",
-    "Emissions|Sulfur": "CEDS-BB4CMIP",
-    "Emissions|VOC": "CEDS-BB4CMIP",
+    "Emissions|SO2F2": "CR-CMIP-1-0-0-inverse-smooth",
+    "Emissions|Sulfur": "CEDS-BB4CMIP-PRIMAP",
+    "Emissions|VOC": "CEDS-BB4CMIP-PRIMAP",
 }
 
 # %%
