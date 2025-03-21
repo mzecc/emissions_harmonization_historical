@@ -60,6 +60,8 @@ pix.units.set_openscm_registry_as_default()
 class CEDSOption(StrEnum):
     """CEDS options"""
 
+    Drive_2025_03_18 = auto()
+    Drive_2025_03_11 = auto()
     Zenodo_2024_07_08 = auto()
     # esgf_gridded_yyyy_mm_dd = auto()
 
