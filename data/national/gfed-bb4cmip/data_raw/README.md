@@ -45,23 +45,23 @@ Then, download the data
 # Comma-separated list
 # On ESGF website: https://aims2.llnl.gov/search?project=input4MIPs&activeFacets=%7B%22mip_era%22%3A%22CMIP7%22%2C%22institution_id%22%3A%22DRES%22%2C%22source_id%22%3A%22DRES-CMIP-BB4CMIP7-2-0%22%7D for an overview
 # You can search with esgpull search e.g. `venv/bin/esgpull search --all project:input4MIPs mip_era:CMIP7 source_id:DRES-CMIP-BB4CMIP7-2-0 grid_label:gn`
-variable_ids_to_grab="BC,CH4,CO,CO2,Multiple,N2O,NH3,NMVOC_bulk,NOx,OC,SO2,gridcellarea"
+variable_ids_to_grab="BC,CH4,CO,CO2,Multiple,N2O,NH3,NMVOCbulk,NOx,OC,SO2,gridcellarea"
 venv/bin/esgpull add --tag bb4cmip --track variable_id:"${variable_ids_to_grab}" project:input4MIPs mip_era:CMIP7 source_id:DRES-CMIP-BB4CMIP7-2-0 grid_label:gn
 venv/bin/esgpull update -y --tag bb4cmip
 venv/bin/esgpull download --tag bb4cmip # this downloads most variables, and requires about 12-13 GB of data
 ```
 
 The download takes some time, but if it gets interrupted it can be restarted using
-```
+```sh
 venv/bin/esgpull status
 ```
 to check if you have downloads that were not completed (error) or that were not yet started before the interruption (starting)
 To put them back in the queue:
-```
+```sh
 venv/bin/esgpull retry error
 venv/bin/esgpull retry starting
 ```
 and then to continue downloading these:
-```
+```sh
 venv/bin/esgpull retry download
 ```
