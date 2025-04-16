@@ -39,6 +39,9 @@ from emissions_harmonization_historical.units import assert_units_match_wishes
 pix.units.set_openscm_registry_as_default()
 
 
+# %%
+CEDS_PROCESSING_ID
+
 # %% [markdown]
 # Set paths
 
@@ -91,7 +94,7 @@ ceds_map.to_frame(index=False)
 
 # %%
 ceds = pd.concat(
-    read_CEDS(Path(ceds_data_folder) / f"{s}_CEDS_emissions_by_country_sector_v{ceds_release}.csv") for s in species
+    read_CEDS(Path(ceds_data_folder) / f"{s}_CEDS_estimates_by_country_sector_v{ceds_release}.csv") for s in species
 ).rename_axis(index={"region": "country"})
 ceds = ceds.pix.semijoin(ceds_map, how="outer")
 ceds.loc[isna].pix.unique(["sector_59", "sector"])  # print sectors with NAs
@@ -191,22 +194,49 @@ assert_units_match_wishes(ceds_reformatted_iamc)
 
 # %%
 out_global = ceds_reformatted_iamc.loc[pix.isin(region="World")]  # only the added "World" region
+
 out_national_with_global = ceds_reformatted_iamc.loc[
     ~pix.isin(region="World")
 ]  # remove the added "World" region, and the CEDS "global" region
+
 out_national_without_global = ceds_reformatted_iamc.loc[
     ~pix.isin(region=["World", "global"])
 ]  # remove the added "World" region, and the CEDS "global" region
+out_national_without_global = out_national_without_global.loc[
+    ~pix.ismatch(variable="**Aircraft")
+]  # remove all national "Emissions|CO2|Aircraft"
+
 out_national_only_global = ceds_reformatted_iamc.loc[
     pix.isin(region="global")
 ]  # only the CEDS "global" region; which represents "international" emissions
+out_national_only_global = out_national_only_global.loc[
+    ~pix.ismatch(variable="**Aircraft")
+]  # remove all global "Emissions|CO2|Aircraft"
+global_aircraft = out_global.loc[pix.ismatch(variable="**Aircraft")]  # filter out all global "Emissions|CO2|Aircraft"
+global_aircraft = global_aircraft.pix.assign(region="global")
+# rename "region" to "global"
+out_national_only_global = pd.concat([out_national_only_global, global_aircraft])
+# concatenate global aircraft emissions with out_national_only_global
 
 # %%
-assert out_national_with_global.shape[0] + out_global.shape[0] == ceds_reformatted_iamc.shape[0]
 assert (
-    out_national_without_global.shape[0] + out_national_only_global.shape[0] + out_global.shape[0]
-    == ceds_reformatted_iamc.shape[0]
+    out_national_with_global.loc[~pix.ismatch(variable="**Aircraft")].shape[0]
+    + out_global.loc[~pix.ismatch(variable="**Aircraft")].shape[0]
+    == ceds_reformatted_iamc.loc[~pix.ismatch(variable="**Aircraft")].shape[0]
 )
+
+assert (
+    out_national_without_global.loc[~pix.ismatch(variable="**Aircraft")].shape[0]
+    + out_national_only_global.loc[~pix.ismatch(variable="**Aircraft")].shape[0]
+    + out_global.loc[~pix.ismatch(variable="**Aircraft")].shape[0]
+    == ceds_reformatted_iamc.loc[~pix.ismatch(variable="**Aircraft")].shape[0]
+)
+
+# %%
+out_global.loc[pix.ismatch(variable=["Emissions|CO2|Aircraft"])]
+
+# %%
+out_national_only_global.loc[pix.ismatch(variable=["Emissions|CO2|Aircraft"])]
 
 # %% [markdown]
 # Check that national sums equal global total.
@@ -262,6 +292,16 @@ else:
         len(nz[["region", "variable"]].drop_duplicates())
         == CEDS_EXPECTED_NUMBER_OF_REGION_VARIABLE_PAIRS_IN_GLOBAL_HARMONIZATION
     )  # ... if the CEDS version is not 2024_07_08, this assert statement may need to be updated
+
+# %%
+national_sums_checker = (
+    pix.assignlevel(
+        out_national_without_global.groupby(["model", "scenario", "variable", "unit"]).sum(), region="World"
+    )
+    .loc[~pix.ismatch(variable=["**Aircraft", "**Shipping"])]
+    .reset_index()
+    .set_index(out_global.index.names)
+)
 
 # %%
 # national CEDS data

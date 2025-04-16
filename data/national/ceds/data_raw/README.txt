@@ -2,8 +2,8 @@
 v_2025_03_18 (CMIP7 final final)
 ----------------------
 
-Download data from ScenarioMIP drive folder:
-https://drive.google.com/drive/folders/1pLT2-zAmRqlkT2cXbuAl72gMgGdd7UTT
+Download data from zenodo:
+https://zenodo.org/records/15059443
 DOI: 10.5281/zenodo.15059443
 
 Place the extracted data in this folder.
@@ -14,6 +14,8 @@ At the moment, we only use files with a filename of the form:
 
 These data only come from the `v_2025_03_18_aggregate.zip` file, but we recommend downloading the others now too as they may be used in future.
 
+additional files with comparison against CMIP6 can be found in the ScenarioMIP drive folder:
+https://drive.google.com/drive/folders/1pLT2-zAmRqlkT2cXbuAl72gMgGdd7UTT
 
 
 ----------------------
