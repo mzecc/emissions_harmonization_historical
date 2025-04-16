@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.16.4
+#       jupytext_version: 1.16.6
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -16,6 +16,11 @@
 # # EDGAR - process
 #
 # Process data from [EDGAR](https://edgar.jrc.ec.europa.eu/dataset_ghg2024).
+#
+#
+# We also have 0151_EDGAR_harmonisation_sectors.py, which is used used to serve the vetting of IAM scenarios based on national level harmonization sectors in the same format as what is produced in CEDS-prepare.py
+#
+# Instead, this notebook is especially for minor gases (F-gases), on the global level, for climate emulator input.
 
 # %%
 from pathlib import Path

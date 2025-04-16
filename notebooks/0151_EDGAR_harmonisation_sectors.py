@@ -15,7 +15,11 @@
 # %% [markdown]
 # # Prepare EDGAR
 #
-# Prepare data from EDGAR (currently as provided by Steve Smith).
+# Prepare data from EDGAR that has already been prepared in CEDS-aligned sectors (currently as provided by Steve Smith).
+#
+# We also have 0109_edgar-prepare.py, which is used especially for minor gases (F-gases), on the global level, for climate emulator input.
+#
+# Instead, this notebook is used to serve the vetting of IAM scenarios based on national level harmonization sectors in the same format as what is produced in CEDS-prepare.py
 
 # %%
 # import external packages and functions
@@ -77,9 +81,6 @@ species = [
     "OC",
     "SO2",
 ]
-
-# %%
-edgar_mapping['EDGAR_sectors']
 
 # %% [markdown]
 # Load sector mapping of emissions species
@@ -171,7 +172,7 @@ edgar_reformatted_iamc.pix.unique(['variable'])
 assert_units_match_wishes(edgar_reformatted_iamc)
 
 # %% [markdown]
-# Save formatted CEDS data
+# Save formatted EDGAR data
 
 # %%
 out_global = edgar_reformatted_iamc.loc[pix.isin(region="World")]  # only the added "World" region
