@@ -343,7 +343,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstandard-0.23.0-py311hbc35293_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.6-ha6fb4c9_0.conda
       - pypi: https://files.pythonhosted.org/packages/54/7e/ac0991d1745f7d755fc1cd381b3990a45b404b4d008fc75e2a983516fbfe/alembic-1.14.1-py3-none-any.whl
-      - pypi: git+https://github.com/iiasa/aneris.git?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
+      - pypi: git+https://github.com/iiasa/aneris?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
       - pypi: https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c5/55/51844dd50c4fc7a33b653bfaba4c2456f06955289ca770a5dbd5fd267374/cfgv-3.4.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/91/a1/cf2472db20f7ce4a6be1253a81cfdf85ad9c7885ffbed7047fb72c24cf87/distlib-0.3.9-py2.py3-none-any.whl
@@ -372,7 +372,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/77/39/86e07f4e9671ee9311fa4bafc41c66d6a907192707160e3f45272e78be38/pre_commit-3.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/49/15114d5f7ee68983f4e1a24d47e75334568960352a07c6f0e796e912685d/psycopg-3.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/7c/f5099ad491f78ba491e56cd686b38b0737eb09a719e919661a9f8d08e754/psycopg_binary-3.2.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: git+https://github.com/gidden/ptolemy.git?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
+      - pypi: git+https://github.com/gidden/ptolemy?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
       - pypi: https://files.pythonhosted.org/packages/9b/a9/10d819bad953f2a83b01e602c1f64cb3c3b3ad0366f3198b995be76910c3/pyam_iamc-3.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/12/fdbcd29b5a243af2f1c1a83636a21e3837aeaa070c9212ebe657e39ce563/pycountry-23.12.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f4/3c/8cc1cc84deffa6e25d2d0c688ebb80635dfdbf1dbea3e30c541c8cf4d860/pydantic-2.10.6-py3-none-any.whl
@@ -740,7 +740,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zstandard-0.23.0-py311hd5293d8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zstd-1.5.6-h02f22dd_0.conda
       - pypi: https://files.pythonhosted.org/packages/54/7e/ac0991d1745f7d755fc1cd381b3990a45b404b4d008fc75e2a983516fbfe/alembic-1.14.1-py3-none-any.whl
-      - pypi: git+https://github.com/iiasa/aneris.git?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
+      - pypi: git+https://github.com/iiasa/aneris?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
       - pypi: https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c5/55/51844dd50c4fc7a33b653bfaba4c2456f06955289ca770a5dbd5fd267374/cfgv-3.4.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/91/a1/cf2472db20f7ce4a6be1253a81cfdf85ad9c7885ffbed7047fb72c24cf87/distlib-0.3.9-py2.py3-none-any.whl
@@ -769,7 +769,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/77/39/86e07f4e9671ee9311fa4bafc41c66d6a907192707160e3f45272e78be38/pre_commit-3.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/49/15114d5f7ee68983f4e1a24d47e75334568960352a07c6f0e796e912685d/psycopg-3.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bf/ab/4f6c815862d62d9d06353abfbf36fef69ad7e6ca0763eed1629f47579e83/psycopg_binary-3.2.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
-      - pypi: git+https://github.com/gidden/ptolemy.git?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
+      - pypi: git+https://github.com/gidden/ptolemy?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
       - pypi: https://files.pythonhosted.org/packages/9b/a9/10d819bad953f2a83b01e602c1f64cb3c3b3ad0366f3198b995be76910c3/pyam_iamc-3.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/12/fdbcd29b5a243af2f1c1a83636a21e3837aeaa070c9212ebe657e39ce563/pycountry-23.12.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f4/3c/8cc1cc84deffa6e25d2d0c688ebb80635dfdbf1dbea3e30c541c8cf4d860/pydantic-2.10.6-py3-none-any.whl
@@ -1130,7 +1130,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstandard-0.23.0-py311hdf6fcd6_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.6-h915ae27_0.conda
       - pypi: https://files.pythonhosted.org/packages/54/7e/ac0991d1745f7d755fc1cd381b3990a45b404b4d008fc75e2a983516fbfe/alembic-1.14.1-py3-none-any.whl
-      - pypi: git+https://github.com/iiasa/aneris.git?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
+      - pypi: git+https://github.com/iiasa/aneris?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
       - pypi: https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c5/55/51844dd50c4fc7a33b653bfaba4c2456f06955289ca770a5dbd5fd267374/cfgv-3.4.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/91/a1/cf2472db20f7ce4a6be1253a81cfdf85ad9c7885ffbed7047fb72c24cf87/distlib-0.3.9-py2.py3-none-any.whl
@@ -1159,7 +1159,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/77/39/86e07f4e9671ee9311fa4bafc41c66d6a907192707160e3f45272e78be38/pre_commit-3.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/49/15114d5f7ee68983f4e1a24d47e75334568960352a07c6f0e796e912685d/psycopg-3.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f3/9a/8013aa4ad4d76dfcf9b822da549d51aab96abfc77afc44b200ef295685dc/psycopg_binary-3.2.4-cp311-cp311-macosx_10_9_x86_64.whl
-      - pypi: git+https://github.com/gidden/ptolemy.git?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
+      - pypi: git+https://github.com/gidden/ptolemy?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
       - pypi: https://files.pythonhosted.org/packages/9b/a9/10d819bad953f2a83b01e602c1f64cb3c3b3ad0366f3198b995be76910c3/pyam_iamc-3.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/12/fdbcd29b5a243af2f1c1a83636a21e3837aeaa070c9212ebe657e39ce563/pycountry-23.12.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f4/3c/8cc1cc84deffa6e25d2d0c688ebb80635dfdbf1dbea3e30c541c8cf4d860/pydantic-2.10.6-py3-none-any.whl
@@ -1520,7 +1520,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstandard-0.23.0-py311ha60cc69_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.6-hb46c0d2_0.conda
       - pypi: https://files.pythonhosted.org/packages/54/7e/ac0991d1745f7d755fc1cd381b3990a45b404b4d008fc75e2a983516fbfe/alembic-1.14.1-py3-none-any.whl
-      - pypi: git+https://github.com/iiasa/aneris.git?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
+      - pypi: git+https://github.com/iiasa/aneris?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
       - pypi: https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c5/55/51844dd50c4fc7a33b653bfaba4c2456f06955289ca770a5dbd5fd267374/cfgv-3.4.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/91/a1/cf2472db20f7ce4a6be1253a81cfdf85ad9c7885ffbed7047fb72c24cf87/distlib-0.3.9-py2.py3-none-any.whl
@@ -1548,7 +1548,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/77/39/86e07f4e9671ee9311fa4bafc41c66d6a907192707160e3f45272e78be38/pre_commit-3.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/49/15114d5f7ee68983f4e1a24d47e75334568960352a07c6f0e796e912685d/psycopg-3.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1e/65/2422036d0169e33e5f06d868a36235340f85e42afe153d59b0edf4b4210f/psycopg_binary-3.2.4-cp311-cp311-macosx_11_0_arm64.whl
-      - pypi: git+https://github.com/gidden/ptolemy.git?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
+      - pypi: git+https://github.com/gidden/ptolemy?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
       - pypi: https://files.pythonhosted.org/packages/9b/a9/10d819bad953f2a83b01e602c1f64cb3c3b3ad0366f3198b995be76910c3/pyam_iamc-3.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/12/fdbcd29b5a243af2f1c1a83636a21e3837aeaa070c9212ebe657e39ce563/pycountry-23.12.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f4/3c/8cc1cc84deffa6e25d2d0c688ebb80635dfdbf1dbea3e30c541c8cf4d860/pydantic-2.10.6-py3-none-any.whl
@@ -1898,7 +1898,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstandard-0.23.0-py311h53056dc_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstd-1.5.6-h0ea2cb4_0.conda
       - pypi: https://files.pythonhosted.org/packages/54/7e/ac0991d1745f7d755fc1cd381b3990a45b404b4d008fc75e2a983516fbfe/alembic-1.14.1-py3-none-any.whl
-      - pypi: git+https://github.com/iiasa/aneris.git?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
+      - pypi: git+https://github.com/iiasa/aneris?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
       - pypi: https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c5/55/51844dd50c4fc7a33b653bfaba4c2456f06955289ca770a5dbd5fd267374/cfgv-3.4.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/91/a1/cf2472db20f7ce4a6be1253a81cfdf85ad9c7885ffbed7047fb72c24cf87/distlib-0.3.9-py2.py3-none-any.whl
@@ -1927,7 +1927,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/77/39/86e07f4e9671ee9311fa4bafc41c66d6a907192707160e3f45272e78be38/pre_commit-3.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/49/15114d5f7ee68983f4e1a24d47e75334568960352a07c6f0e796e912685d/psycopg-3.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/12/c5/1be474bfa7282aa9177c3e498eb641b1441724f0155953f3872c69deddf0/psycopg_binary-3.2.4-cp311-cp311-win_amd64.whl
-      - pypi: git+https://github.com/gidden/ptolemy.git?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
+      - pypi: git+https://github.com/gidden/ptolemy?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
       - pypi: https://files.pythonhosted.org/packages/9b/a9/10d819bad953f2a83b01e602c1f64cb3c3b3ad0366f3198b995be76910c3/pyam_iamc-3.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/12/fdbcd29b5a243af2f1c1a83636a21e3837aeaa070c9212ebe657e39ce563/pycountry-23.12.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f4/3c/8cc1cc84deffa6e25d2d0c688ebb80635dfdbf1dbea3e30c541c8cf4d860/pydantic-2.10.6-py3-none-any.whl
@@ -2040,7 +2040,7 @@ packages:
   - backports-zoneinfo ; python_full_version < '3.9' and extra == 'tz'
   - tzdata ; extra == 'tz'
   requires_python: '>=3.8'
-- pypi: git+https://github.com/iiasa/aneris.git?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
+- pypi: git+https://github.com/iiasa/aneris?rev=9e5aa002b523f1d5d0ac32554988816e8c20cb44#9e5aa002b523f1d5d0ac32554988816e8c20cb44
   name: aneris-iamc
   version: 0.3.3.dev6+g9e5aa00
   requires_dist:
@@ -13545,7 +13545,7 @@ packages:
   purls: []
   size: 9389
   timestamp: 1726802555076
-- pypi: git+https://github.com/gidden/ptolemy.git?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
+- pypi: git+https://github.com/gidden/ptolemy?rev=015aa843c340bd57464eb7cfd5f3c8e397201266#015aa843c340bd57464eb7cfd5f3c8e397201266
   name: ptolemy-iamc
   version: 0.4.dev3+g015aa84
   requires_dist:
