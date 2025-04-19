@@ -64,12 +64,15 @@ pix.units.set_openscm_registry_as_default()
 class CEDSOption(StrEnum):
     """CEDS options"""
 
-    Zenodo_2024_07_08 = auto()
+    Zenodo_2025_03_18 = auto() # https://doi.org/10.5281/zenodo.15059443
+    Drive_2025_03_18 = auto() # https://drive.google.com/file/d/1xQprQN-bZboJrEH2g2t8uIF2IN7qAa2Q/view?usp=drive_link
+    Drive_2025_03_11 = auto() # https://drive.google.com/file/d/17ZjKy4VmGuzU1YnQMQFti5kG0prX2k_L/view?usp=drive_link
+    Zenodo_2024_07_08 = auto() # https://doi.org/10.5281/zenodo.12803197
     # esgf_gridded_yyyy_mm_dd = auto()
 
 
 # %%
-CEDS_SOURCE = CEDSOption.Zenodo_2024_07_08
+CEDS_SOURCE = CEDSOption.Zenodo_2025_03_18
 CEDS_SOURCE
 
 
@@ -79,6 +82,7 @@ class BiomassBurningOption(StrEnum):
 
     GFED4_1s = auto()
     esgf_gridded_dres_cmip_bb4cmip7_1_0 = auto()
+    esgf_gridded_dres_cmip_bb4cmip7_2_0 = auto()
 
 
 # %%
@@ -97,7 +101,7 @@ combined_processed_output_file_world_only = DATA_ROOT / Path(
 # ## Process national data
 
 # %%
-if CEDS_SOURCE == CEDSOption.Zenodo_2024_07_08:
+if CEDS_SOURCE in [CEDSOption.Zenodo_2024_07_08, CEDSOption.Drive_2025_03_11, CEDSOption.Drive_2025_03_18, CEDSOption.Zenodo_2025_03_18]:
     ceds = pix.concat(
         [
             load_csv(
