@@ -43,7 +43,7 @@ out_path_national = data_path / f"gfed-bb4cmip_cmip7_national_{GFED_PROCESSING_I
 # %%
 species = [
     "BC",
-    "NMVOC",
+    "NMVOCbulk",
     "CO",
     "CO2",
     "CH4",
@@ -86,7 +86,7 @@ df_reordered = df_sorted.set_index(["model", "scenario", "region", "variable", "
 df_renamed = df_reordered.rename(
     index={
         "Emissions|SO2|Biomass Burning": "Emissions|Sulfur|Biomass Burning",
-        "Emissions|NMVOC|Biomass Burning": "Emissions|VOC|Biomass Burning",
+        "Emissions|NMVOCbulk|Biomass Burning": "Emissions|VOC|Biomass Burning",
     },
     level="variable",
 )
