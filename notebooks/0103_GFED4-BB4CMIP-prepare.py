@@ -67,9 +67,9 @@ species_data = {
         "unit_label": "Mt BC / yr",
         "filename_label": "BC",
     },
-    "NMVOC": {
+    "NMVOCbulk": {
         "unit_label": "Mt NMVOC / yr",
-        "filename_label": "NMVOC_bulk",
+        "filename_label": "NMVOCbulk",
     },
     "CO": {
         "unit_label": "Mt CO / yr",
