@@ -1,5 +1,5 @@
 ----------------------
-v_2025_03_18 (CMIP7 final final)
+v_2025_03_18
 ----------------------
 
 Download data from zenodo:
