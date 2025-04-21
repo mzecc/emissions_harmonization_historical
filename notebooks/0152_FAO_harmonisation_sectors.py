@@ -66,7 +66,7 @@ fao_csv_files
 # Specify species to processes
 
 # %%
-# FAO in this dataset from Stevce has CH4 agriculture and N2O agriculture
+# FAO in this dataset from Steve has CH4 agriculture and N2O agriculture
 species = [
     # "BC",
     "CH4",
