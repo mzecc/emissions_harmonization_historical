@@ -1,5 +1,5 @@
 """
-Run the 0401 notebooks for all the available models
+Run the 040x notebooks for all the available models
 """
 
 import papermill as pm
@@ -29,23 +29,23 @@ def main():
     )
 
     output_dir = DATA_ROOT / "reporting-checking"
-    notebook_to_run = "0401_model-reporting.ipynb"
 
     available_models = sorted(SCENARIO_DB.load_metadata().get_level_values("model").unique())
     for model in tqdm.tqdm(available_models, desc="models"):
         model_clean = model.replace(".", "-").replace(" ", "-")
 
-        output_dir_notebook = output_dir / SCENARIO_TIME_ID / model_clean
-        output_dir_notebook.mkdir(exist_ok=True, parents=True)
-        output_notebook = output_dir_notebook / notebook_to_run
+        for notebook_to_run in ["0401_model-reporting.ipynb", "0402_model-internal-consistency.ipynb"]:
+            output_dir_notebook = output_dir / SCENARIO_TIME_ID / model_clean
+            output_dir_notebook.mkdir(exist_ok=True, parents=True)
+            output_notebook = output_dir_notebook / notebook_to_run
 
-        print(f"Executing {notebook_to_run} for {model=}")
-        print(f"Writing to {output_notebook}")
-        pm.execute_notebook(
-            notebook_to_run,
-            output_notebook,
-            parameters=dict(model=model, output_dir=str(output_dir)),
-        )
+            print(f"Executing {notebook_to_run} for {model=}")
+            print(f"Writing to {output_notebook}")
+            pm.execute_notebook(
+                notebook_to_run,
+                output_notebook,
+                parameters=dict(model=model, output_dir=str(output_dir)),
+            )
 
 
 if __name__ == "__main__":

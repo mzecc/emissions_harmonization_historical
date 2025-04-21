@@ -21,16 +21,20 @@
 # ## Imports
 
 # %%
+from functools import partial
 from pathlib import Path
 
+import openpyxl
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
+import tqdm.auto as tqdm
 from gcages.cmip7_scenariomip.pre_processing import (
     get_independent_index_input,
 )
 from gcages.index_manipulation import combine_species, split_sectors
 from gcages.testing import compare_close
+from openpyxl.styles import Font
 from pandas_openscm.db import (
     FeatherDataBackend,
     FeatherIndexBackend,
@@ -47,7 +51,7 @@ from emissions_harmonization_historical.constants import (
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND-MAgPIE 3.5-4.10"
+model: str = "IMAGE 3.4"
 output_dir: str = "../data/reporting-checking"
 
 # %%
@@ -73,6 +77,26 @@ SCENARIO_DB = OpenSCMDB(
 )
 
 SCENARIO_DB.load_metadata().shape
+
+
+# %% [markdown]
+# ## Helper function(s)
+
+
+# %%
+def set_cell(
+    value: str,
+    row: int,
+    col: int,
+    ws: openpyxl.worksheet.worksheet.Worksheet,
+    font: openpyxl.styles.fonts.Font | None = None,
+):
+    """Set the value for an excel cell"""
+    cell = ws.cell(row=row, column=col)
+    cell.value = value
+    if font is not None:
+        cell.font = font
+
 
 # %% [markdown]
 # ## Load data
@@ -160,21 +184,99 @@ for variable in totals_exp.pix.unique("variable"):
     )
 
     if comparison_variable.empty:
+        print(f"o {variable} - consistent")
         continue
 
+    print(f"x {variable} - inconsistent")
     inconsistencies_l.append(comparison_variable)
-    display(comparison_variable)  # noqa: F821
+    # display(comparison_variable)
 
+print()
 if not inconsistencies_l:
     print("Data is internally consistent")
 
 else:
-    print("The following internal consistency issues were found")
+    print("Internal consistency issues were found")
     inconsistencies = pix.concat(inconsistencies_l)
-    display(inconsistencies)  # noqa: F821
+    # display(inconsistencies)
     # TODO: save this out by variable
     # inconsistencies.to_csv(output_dir_model / "internal-inconsistencies.csv", index=True)
     # also include the components we considered
     # also see if we can figure out whether there is anything obvious missing
     # model_df_considered.loc[pix.ismatch(variable=f"{variable}**")]
     # variable.split("|")[-1]
+
+# %%
+if inconsistencies_l:
+    internal_consistency_issues_filepath = output_dir_model / "internal-consistency-issues.xlsx"
+    print(f"Writing {internal_consistency_issues_filepath}")
+
+    writer = pd.ExcelWriter(internal_consistency_issues_filepath, engine="openpyxl")
+    workbook = writer.book
+
+    for inconsistent_variable, inconsistent_variable_df in tqdm.tqdm(
+        inconsistencies.groupby("variable"), desc="variables"
+    ):
+        species = inconsistent_variable.split("|")[-1]
+        species_worksheet = workbook.create_sheet(title=species)
+
+        set_cell_ws = partial(set_cell, ws=species_worksheet)
+
+        set_cell_ws(f"Internal consistency errors for {inconsistent_variable}", row=1, col=1, font=Font(bold=True))
+        set_cell_ws(
+            "Reported totals compared to the sum of sector-region information is shown below",
+            row=3,
+            col=1,
+            font=Font(bold=True),
+        )
+        set_cell_ws(
+            f"Relative tolerance applied while checking for consistency: {tols[inconsistent_variable]['rtol']}",
+            row=4,
+            col=1,
+        )
+        set_cell_ws(
+            f"Absolute tolerance applied while checking for consistency: {tols[inconsistent_variable]['atol']}",
+            row=5,
+            col=1,
+        )
+        set_cell_ws(
+            "NaN indicates that there is not an inconsistency issue for this data point for the given tolerances",
+            row=6,
+            col=1,
+        )
+
+        inconsistent_variable_df.columns.name = "source"
+        inconsistent_variable_df_stacked = (
+            inconsistent_variable_df.unstack().stack("source", future_stack=True).sort_index()
+        )
+        inconsistent_variable_df_stacked.to_excel(
+            writer,
+            sheet_name=species,
+            startrow=8 - 1,  # pandas offset by one
+        )
+
+        components_included_in_sum = model_df_considered.loc[pix.ismatch(variable=f"{inconsistent_variable}**")]
+        components_included_in_sum = (
+            components_included_in_sum.pix.assign(source="model_reported")
+            .reorder_levels(inconsistent_variable_df_stacked.index.names)
+            .sort_index()
+        )
+
+        current_row = 8 - 1 + 1 + inconsistent_variable_df_stacked.shape[0]
+        set_cell_ws(
+            "The following rows were used to create the sector-region sum",
+            row=current_row + 2,
+            col=1,
+            font=Font(bold=True),
+        )
+        components_included_in_sum.to_excel(
+            writer,
+            sheet_name=species,
+            startrow=current_row + 4 - 1,  # pandas offset by one
+        )
+
+        # Possible extension: try and guess what variables were missing or double counted
+
+    workbook.save(internal_consistency_issues_filepath)
+
+    print(f"Wrote {internal_consistency_issues_filepath}")
