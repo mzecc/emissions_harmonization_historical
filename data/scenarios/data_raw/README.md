@@ -7,10 +7,10 @@ create a virtual environment using whatever environment manager you like
 then remove `venv/bin/` from all the commands below).
 
 ```sh
-# Install pyam-iamc
+# Install dependencies
 python3 -m venv venv
 venv/bin/pip install --upgrade pip wheel
-venv/bin/pip install pyam-iamc tqdm
+venv/bin/pip install -r requirements.txt
 ```
 
 Login with ixmp4
