@@ -144,21 +144,22 @@ if not model_region_missing.empty:
         .all()
     )
 
+    # Slightly slow way to do this, but ok
+    missing_by_region = model_region_missing_df.groupby("region")["variable"].apply(lambda x: x.values)
+    missing_in_all_regions = set(missing_by_region.iloc[0])
+    for mr in missing_by_region:
+        missing_in_all_regions = missing_in_all_regions.intersection(set(mr))
+
+    print("Missing in all regions")
+    print("======================")
+    print()
+    print(textwrap.indent("\n".join(sorted(missing_in_all_regions)), prefix="- "))
+    print()
+
     if all_regions_missing_the_same:
         print("All regions are missing the same variables")
 
     else:
-        missing_by_region = model_region_missing_df.groupby("region")["variable"].apply(lambda x: x.values)
-        missing_in_all_regions = set(missing_by_region.iloc[0])
-        for mr in missing_by_region:
-            missing_in_all_regions = missing_in_all_regions.intersection(set(mr))
-
-        print("Missing in all regions")
-        print("======================")
-        print()
-        print(textwrap.indent("\n".join(sorted(missing_in_all_regions)), prefix="- "))
-
-        print()
         print("Missing for specific regions")
         print("============================")
         for region, mr in missing_by_region.items():
