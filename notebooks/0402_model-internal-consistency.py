@@ -211,72 +211,70 @@ if inconsistencies_l:
     internal_consistency_issues_filepath = output_dir_model / "internal-consistency-issues.xlsx"
     print(f"Writing {internal_consistency_issues_filepath}")
 
-    writer = pd.ExcelWriter(internal_consistency_issues_filepath, engine="openpyxl")
-    workbook = writer.book
+    with pd.ExcelWriter(internal_consistency_issues_filepath, engine="openpyxl") as writer:
+        workbook = writer.book
 
-    for inconsistent_variable, inconsistent_variable_df in tqdm.tqdm(
-        inconsistencies.groupby("variable"), desc="variables"
-    ):
-        species = inconsistent_variable.split("|")[-1]
-        species_worksheet = workbook.create_sheet(title=species)
+        for inconsistent_variable, inconsistent_variable_df in tqdm.tqdm(
+            inconsistencies.groupby("variable"), desc="variables"
+        ):
+            species = inconsistent_variable.split("|")[-1]
+            species_worksheet = workbook.create_sheet(title=species)
 
-        set_cell_ws = partial(set_cell, ws=species_worksheet)
+            set_cell_ws = partial(set_cell, ws=species_worksheet)
 
-        set_cell_ws(f"Internal consistency errors for {inconsistent_variable}", row=1, col=1, font=Font(bold=True))
-        set_cell_ws(
-            "Reported totals compared to the sum of sector-region information is shown below",
-            row=3,
-            col=1,
-            font=Font(bold=True),
-        )
-        set_cell_ws(
-            f"Relative tolerance applied while checking for consistency: {tols[inconsistent_variable]['rtol']}",
-            row=4,
-            col=1,
-        )
-        set_cell_ws(
-            f"Absolute tolerance applied while checking for consistency: {tols[inconsistent_variable]['atol']}",
-            row=5,
-            col=1,
-        )
-        set_cell_ws(
-            "NaN indicates that there is not an inconsistency issue for this data point for the given tolerances",
-            row=6,
-            col=1,
-        )
+            set_cell_ws(f"Internal consistency errors for {inconsistent_variable}", row=1, col=1, font=Font(bold=True))
+            set_cell_ws(
+                "Reported totals compared to the sum of sector-region information is shown below",
+                row=3,
+                col=1,
+                font=Font(bold=True),
+            )
+            set_cell_ws(
+                f"Relative tolerance applied while checking for consistency: {tols[inconsistent_variable]['rtol']}",
+                row=4,
+                col=1,
+            )
+            set_cell_ws(
+                f"Absolute tolerance applied while checking for consistency: {tols[inconsistent_variable]['atol']}",
+                row=5,
+                col=1,
+            )
+            set_cell_ws(
+                "NaN indicates that there is not an inconsistency issue for this data point for the given tolerances",
+                row=6,
+                col=1,
+            )
 
-        inconsistent_variable_df.columns.name = "source"
-        inconsistent_variable_df_stacked = (
-            inconsistent_variable_df.unstack().stack("source", future_stack=True).sort_index()
-        )
-        inconsistent_variable_df_stacked.to_excel(
-            writer,
-            sheet_name=species,
-            startrow=8 - 1,  # pandas offset by one
-        )
+            inconsistent_variable_df.columns.name = "source"
+            inconsistent_variable_df_stacked = (
+                inconsistent_variable_df.unstack().stack("source", future_stack=True).sort_index()
+            )
+            inconsistent_variable_df_stacked.to_excel(
+                writer,
+                sheet_name=species,
+                startrow=8 - 1,  # pandas offset by one
+            )
 
-        components_included_in_sum = model_df_considered.loc[pix.ismatch(variable=f"{inconsistent_variable}**")]
-        components_included_in_sum = (
-            components_included_in_sum.pix.assign(source="model_reported")
-            .reorder_levels(inconsistent_variable_df_stacked.index.names)
-            .sort_index()
-        )
+            components_included_in_sum = model_df_considered.loc[pix.ismatch(variable=f"{inconsistent_variable}**")]
+            components_included_in_sum = (
+                components_included_in_sum.pix.assign(source="model_reported")
+                .reorder_levels(inconsistent_variable_df_stacked.index.names)
+                .sort_index()
+            )
 
-        current_row = 8 - 1 + 1 + inconsistent_variable_df_stacked.shape[0]
-        set_cell_ws(
-            "The following rows were used to create the sector-region sum",
-            row=current_row + 2,
-            col=1,
-            font=Font(bold=True),
-        )
-        components_included_in_sum.to_excel(
-            writer,
-            sheet_name=species,
-            startrow=current_row + 4 - 1,  # pandas offset by one
-        )
+            current_row = 8 - 1 + 1 + inconsistent_variable_df_stacked.shape[0]
+            set_cell_ws(
+                "The following rows were used to create the sector-region sum",
+                row=current_row + 2,
+                col=1,
+                font=Font(bold=True),
+            )
+            components_included_in_sum.to_excel(
+                writer,
+                sheet_name=species,
+                startrow=current_row + 4 - 1,  # pandas offset by one
+            )
 
-        # Possible extension: try and guess what variables were missing or double counted
+            # Possible extension: try and guess what variables were missing or double counted
 
-    workbook.save(internal_consistency_issues_filepath)
-
-    print(f"Wrote {internal_consistency_issues_filepath}")
+        print(f"Wrote {internal_consistency_issues_filepath}")
