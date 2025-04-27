@@ -27,19 +27,12 @@ from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
 
+import gcages.cmip7_scenariomip.pre_processing.reaggregation.basic
 import openpyxl
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
 import tqdm.auto as tqdm
-from gcages.cmip7_scenariomip.pre_processing import (
-    get_independent_index_input,
-)
-from gcages.cmip7_scenariomip.pre_processing.constants import (
-    OPTIONAL_MODEL_REGION_VARIABLES_INPUT,
-    REQUIRED_MODEL_REGION_VARIABLES_INPUT,
-    REQUIRED_WORLD_VARIABLES_INPUT,
-)
 from gcages.index_manipulation import combine_species, split_sectors
 from gcages.testing import compare_close
 from openpyxl.styles import Font
@@ -134,10 +127,13 @@ def get_higher_lower_detail(level: int, ind: dict[int, str]) -> tuple[list[str],
 
 
 # %%
-def get_extras_l(
+def get_extras_l(  # noqa: PLR0913
     inconsistent_variable: str,
     verbosity: int,
     model_df: pd.DataFrame,
+    required_model_region_variables: tuple[str, ...],
+    optional_model_region_variables: tuple[str, ...],
+    required_world_variables: tuple[str, ...],
     not_relevant: tuple[str, ...] = ("Emissions|CO2|AFOLU [NGHGI]",),
 ) -> list[str]:
     """
@@ -150,10 +146,10 @@ def get_extras_l(
     not_relevant_s = set(not_relevant)
 
     required_variables_grouped = group_into_levels(
-        v for v in REQUIRED_MODEL_REGION_VARIABLES_INPUT if f"{inconsistent_variable}{level_separator}" in v
+        v for v in required_model_region_variables if f"{inconsistent_variable}{level_separator}" in v
     )
     optional_variables_grouped = group_into_levels(
-        v for v in OPTIONAL_MODEL_REGION_VARIABLES_INPUT if f"{inconsistent_variable}{level_separator}" in v
+        v for v in optional_model_region_variables if f"{inconsistent_variable}{level_separator}" in v
     )
 
     extras_l = []
@@ -189,7 +185,7 @@ def get_extras_l(
 
         reported_at_world_level = not_exp.intersection(
             {
-                *REQUIRED_WORLD_VARIABLES_INPUT,
+                *required_world_variables,
                 # No idea how to express the Bunkers exception well
                 level_separator.join([*inconsistent_variable.split(level_separator), "Energy", "Demand", "Bunkers"]),
             }
@@ -255,6 +251,8 @@ if model_raw.empty:
 model_df = model_raw.loc[:, 2015:2100].dropna(how="all", axis="columns")
 if model_df.empty:
     raise AssertionError
+
+model_df.columns.name = "year"
 # model_df
 
 # %% [markdown]
@@ -266,10 +264,33 @@ if not model_regions:
     raise AssertionError
 # model_regions
 
+# %% [markdown]
+# ### Define the internal consistency checking index
+#
+# If your model reports domestic aviation at the regional level, this will be fine.
+# If not, we'll need to add some different code.
+
+# %%
+internal_consistency_checking_index = (
+    gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.get_internal_consistency_checking_index(model_regions)
+)
+
+# %%
+required_model_region_variables = (
+    gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.REQUIRED_MODEL_REGION_VARIABLES
+)
+optional_model_region_variables = (
+    gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.OPTIONAL_MODEL_REGION_VARIABLES
+)
+required_world_variables = gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.REQUIRED_WORLD_VARIABLES
+
+# %% [markdown]
+# ### Check the internal consistency
+
 # %%
 model_df_considered = multi_index_lookup(
     model_df,
-    get_independent_index_input(model_regions),
+    internal_consistency_checking_index,
 )
 # model_df_considered
 
@@ -284,20 +305,8 @@ totals_reported = multi_index_lookup(model_df, totals_exp.index)
 # totals_reported
 
 # %%
-# [print(f"'{v}': dict(rtol=1e-3, atol=1e-6),") for v in totals_exp.pix.unique("variable")]
-tols = {
-    "Emissions|BC": dict(rtol=1e-3, atol=1e-6),
-    "Emissions|CH4": dict(rtol=1e-3, atol=1e-6),
-    "Emissions|CO": dict(rtol=1e-3, atol=1e-6),
-    # Higher absolute tolerance because of reporting units
-    "Emissions|CO2": dict(rtol=1e-3, atol=1.0),
-    "Emissions|NH3": dict(rtol=1e-3, atol=1e-6),
-    "Emissions|NOx": dict(rtol=1e-3, atol=1e-6),
-    "Emissions|OC": dict(rtol=1e-3, atol=1e-6),
-    "Emissions|Sulfur": dict(rtol=1e-3, atol=1e-6),
-    "Emissions|VOC": dict(rtol=1e-3, atol=1e-6),
-    "Emissions|N2O": dict(rtol=1e-3, atol=1e-6),
-}
+tols = gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.get_default_internal_conistency_checking_tolerances()
+tols
 
 # %%
 inconsistencies_l = []
@@ -305,12 +314,19 @@ for variable in totals_exp.pix.unique("variable"):
     totals_exp_variable = totals_exp.loc[pix.isin(variable=variable)]
     totals_reported_variable = totals_reported.loc[pix.isin(variable=variable)]
 
+    unit_l = totals_exp_variable.index.get_level_values("unit").unique()
+    if len(unit_l) > 1:
+        raise AssertionError(unit_l)
+
+    unit = unit_l[0]
+    tols_use = {k: v.to(unit).m if k == "atol" else v for k, v in tols[variable].items()}
+
     comparison_variable = compare_close(
         left=totals_exp_variable,
         right=totals_reported_variable.reorder_levels(totals_exp_variable.index.names),
         left_name="derived_from_input",
         right_name="reported_total",
-        **tols[variable],
+        **tols_use,
     )
 
     if comparison_variable.empty:
@@ -342,7 +358,7 @@ if inconsistencies_l:
         workbook = writer.book
 
         for inconsistent_variable, inconsistent_variable_df in tqdm.tqdm(
-            inconsistencies.groupby("variable"), desc="variables"
+            inconsistencies.groupby("variable"), desc="species"
         ):
             inconsistent_variable_df.columns.name = "source"
             inconsistent_variable_df_stacked = (
@@ -383,7 +399,14 @@ if inconsistencies_l:
             )
 
             current_row = 7
-            extras_l = get_extras_l(inconsistent_variable=inconsistent_variable, verbosity=verbosity, model_df=model_df)
+            extras_l = get_extras_l(
+                inconsistent_variable=inconsistent_variable,
+                verbosity=verbosity,
+                model_df=model_df,
+                required_model_region_variables=required_model_region_variables,
+                optional_model_region_variables=optional_model_region_variables,
+                required_world_variables=required_world_variables,
+            )
             if extras_l:
                 extras_df = model_df.loc[pix.isin(variable=extras_l, region="World")]
                 totals_extras = combine_species(

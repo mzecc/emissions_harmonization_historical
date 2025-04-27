@@ -24,12 +24,9 @@
 import textwrap
 from pathlib import Path
 
+import gcages.cmip7_scenariomip.pre_processing.reaggregation.basic
 import pandas as pd
 import pandas_indexing as pix
-from gcages.cmip7_scenariomip.pre_processing import (
-    get_required_model_region_index_input,
-    get_required_world_index_input,
-)
 from gcages.completeness import get_missing_levels
 from pandas_openscm.db import (
     FeatherDataBackend,
@@ -46,7 +43,7 @@ from emissions_harmonization_historical.constants import (
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "MESSAGEix-GLOBIOM-GAINS 2.1-M-R12"
+model: str = "REMIND-MAgPIE 3.5-4.10"
 output_dir: str = "../data/reporting-checking"
 
 # %%
@@ -97,6 +94,8 @@ if model_raw.empty:
 model_df = model_raw.loc[:, 2015:2100].dropna(how="all", axis="columns")
 if model_df.empty:
     raise AssertionError
+
+model_df.columns.name = "year"
 # model_df
 
 # %% [markdown]
@@ -109,7 +108,105 @@ if not model_regions:
 # model_regions
 
 # %%
-missing_world = get_missing_levels(model_df.index, get_required_world_index_input(), unit_col="unit")
+# # This is how we generated salted data
+# from gcages.cmip7_scenariomip import CMIP7ScenarioMIPPreProcessor
+# from gcages.cmip7_scenariomip.pre_processing.reaggregation import ReaggregatorBasic
+# from gcages.cmip7_scenariomip.pre_processing.reaggregation.basic import get_required_timeseries_index
+# from gcages.completeness import get_missing_levels
+# from gcages.index_manipulation import create_levels_based_on_existing, set_new_single_value_levels
+# import numpy as np
+# from pandas_openscm.index_manipulation import update_index_levels_func
+
+
+# reaggregator = ReaggregatorBasic(model_regions=model_regions)
+# pre_processor = CMIP7ScenarioMIPPreProcessor(
+#     reaggregator=reaggregator,
+#     n_processes=None,  # run serially
+# )
+
+# required_index = get_required_timeseries_index(
+#             model_regions=model_regions,
+#             world_region=reaggregator.world_region,
+#             region_level=reaggregator.region_level,
+#             variable_level=reaggregator.variable_level,
+#         )
+
+# saltable_l = []
+# saltable_category_l = []
+# for scenario, sdf in model_df.groupby("scenario"):
+#     if len(saltable_l) > 2:
+#         break
+
+#     if any(sp in scenario for sp in saltable_category_l):
+#         continue
+
+#     try:
+#         pre_processor(sdf)
+#         print(scenario)
+#         saltable_l.append(sdf)
+#         saltable_category_l.append(scenario.split("- ")[-1].split(" ")[0])
+#         continue
+#     except Exception:
+#         pass
+
+#     variable_unit_map = {"|".join(v.split("|")[:2]): u
+#  for v, u in sdf.index.droplevel(sdf.index.names.difference(["variable", "unit"])).drop_duplicates().to_list()}
+#     def guess_unit(v_in: str) -> str:
+#         for k, v in variable_unit_map.items():
+#             if v_in.startswith(f"{k}|") or v_in ==k:
+#                 return v
+
+#     mls = get_missing_levels(
+#         sdf.index,
+#         required_index,
+#         unit_col=reaggregator.unit_level,
+#     )
+
+#     zeros_hack = pd.DataFrame(
+#         np.zeros((mls.shape[0], sdf.shape[1])),
+#         columns=sdf.columns,
+#         index=create_levels_based_on_existing(mls, {"unit": ("variable", guess_unit)})
+#     )
+#     zeros_hack = set_new_single_value_levels(
+# zeros_hack, {"model": model, "scenario": scenario}).reorder_levels(sdf.index.names)
+
+#     sdf_full = pix.concat([sdf, zeros_hack])
+
+#     try:
+#         pre_processor(sdf_full)
+#         print(f"{scenario} after filling missing required")
+#         saltable_l.append(sdf_full)
+#         saltable_category_l.append(scenario.split("- ")[-1].split(" ")[0])
+#         continue
+#     except Exception:
+#         pass
+
+# salted = pix.concat(saltable_l)
+# salted = update_index_levels_func(
+#    salted, {"model": lambda _: "model_1", "region": lambda x: x.replace(model, "model_1")})
+# salted.to_csv("~/salted.csv")
+# salted
+
+# %% [markdown]
+# ### Define the required timeseries index
+#
+# If your model reports domestic aviation at the regional level, this will be fine.
+# If not, we'll need to add some different code.
+
+# %%
+required_timeseries_index = gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.get_required_timeseries_index(
+    model_regions
+)
+# required_timeseries_index
+
+# %%
+missing = get_missing_levels(model_df.index, required_timeseries_index, unit_col="unit")
+
+world_locator = missing.get_level_values("region") == "World"
+missing_world = missing[world_locator]
+missing_model_region = missing[~world_locator]
+
+# %%
 if missing_world.empty:
     print("Nothing missing at the World level")
 
@@ -121,31 +218,27 @@ else:
     display(missing_world_df)  # noqa: F821
 
 # %%
-model_region_missing = get_missing_levels(
-    model_df.index, get_required_model_region_index_input(model_regions), unit_col="unit"
-)
-
-if model_region_missing.empty:
+if missing_model_region.empty:
     print("Nothing missing at the regional level")
 
 else:
-    model_region_missing_df = model_region_missing.to_frame(index=False)
-    model_region_missing_df.to_csv(output_dir_model / "missing-model-region.csv", index=False)
+    missing_model_region_df = missing_model_region.to_frame(index=False)
+    missing_model_region_df.to_csv(output_dir_model / "missing-model-region.csv", index=False)
 
     print("The following timeseries are missing at the model region level")
-    display(model_region_missing_df)  # noqa: F821
+    display(missing_model_region_df)  # noqa: F821
 
 # %%
-if not model_region_missing.empty:
-    model_region_missing_variables = model_region_missing_df["variable"].unique()
+if not missing_model_region.empty:
+    missing_model_region_variables = missing_model_region_df["variable"].unique()
     all_regions_missing_the_same = (
-        model_region_missing_df.groupby("region")["variable"]
-        .apply(lambda x: set(x) == set(model_region_missing_variables))
+        missing_model_region_df.groupby("region")["variable"]
+        .apply(lambda x: set(x) == set(missing_model_region_variables))
         .all()
     )
 
     # Slightly slow way to do this, but ok
-    missing_by_region = model_region_missing_df.groupby("region")["variable"].apply(lambda x: x.values)
+    missing_by_region = missing_model_region_df.groupby("region")["variable"].apply(lambda x: x.values)
     missing_in_all_regions = set(missing_by_region.iloc[0])
     for mr in missing_by_region:
         missing_in_all_regions = missing_in_all_regions.intersection(set(mr))

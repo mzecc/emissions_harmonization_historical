@@ -5116,7 +5116,7 @@ packages:
 - pypi: ../gcages
   name: gcages
   version: 0.3.1a1
-  sha256: 07a2acff145ec6455bf492ce593afb2585f25525a97d5a852c0a091e3767d3b3
+  sha256: f2c1cb76a6d62dcccc809fd3d00d38b9c64879518eb9cade63622dfd447f3558
   requires_dist:
   - backports-strenum>=1.3.1 ; python_full_version < '3.11'
   - numpy>=1.25.0
@@ -5130,8 +5130,6 @@ packages:
   - scmdata>=0.17.0,<0.18 ; extra == 'ar6'
   - silicone>=1.3.0 ; extra == 'ar6'
   - xarray<2025 ; extra == 'ar6'
-  - nomenclature-iamc>=0.7 ; extra == 'cmip7-scenariomip'
-  - pyam-iamc>=1.6.0 ; extra == 'cmip7-scenariomip'
   - tqdm>=4.0.0 ; extra == 'progress'
   - gcages[ar6] ; extra == 'full'
   - gcages[cmip7-scenariomip] ; extra == 'full'
