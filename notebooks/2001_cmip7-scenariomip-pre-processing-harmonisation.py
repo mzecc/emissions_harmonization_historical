@@ -177,9 +177,31 @@ history_model_relevant = multi_index_lookup(
         model_pre_processed.index.names.difference(["variable", "region"])
     ).drop_duplicates(),
 )
-history_model_relevant = history_model_relevant
 
 history_model_relevant
+
+# %%
+from aneris.methods import default_methods
+from gcages.aneris_helpers import _convert_units_to_match
+
+# %%
+model_harm_overrides_default_l = []
+for (model, scenario), msdf in model_pre_processed.groupby(["model", "scenario"]):
+    msdf_relevant_aneris = msdf.reset_index(["model", "scenario"], drop=True)
+    history_model_relevant_aneris = _convert_units_to_match(
+        start=history_model_relevant.reset_index(["model", "scenario"], drop=True).reorder_levels(
+            msdf_relevant_aneris.index.names
+        ),
+        match=msdf_relevant_aneris,
+    )
+
+    msdf_default_overrides = default_methods(
+        hist=history_model_relevant_aneris, model=msdf_relevant_aneris, base_year=harmonisation_year
+    )
+
+    model_harm_overrides_default_l.append(msdf_default_overrides[0].pix.assign(model=model, scenario=scenario))
+
+model_harm_overrides_default = pix.concat(model_harm_overrides_default_l)
 
 # %%
 gridding_workflow_emissions_harmonised = harmonise_all(
