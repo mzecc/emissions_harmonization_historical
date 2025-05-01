@@ -72,7 +72,7 @@ HISTORICAL_EMISSIONS_GLOBAL_WORKFLOW_FILE = (
 )
 # HISTORICAL_EMISSIONS_GLOBAL_WORKFLOW_FILE
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 model: str = "REMIND-MAgPIE 3.5-4.10"
 
 # %%
