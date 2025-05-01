@@ -53,7 +53,7 @@ HISTORICAL_GRIDDING_FILE = (
     DATA_ROOT
     / "cmip7-scenariomip-workflow"
     / "harmonisation"
-    / f"gridding-historical-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
+    / f"gridding-harmonisation-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 HISTORICAL_GRIDDING_FILE
 
@@ -128,7 +128,7 @@ for (model, scenario), msdf in tqdm.auto.tqdm(pre_processed.groupby(["model", "s
     model_harm_overrides_default_l.append(msdf_default_overrides[0].pix.assign(model=model, scenario=scenario))
     # break
 
-model_harm_overrides_default = pix.concat(model_harm_overrides_default_l)
+model_harm_overrides_default = pix.concat(model_harm_overrides_default_l).reset_index("unit", drop=True)
 
 # %%
 pre_processed.shape

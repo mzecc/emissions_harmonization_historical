@@ -23,6 +23,7 @@
 # %%
 from collections import defaultdict
 
+import matplotlib.pyplot as plt
 import pandas_indexing as pix
 import pandas_openscm
 from gcages.cmip7_scenariomip.gridding_emissions import get_complete_gridding_index
@@ -40,6 +41,7 @@ from emissions_harmonization_historical.constants import (
     IAMC_REGION_PROCESSING_ID,
     SCENARIO_TIME_ID,
 )
+from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR
 
 # %% [markdown]
 # ## Set up
@@ -74,7 +76,7 @@ OUT_FILE = (
     DATA_ROOT
     / "cmip7-scenariomip-workflow"
     / "harmonisation"
-    / f"gridding-historical-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
+    / f"gridding-harmonisation-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 OUT_FILE.parent.mkdir(exist_ok=True, parents=True)
 
@@ -122,10 +124,13 @@ if world_gridding_index.empty:
 world_gridding_index
 
 # %%
-gridding_historical_emissions_world = historical_emissions_world.openscm.mi_loc(world_gridding_index)
-assert_all_groups_are_complete(gridding_historical_emissions_world, world_gridding_index)
+gridding_harmonisation_emissions_world = historical_emissions_world.openscm.mi_loc(world_gridding_index)
+assert_all_groups_are_complete(gridding_harmonisation_emissions_world, world_gridding_index)
 
-# gridding_historical_emissions_world
+# gridding_harmonisation_emissions_world
+
+# %% [markdown]
+# No high variability headaches here so nothing more to do.
 
 # %% [markdown]
 # ### Sectors we grid at the model region level
@@ -231,17 +236,76 @@ for model, regions in model_regions.items():
 gridding_historical_emissions_model_region
 
 # %% [markdown]
+# ## Use regressions for high variability variables
+
+# %%
+# TODO: decide which variables exactly to use averaging with
+high_variability_variables = sorted(
+    [
+        v
+        for v in gridding_historical_emissions_model_region.pix.unique("variable")
+        if "Burning" in v
+        and any(
+            s in v
+            for s in (
+                "BC",
+                "CO",
+                "CH4",
+                # # Having looked at the data, I'm not sure I would do this for CO2
+                # "CO2",
+                "N2O",
+                "NH3",
+                "NOx",
+                "OC",
+                "VOC",
+            )
+        )
+    ]
+)
+high_variability_variables
+
+# %%
+# Match biomass burning smoothing
+n_years_for_average = 5
+plot_regions = ["AIM 3.0|Brazil"]
+
+gridding_harmonisation_emissions_model_region_l = []
+for (variable, region), vrdf in gridding_historical_emissions_model_region.groupby(["variable", "region"]):
+    if variable in high_variability_variables:
+        tmp = vrdf.copy()
+        harmonisation_value = tmp.loc[:, HARMONISATION_YEAR - n_years_for_average + 1 : HARMONISATION_YEAR].mean(
+            axis="columns"
+        )
+
+        if region in plot_regions:
+            ax = vrdf.pix.project(["variable", "region"]).loc[:, 1990:].T.plot()
+            ax.scatter(HARMONISATION_YEAR, float(harmonisation_value.iloc[0]), marker="x", color="tab:orange")
+            ax.grid(which="major")
+            # ax.set_xticks(regress_vals.columns, minor=True)
+            # ax.grid(which="minor")
+            plt.show()
+
+        tmp[HARMONISATION_YEAR] = harmonisation_value
+
+    else:
+        tmp = vrdf
+
+    gridding_harmonisation_emissions_model_region_l.append(tmp)
+
+gridding_harmonisation_emissions_model_region = pix.concat(gridding_harmonisation_emissions_model_region_l)
+
+# %% [markdown]
 # ## Combine and save
 
 # %%
-gridding_historical_emissions = pix.concat(
+gridding_harmonisation_emissions = pix.concat(
     [
-        gridding_historical_emissions_world,
-        gridding_historical_emissions_model_region,
+        gridding_harmonisation_emissions_world,
+        gridding_harmonisation_emissions_model_region,
     ]
 )
 # gridding_historical_emissions
 
 # %%
-gridding_historical_emissions.to_csv(OUT_FILE)
+gridding_harmonisation_emissions.to_csv(OUT_FILE)
 OUT_FILE
