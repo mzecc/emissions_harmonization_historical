@@ -101,6 +101,9 @@ combined_processed_output_file_world_only = DATA_ROOT / Path(
 # ## Process national data
 
 # %%
+index_cols = ["model", "scenario", "variable", "region", "unit"]
+
+# %%
 if CEDS_SOURCE in [
     CEDSOption.Zenodo_2024_07_08,
     CEDSOption.Drive_2025_03_11,
@@ -110,10 +113,12 @@ if CEDS_SOURCE in [
     ceds = pix.concat(
         [
             load_timeseries_csv(
-                DATA_ROOT / Path("national", "ceds", "processed", f"ceds_cmip7_national_{CEDS_PROCESSING_ID}.csv")
+                DATA_ROOT / Path("national", "ceds", "processed", f"ceds_cmip7_national_{CEDS_PROCESSING_ID}.csv"),
+                index_columns=index_cols,
             ),
             load_timeseries_csv(
-                DATA_ROOT / Path("national", "ceds", "processed", f"ceds_cmip7_global_{CEDS_PROCESSING_ID}.csv")
+                DATA_ROOT / Path("national", "ceds", "processed", f"ceds_cmip7_global_{CEDS_PROCESSING_ID}.csv"),
+                index_columns=index_cols,
             ),
         ]
     )
@@ -130,10 +135,14 @@ ceds
 if BIOMASS_BURNING_SOURCE == BiomassBurningOption.GFED4_1s:
     biomass_burning = pix.concat(
         [
-            load_csv(
-                DATA_ROOT / Path("national", "gfed", "processed", f"gfed_cmip7_national_{GFED_PROCESSING_ID}.csv")
+            load_timeseries_csv(
+                DATA_ROOT / Path("national", "gfed", "processed", f"gfed_cmip7_national_{GFED_PROCESSING_ID}.csv"),
+                index_columns=index_cols,
             ),
-            load_csv(DATA_ROOT / Path("national", "gfed", "processed", f"gfed_cmip7_World_{GFED_PROCESSING_ID}.csv")),
+            load_timeseries_csv(
+                DATA_ROOT / Path("national", "gfed", "processed", f"gfed_cmip7_World_{GFED_PROCESSING_ID}.csv"),
+                index_columns=index_cols,
+            ),
         ]
     )
 else:
@@ -143,6 +152,9 @@ if biomass_burning.index.duplicated().any():
     raise AssertionError
 
 biomass_burning
+
+# %%
+biomass_burning.loc[pix.ismatch(variable="**VOC**", region=["World"])].pix.project("variable").T.plot()
 
 # %%
 cmip7combined_data = pix.concat([ceds, biomass_burning])
