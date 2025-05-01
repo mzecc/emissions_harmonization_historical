@@ -36,7 +36,6 @@ from pandas_openscm.db import (
     FeatherIndexBackend,
     OpenSCMDB,
 )
-from pandas_openscm.indexing import multi_index_lookup
 from pandas_openscm.io import load_timeseries_csv
 
 from emissions_harmonization_historical.constants import (
@@ -221,7 +220,7 @@ pdf_global_workflow = combo_global_workflow.openscm.to_long_data().dropna()
 pdf_global_workflow = pdf_global_workflow[~pdf_global_workflow["variable"].str.endswith("CO2|Biosphere")]
 
 # %%
-sns.relplot(
+fg = sns.relplot(
     data=pdf_global_workflow[pdf_global_workflow["time"] > 1990],
     x="time",
     y="value",
@@ -239,18 +238,20 @@ sns.relplot(
     facet_kws=dict(sharey=False),
     kind="line",
 )
+for ax in fg.axes.flatten():
+    if "CO2" in ax.get_title():
+        ax.axhline(0.0, linestyle="--", color="tab:gray")
+
+    else:
+        ax.set_ylim(ymin=0.0)
 
 # %%
-# While I'm trying to figure out why we're getting spurious negative values
-variable_regions_to_plot = (
-    harmonised[harmonised.min(axis="columns") < 0]
-    .index.droplevel(harmonised.index.names.difference(["variable", "region"]))
-    .drop_duplicates()
-)
-# variable_regions_to_plot
+# # While I'm trying to figure out why we're getting spurious negative values
+# variable_regions_to_plot = harmonised[harmonised.min(axis="columns") < 0].index.droplevel(harmonised.index.names.difference(["variable", "region"])).drop_duplicates()
+# # variable_regions_to_plot
 
 # %%
-pdf = multi_index_lookup(
+pdf = (
     combo.loc[
         pix.isin(
             variable=harmonised.index.get_level_values("variable").unique(),
@@ -258,13 +259,16 @@ pdf = multi_index_lookup(
         )
     ]
     .sort_index(axis="columns")
-    .loc[:, 1950:],
-    variable_regions_to_plot,
+    .loc[:, 1950:]
 )
+# pdf = multi_index_lookup(pdf, variable_regions_to_plot)
 if pdf.empty:
     raise AssertionError
 
 # pdf
+
+# %%
+pdf.pix.unique("stage")
 
 # %%
 pdf_sectors = split_sectors(pdf)
@@ -296,10 +300,16 @@ for region in ["World", *sorted([r for r in pdf_sectors.index.get_level_values("
         for ax in fg.axes.flatten():
             ax.axvline(HARMONISATION_YEAR, linestyle="--", color="gray", alpha=0.3, zorder=1.2)
 
-        plt.show()
+            if species == "CO2":
+                ax.axhline(0.0, linestyle="--", color="tab:gray")
+            else:
+                ax.set_ylim(ymin=0.0)
 
+        plt.show()
     # if region != "World":
-    #     break
+    # break
 
 # %%
 assert False, "Save harmonised and overrides"
+
+# %%

@@ -236,7 +236,7 @@ for model, regions in model_regions.items():
 gridding_historical_emissions_model_region
 
 # %% [markdown]
-# ## Use regressions for high variability variables
+# ## Smooth high variability variables
 
 # %%
 # TODO: decide which variables exactly to use averaging with
@@ -265,9 +265,12 @@ high_variability_variables = sorted(
 high_variability_variables
 
 # %%
+[r for r in gridding_historical_emissions_model_region.pix.unique("region") if "REMIND" in r]
+
+# %%
 # Match biomass burning smoothing
 n_years_for_average = 5
-plot_regions = ["AIM 3.0|Brazil"]
+plot_regions = ["AIM 3.0|Brazil", "REMIND-MAgPIE 3.5-4.10|Canada, Australia, New Zealand"]
 
 gridding_harmonisation_emissions_model_region_l = []
 for (variable, region), vrdf in gridding_historical_emissions_model_region.groupby(["variable", "region"]):
