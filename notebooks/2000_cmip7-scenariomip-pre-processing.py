@@ -71,6 +71,9 @@ SCENARIO_DB = OpenSCMDB(
 
 SCENARIO_DB.load_metadata().shape
 
+# %%
+SCENARIO_DB.load_metadata().get_level_values("model").unique()
+
 # %% [markdown]
 # ## Load data
 
@@ -82,7 +85,10 @@ model_raw = SCENARIO_DB.load(pix.isin(model=model), progress=True)
 if model_raw.empty:
     raise AssertionError
 
-# model_raw
+model_raw
+
+# %%
+model_raw.pix.unique(["variable", "region"]).to_frame(index=False)
 
 # %% [markdown]
 # Extract the model data, keeping:
@@ -196,14 +202,11 @@ pre_processor = CMIP7ScenarioMIPPreProcessor(
 pre_processing_res = pre_processor(model_df)
 
 # %%
-out_dir
-
-# %%
 model_safe = model.replace(" ", "_").replace(".", "-")
 model_safe
 
 # %%
-pre_processing_res.gridding_workflow_emissions.pix.assign(stage="gridding_emissions")
+pre_processing_res.global_workflow_emissions
 
 # %%
 for stage, df in (

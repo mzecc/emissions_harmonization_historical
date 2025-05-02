@@ -26,6 +26,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import pandas_indexing as pix
 import pandas_openscm
+import tqdm.auto
 from gcages.cmip7_scenariomip.gridding_emissions import get_complete_gridding_index
 from gcages.completeness import assert_all_groups_are_complete
 from pandas_openscm.db import (
@@ -38,6 +39,7 @@ from pandas_openscm.io import load_timeseries_csv
 from emissions_harmonization_historical.constants import (
     COMBINED_HISTORY_ID,
     DATA_ROOT,
+    HISTORY_SCENARIO_NAME,
     IAMC_REGION_PROCESSING_ID,
     SCENARIO_TIME_ID,
 )
@@ -271,9 +273,12 @@ high_variability_variables
 # Match biomass burning smoothing
 n_years_for_average = 5
 plot_regions = ["AIM 3.0|Brazil", "REMIND-MAgPIE 3.5-4.10|Canada, Australia, New Zealand"]
+plot_regions = []
 
 gridding_harmonisation_emissions_model_region_l = []
-for (variable, region), vrdf in gridding_historical_emissions_model_region.groupby(["variable", "region"]):
+for (variable, region), vrdf in tqdm.auto.tqdm(
+    gridding_historical_emissions_model_region.groupby(["variable", "region"])
+):
     if variable in high_variability_variables:
         tmp = vrdf.copy()
         harmonisation_value = tmp.loc[:, HARMONISATION_YEAR - n_years_for_average + 1 : HARMONISATION_YEAR].mean(
@@ -306,7 +311,8 @@ gridding_harmonisation_emissions = pix.concat(
         gridding_harmonisation_emissions_world,
         gridding_harmonisation_emissions_model_region,
     ]
-)
+).pix.assign(scenario=HISTORY_SCENARIO_NAME)
+gridding_harmonisation_emissions.columns.name = "year"
 # gridding_historical_emissions
 
 # %%

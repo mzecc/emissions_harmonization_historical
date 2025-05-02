@@ -94,17 +94,27 @@ in_db = OpenSCMDB(
 in_db.load_metadata().shape
 
 # %%
-OUT_FILE = (
-    DATA_ROOT
-    / "cmip7-scenariomip-workflow"
-    / "harmonisation"
-    / f"harmonised_{model_clean}_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}_{SCENARIO_TIME_ID}_{CMIP7_SCENARIOMIP_PRE_PROCESSING_ID}.csv"
+OUT_ID_KEY = "_".join(
+    [model_clean, COMBINED_HISTORY_ID, IAMC_REGION_PROCESSING_ID, SCENARIO_TIME_ID, CMIP7_SCENARIOMIP_PRE_PROCESSING_ID]
 )
+
+# %%
+OUT_FILE = DATA_ROOT / "cmip7-scenariomip-workflow" / "harmonisation" / f"harmonised_{OUT_ID_KEY}.csv"
 OUT_FILE.parent.mkdir(exist_ok=True, parents=True)
-# OUT_FILE
+OUT_FILE
+
+# %%
+OUT_FILE_OVERRIDES = (
+    DATA_ROOT / "cmip7-scenariomip-workflow" / "harmonisation" / f"harmonisation-overrides_{OUT_ID_KEY}.csv"
+)
+OUT_FILE_OVERRIDES.parent.mkdir(exist_ok=True, parents=True)
+OUT_FILE_OVERRIDES
 
 # %% [markdown]
 # ## Load data
+
+# %%
+in_db.load_metadata().get_level_values("stage").unique()
 
 # %%
 pre_processed_model = in_db.load(pix.isin(model=model, stage="gridding_emissions"), progress=True).reset_index(
@@ -147,7 +157,8 @@ harmonisation_defaults
 # ## Apply harmonisation overrides
 
 # %%
-# # Temporary while I try and figure out how to avoid negative harmonisation
+# # If you're trying to figure out issues with a particular timeseries,
+# # filter first
 # pre_processed_model = pre_processed_model.loc[pix.ismatch(variable="**Sulfur**Industr**", region=[
 #     "REMIND-MAgPIE 3.5-4.10|Canada, Australia, New Zealand",
 #     "REMIND-MAgPIE 3.5-4.10|India",
@@ -155,21 +166,16 @@ harmonisation_defaults
 # ])]
 # pre_processed_model
 
-# %%
-# Any specific wishes would go in here.
-# Obviously, we could also load them from a file.
-overrides = harmonisation_defaults
-
-# %%
-# overrides.loc["REMIND-MAgPIE 3.5-4.10", "SSP1 - Low Emissions", slice(None), "Emissions|BC|Transportation Sector"]
-
 # %% [markdown]
-# The harmonisation gives unwanted negative values
+# The default harmonisation gives unwanted negative values
 # where the difference offset between the model and history
 # is larger than the historical emissions themselves
 # and the default choice is reduce offset.
 # Hence we override these here
 # for all species except CO<sub>2</sub>.
+
+# %%
+overrides = harmonisation_defaults
 
 # %%
 offsets = pre_processed_model[HARMONISATION_YEAR].subtract(
@@ -187,6 +193,11 @@ overrides.loc[reduce_offset_despite_negative_with_offset] = "constant_ratio"
 
 # %%
 overrides.loc["REMIND-MAgPIE 3.5-4.10", "SSP1 - Low Emissions", slice(None), "Emissions|BC|Transportation Sector"]
+
+# %%
+# model specific stuff could go in here
+# (or be loaded from a file)
+# overrides.loc["REMIND-MAgPIE 3.5-4.10", "SSP1 - Low Emissions", slice(None), "Emissions|BC|Transportation Sector"]
 
 # %% [markdown]
 # ## Harmonise
@@ -246,11 +257,6 @@ for ax in fg.axes.flatten():
         ax.set_ylim(ymin=0.0)
 
 # %%
-# # While I'm trying to figure out why we're getting spurious negative values
-# variable_regions_to_plot = harmonised[harmonised.min(axis="columns") < 0].index.droplevel(harmonised.index.names.difference(["variable", "region"])).drop_duplicates()
-# # variable_regions_to_plot
-
-# %%
 pdf = (
     combo.loc[
         pix.isin(
@@ -261,7 +267,14 @@ pdf = (
     .sort_index(axis="columns")
     .loc[:, 1950:]
 )
+
+# %%
+# # If you need to look at negative values only, use this
+# variable_regions_to_plot = harmonised[harmonised.min(axis="columns") < 0].index.droplevel(harmonised.index.names.difference(["variable", "region"])).drop_duplicates()
+# # variable_regions_to_plot
 # pdf = multi_index_lookup(pdf, variable_regions_to_plot)
+
+# %%
 if pdf.empty:
     raise AssertionError
 
@@ -306,8 +319,10 @@ for region in ["World", *sorted([r for r in pdf_sectors.index.get_level_values("
                 ax.set_ylim(ymin=0.0)
 
         plt.show()
-    # if region != "World":
-    # break
+
+    # Don't plot all for now
+    if region != "World":
+        break
 
 # %%
 assert False, "Save harmonised and overrides"

@@ -26,6 +26,8 @@
 import pandas_indexing as pix
 import pandas_openscm
 import tqdm.auto
+from aneris.methods import default_methods
+from gcages.aneris_helpers import _convert_units_to_match
 from pandas_openscm.db import (
     FeatherDataBackend,
     FeatherIndexBackend,
@@ -49,18 +51,13 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""}
-HISTORICAL_GRIDDING_FILE = (
+HARMONISATION_EMISSIONS_FILE = (
     DATA_ROOT
     / "cmip7-scenariomip-workflow"
     / "harmonisation"
-    / f"gridding-harmonisation-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
+    / f"harmonisation-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
 )
-HISTORICAL_GRIDDING_FILE
-
-# %%
-# TODO: load historical non-gridding data
-# TODO: split out io function to just load all default historical data
-#       so we can use it here and in the actual harmonisation
+HARMONISATION_EMISSIONS_FILE
 
 # %%
 IN_DIR = DATA_ROOT / "cmip7-scenariomip-workflow" / "pre-processing" / CMIP7_SCENARIOMIP_PRE_PROCESSING_ID
@@ -86,26 +83,43 @@ OUT_FILE.parent.mkdir(exist_ok=True, parents=True)
 # ## Load data
 
 # %%
-historical_emissions_gridding = load_timeseries_csv(
-    HISTORICAL_GRIDDING_FILE,
+harmonisation_emissions = load_timeseries_csv(
+    HARMONISATION_EMISSIONS_FILE,
     index_columns=["model", "scenario", "region", "variable", "unit"],
     out_column_type=int,
 )
-if historical_emissions_gridding.empty:
+if harmonisation_emissions.empty:
     raise AssertionError
 
-historical_emissions_gridding
+harmonisation_emissions.columns.name = "year"
+# harmonisation_emissions
 
 # %%
-pre_processed = in_db.load(pix.isin(stage="gridding_emissions"), progress=True).reset_index("stage", drop=True)
-if pre_processed.empty:
+pre_processed_gridding = in_db.load(pix.isin(stage="gridding_emissions"), progress=True).reset_index("stage", drop=True)
+if pre_processed_gridding.empty:
     raise AssertionError
 
-pre_processed
+pre_processed_gridding
 
 # %%
-from aneris.methods import default_methods
-from gcages.aneris_helpers import _convert_units_to_match
+pre_processed_global_workflow = in_db.load(pix.isin(stage="global_workflow_emissions"), progress=True).reset_index(
+    "stage", drop=True
+)
+if pre_processed_global_workflow.empty:
+    raise AssertionError
+
+pre_processed_global_workflow
+
+# %%
+pre_processed = pix.concat(
+    [
+        pre_processed_gridding,
+        pre_processed_global_workflow,
+    ]
+)
+
+# %%
+harmonisation_emissions.pix.unique("unit")
 
 # %%
 model_harm_overrides_default_l = []
@@ -113,11 +127,11 @@ for (model, scenario), msdf in tqdm.auto.tqdm(pre_processed.groupby(["model", "s
     msdf_relevant_aneris = msdf.reset_index(["model", "scenario"], drop=True)
 
     history_model_relevant_aneris = _convert_units_to_match(
-        start=historical_emissions_gridding.loc[
-            pix.isin(region=msdf_relevant_aneris.index.get_level_values("region").unique())
-        ]
-        .reset_index(["model", "scenario"], drop=True)
-        .reorder_levels(msdf_relevant_aneris.index.names),
+        start=(
+            harmonisation_emissions.loc[pix.isin(region=msdf_relevant_aneris.index.get_level_values("region").unique())]
+            .reset_index(["model", "scenario"], drop=True)
+            .reorder_levels(msdf_relevant_aneris.index.names)
+        ),
         match=msdf_relevant_aneris,
     )
 
@@ -129,9 +143,6 @@ for (model, scenario), msdf in tqdm.auto.tqdm(pre_processed.groupby(["model", "s
     # break
 
 model_harm_overrides_default = pix.concat(model_harm_overrides_default_l).reset_index("unit", drop=True)
-
-# %%
-pre_processed.shape
 
 # %%
 res = model_harm_overrides_default.to_frame()
