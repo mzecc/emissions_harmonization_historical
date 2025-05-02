@@ -25,6 +25,7 @@ from functools import partial
 
 import pandas_indexing as pix
 import pandas_openscm
+import seaborn as sns
 from gcages.cmip7_scenariomip.gridding_emissions import to_global_workflow_emissions
 from gcages.renaming import SupportedNamingConventions, convert_variable_name
 from pandas_openscm.index_manipulation import update_index_levels_func
@@ -65,6 +66,10 @@ OUT_FILE = (
     / f"global-workflow-harmonisation-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 OUT_FILE.parent.mkdir(exist_ok=True, parents=True)
+
+# %%
+RCMIP_PATH = DATA_ROOT / "global/rcmip/data_raw/rcmip-emissions-annual-means-v5-1-0.csv"
+RCMIP_PATH
 
 # %% [markdown]
 # ## Load data
@@ -129,7 +134,7 @@ adam_et_al_2024 = update_index_levels_func(
     },
 )
 
-adam_et_al_2024
+# adam_et_al_2024
 
 # %%
 # To create these, run notebook "0110_cmip-conc-inversions"
@@ -139,6 +144,7 @@ cmip_inversions = load_csv(
 
 
 def fix_variable_name(v: str) -> str:
+    """Fix the variable name given the naming mess we have"""
     if v in [
         "Emissions|cC4F8",
         "Emissions|CF4",
@@ -176,7 +182,7 @@ cmip_inversions = update_index_levels_func(
     cmip_inversions,
     {"variable": fix_variable_name},
 )
-cmip_inversions
+# cmip_inversions
 
 # %%
 gcb_afolu = load_csv(
@@ -192,7 +198,7 @@ gcb_afolu = update_index_levels_func(
         )
     },
 )
-gcb_afolu
+# gcb_afolu
 
 # %%
 velders_et_al_2022 = load_csv(
@@ -213,7 +219,7 @@ velders_et_al_2022 = update_index_levels_func(
     },
 )
 
-velders_et_al_2022
+# velders_et_al_2022
 
 # %%
 wmo_2022 = load_csv(
@@ -222,6 +228,7 @@ wmo_2022 = load_csv(
 
 
 def fix_variable_name(v: str) -> str:
+    """Fix the variable name given the naming mess we have"""
     if v in [
         "Emissions|cC4F8",
         "Emissions|CF4",
@@ -260,7 +267,7 @@ wmo_2022 = update_index_levels_func(
     {"variable": fix_variable_name},
 )
 
-wmo_2022
+# wmo_2022
 
 # %%
 all_sources = pix.concat(
@@ -273,7 +280,7 @@ all_sources = pix.concat(
         wmo_2022,
     ]
 )
-all_sources
+# all_sources
 
 # %%
 global_variable_sources = {
@@ -348,6 +355,7 @@ global_workflow_harmonisation_emissions = (
 
 
 def update_variable_name(v: str) -> str:
+    """Fix the variable name given the naming mess we have"""
     v = v.replace("Sulfur", "SOx").replace("VOC", "NMVOC")
 
     return convert_variable_name(
@@ -360,7 +368,71 @@ def update_variable_name(v: str) -> str:
 global_workflow_harmonisation_emissions = update_index_levels_func(
     global_workflow_harmonisation_emissions, {"variable": update_variable_name}
 )
-global_workflow_harmonisation_emissions
+exp_n_timeseries = 52
+if global_workflow_harmonisation_emissions.shape[0] != exp_n_timeseries:
+    raise AssertionError
+
+# global_workflow_harmonisation_emissions
+
+# %%
+global_workflow_harmonisation_emissions_rcmip_like = update_index_levels_func(
+    global_workflow_harmonisation_emissions,
+    {
+        "variable": partial(
+            convert_variable_name,
+            from_convention=SupportedNamingConventions.CMIP7_SCENARIOMIP,
+            to_convention=SupportedNamingConventions.RCMIP,
+        )
+    },
+)
+
+# %%
+rcmip = load_timeseries_csv(
+    RCMIP_PATH,
+    index_columns=["model", "scenario", "region", "variable", "unit", "mip_era", "activity_id"],
+    out_column_type=int,
+)
+ssp245 = rcmip.loc[
+    pix.isin(
+        scenario="ssp245",
+        region="World",
+        variable=global_workflow_harmonisation_emissions_rcmip_like.pix.unique("variable"),
+    )
+]
+ssp245 = ssp245.T.interpolate(method="index").T
+
+full_var_set = ssp245.pix.unique("variable")
+n_variables_in_full_scenario = 52
+if len(ssp245) != n_variables_in_full_scenario:
+    raise AssertionError
+
+# ssp245
+
+# %%
+tmp = pix.concat(
+    [
+        global_workflow_harmonisation_emissions_rcmip_like.pix.assign(scenario="CMIP7 ScenarioMIP"),
+        ssp245.reset_index(["activity_id", "mip_era"], drop=True),
+    ]
+).loc[:, 2000:2025]
+pdf = tmp.melt(ignore_index=False, var_name="year").reset_index()
+
+fg = sns.relplot(
+    data=pdf,
+    x="year",
+    y="value",
+    hue="model",
+    style="scenario",
+    col="variable",
+    col_wrap=3,
+    col_order=sorted(pdf["variable"].unique()),
+    facet_kws=dict(sharey=False),
+    kind="line",
+    alpha=0.5,
+)
+
+for ax in fg.figure.axes:
+    ax.set_ylim(0)
 
 # %% [markdown]
 # ## Combine and save

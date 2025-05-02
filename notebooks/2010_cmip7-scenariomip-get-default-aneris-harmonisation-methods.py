@@ -55,7 +55,7 @@ HARMONISATION_EMISSIONS_FILE = (
     DATA_ROOT
     / "cmip7-scenariomip-workflow"
     / "harmonisation"
-    / f"harmonisation-emissions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
+    / f"harmonisation-emissions_gcages-conventions_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}.csv"
 )
 HARMONISATION_EMISSIONS_FILE
 
@@ -74,7 +74,7 @@ OUT_FILE = (
     DATA_ROOT
     / "cmip7-scenariomip-workflow"
     / "harmonisation"
-    / f"harmonisation-default-methods_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}_{SCENARIO_TIME_ID}_{CMIP7_SCENARIOMIP_PRE_PROCESSING_ID}.csv"
+    / f"harmonisation-default-methods_{COMBINED_HISTORY_ID}_{IAMC_REGION_PROCESSING_ID}_{SCENARIO_TIME_ID}_{CMIP7_SCENARIOMIP_PRE_PROCESSING_ID}.csv"  # noqa: E501
 )
 OUT_FILE.parent.mkdir(exist_ok=True, parents=True)
 # OUT_FILE
@@ -117,9 +117,6 @@ pre_processed = pix.concat(
         pre_processed_global_workflow,
     ]
 )
-
-# %%
-harmonisation_emissions.pix.unique("unit")
 
 # %%
 model_harm_overrides_default_l = []
