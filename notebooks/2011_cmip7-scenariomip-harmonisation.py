@@ -39,6 +39,7 @@ from pandas_openscm.io import load_timeseries_csv
 
 from emissions_harmonization_historical.constants import (
     CMIP7_SCENARIOMIP_PRE_PROCESSING_ID,
+    CMIP7_SCENARIOMIP_HARMONISATION_ID,
     COMBINED_HISTORY_ID,
     DATA_ROOT,
     IAMC_REGION_PROCESSING_ID,
@@ -94,7 +95,7 @@ in_db.load_metadata().shape
 
 # %%
 OUT_ID_KEY = "_".join(
-    [model_clean, COMBINED_HISTORY_ID, IAMC_REGION_PROCESSING_ID, SCENARIO_TIME_ID, CMIP7_SCENARIOMIP_PRE_PROCESSING_ID]
+    [model_clean, COMBINED_HISTORY_ID, IAMC_REGION_PROCESSING_ID, SCENARIO_TIME_ID, CMIP7_SCENARIOMIP_PRE_PROCESSING_ID, CMIP7_SCENARIOMIP_HARMONISATION_ID]
 )
 
 # %%
@@ -238,8 +239,9 @@ harmonisation_emissions_model_late = harmonisation_emissions_model[~early_stop_l
 
 # %%
 harmonised_l = []
+min_year = 2021
 for harmonisation_year, historical_emms in [
-    (2021, harmonisation_emissions_model_early),
+    (min_year, harmonisation_emissions_model_early),
     (HARMONISATION_YEAR, harmonisation_emissions_model_late),
 ]:
     to_harmonise = pre_processed_model.openscm.mi_loc(
@@ -251,6 +253,14 @@ for harmonisation_year, historical_emms in [
         year=harmonisation_year,
         overrides=overrides,
     )
+
+    if harmonisation_year > min_year:
+        take_from_history_loc = slice(min_year, HARMONISATION_YEAR - 1)
+        copy_from_history = historical_emms.loc[:, take_from_history_loc].reset_index(["model", "scenario"], drop=True).align(
+            harmonised_harmonisation_year
+        )[0].loc[:, take_from_history_loc].reorder_levels(harmonised_harmonisation_year.index.names)
+    
+        harmonised_harmonisation_year = pd.concat([copy_from_history, harmonised_harmonisation_year], axis="columns")
 
     harmonised_l.append(harmonised_harmonisation_year)
     # break
