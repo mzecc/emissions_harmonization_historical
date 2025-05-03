@@ -15,7 +15,7 @@ dependencies = [
     "nomenclature-iamc>=0.22.1,<0.23",
     "xarray-regrid==0.4.0",
     "papermill>=2.6.0,<3",
-    "silicone>=1.3.0,<2",
+    "silicone>=1.3.0,<2", "pymagicc>=2.1.5,<3", "openscm-runner>=0.13.0,<0.14",
     # # To use a local version, comment this out and use the pypi-dependencies section below
     # "gcages>=0.4.0,<0.5",
 ]
