@@ -53,7 +53,7 @@ from emissions_harmonization_historical.constants_5000 import (
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model_search: str = "REMIND"
+model_search: str = "COFFEE"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model_search
@@ -150,6 +150,8 @@ for _, row in tqdm.auto.tqdm(to_download.iterrows(), total=to_download.shape[0])
 
     with open(known_hashes_file, "w") as fh:
         json.dump(known_hashes, fh, indent=2, sort_keys=True)
+        # add new line to end of file
+        fh.write("\n")
 
     shutil.move(scenario_file_tmp, output_dir_model / scenario_file_name)
     # If we got to this stage, we are fine with an overwrite

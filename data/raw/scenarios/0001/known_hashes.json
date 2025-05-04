@@ -1,4 +1,41 @@
 {
+  "AIM 3.0": {
+    "SSP1 - Medium Emissions": "c16cfa3a4c729bd7aa02116bd42b8c056de4e24729a916645e76948bee06d2fd",
+    "SSP1 - Very Low Emissions": "9657109e0641a5a73be3e41f78faf39db55b72f4ef92e075018776b10ee39333",
+    "SSP2 - Low Emissions": "0e4e28cf980da8e673022215744469885df95c4560233b659b07a5e322097bd1",
+    "SSP2 - Low Overshoot": "cab49aafc37ff90ebee2166b57996e1224064c9edb1b63f228f807a1eef24df3",
+    "SSP2 - Low Overshoot_a": "30e0f9af39e0416d7c306aabd768d7a7877f3a22ac4df104bbc8d74ee82a772f",
+    "SSP2 - Low Overshoot_b": "102b867e0a1f191e581a657a840fc1306b380bd9721d79e779d8fe19b41528e6",
+    "SSP2 - Low Overshoot_c": "0cd15a67deb11ee1f608bcb730d19327723942311aeed6f8752de37c1ba29fcd",
+    "SSP2 - Medium Emissions": "a84f80afebe56a0930ab6c5692a113bb5ea413dad999a3c5745ca2d776d0f99d",
+    "SSP2 - Medium-Low Emissions": "e2100161c58ba2c70f5d6f0340c21a81f1bb44de781a1cf2fafe22b59ae6ade0",
+    "SSP2 - Very Low Emissions": "01033f0050f3511759c2d4439bfc57cc4745fe080a592a2417c345164194c62b",
+    "SSP3 - High Emissions": "cb5a89821d059e506a8c3e4eab9b1c953d319442f564d6c4c0843036725b212d",
+    "SSP5 - High Emissions": "fa3a9f2055fa231285535a1836dfcafb921e2fe6bccc217e72c7260174545931"
+  },
+  "COFFEE 1.6": {
+    "SSP2 - Low Emissions": "534711024b8cbe5bc100ac03d3bd69d48db0b3055d24767f3aae4271f6dfb7e6",
+    "SSP2 - Low Overshoot": "7e1e41588e5c8d6ce1db4f0745b4e4e60871747027710d73808368d781e64758",
+    "SSP2 - Medium Emissions": "7a380f2e41b88362b20c3d50b77f9cde5756132d2db8fd77dbb1fa48c21a5899",
+    "SSP2 - Medium-Low Emissions": "5c00daa0fda5b8b46ae1c6cc3c478c96323bc5f1297cd061802c0c0843c6d3ae",
+    "SSP2 - Very Low Emissions": "537131385a7600939a9dd9d5e82436ee21aaa17da7eff71b499bfc869edd4168"
+  },
+  "IMAGE 3.4": {
+    "SSP1 - Low Emissions": "661224b7d4e3937830199598ceb78ee2bc6a6affad13a12bac0687de098644e3",
+    "SSP1 - Low Overshoot": "e7816a41fe6e02e6f5a60f25309013d42255872304c35222e0145534fc6e8170",
+    "SSP1 - Medium Emissions": "f89e8e0220952bada40d297b956494ea3dd82cac5168fa0fb8f63723782e23ae",
+    "SSP1 - Medium Emissions_a": "7f1c0e2b3ce343b3151a5d706563745d0cbe788efa81a7f0cb86d07a9bf8b84c",
+    "SSP1 - Medium-Low Emissions": "11a6e27542ddebc6f45b8c4034f2f6a9211b0107cb29e241beb2068d35ca9c08",
+    "SSP1 - Very Low Emissions": "a47a1b9ede45b6f78ad2de0dae2da5718173c941c190e36bace4a5d8cf6ff679",
+    "SSP2 - Low Emissions": "aeab2686c47282f83fb2ba758686ebf729fddd454e0bd80d3b9b4ceca19b7c06",
+    "SSP2 - Low Overshoot": "05edf32e5cee0077cf857d3cc92e5b63d95980263ff970c024a009f8da9adc4d",
+    "SSP2 - Medium Emissions": "28a6eff42ecc6b7bc6897102c6052feb1559582a60cda75e61bc37fea5ea5357",
+    "SSP2 - Medium-Low Emissions": "4206288b03990f196b94dde4a401d4aeb2ac2f27815176ab05faa40b5461bbc0",
+    "SSP2 - Very Low Emissions": "c2dd5989564dcb323d508291810783ed56ba057f87dc5c8d121d83dfd50b8223",
+    "SSP2 - Very Low Emissions_a": "26c9eeb5b0db765ab2ccbc7c881a1b9c50ff0f3126371810d7b357bb066bba7c",
+    "SSP3 - High Emissions": "7ad011cca8e09d76bfcdde1c040b5d08f367d45aba67cdca585e3c4faf3b396a",
+    "SSP5 - High Emissions": "6042bb0567d1a389ff493bd76135b4bc60515fceadb28812c5b85461290b689f"
+  },
   "REMIND-MAgPIE 3.5-4.10": {
     "SSP1 - Low Emissions": "dbf4536211e63fee213a73eb053ee67e46d2af9d2812f00cb2dc5d7638a7f8ec",
     "SSP1 - Low Emissions_c": "1007d11a45e8828605f97f67a30969d6477233c171e31bf1e5c50bb0df58fe7b",
