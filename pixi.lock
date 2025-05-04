@@ -5154,8 +5154,8 @@ packages:
   timestamp: 1738501352608
 - pypi: ../gcages
   name: gcages
-  version: 0.4.1a1
-  sha256: 273fc51fb9fe3db6885d6d53957867c8f15de359fc2e664969cd6b3a71f6a8b7
+  version: 0.5.1a1
+  sha256: efc1f4ba7afaf7bab53efabd07ace1e25693bc126e551f6dfad88c0276859b55
   requires_dist:
   - backports-strenum>=1.3.1 ; python_full_version < '3.11'
   - numpy>=1.25.0
