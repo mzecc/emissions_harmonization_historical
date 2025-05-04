@@ -1,6 +1,9 @@
 # Data created by the 500x series
 data/raw/
 
+# Notebooks run with papermill
+notebooks-papermill
+
 # Reporting checking outputs
 data/reporting-checking
 

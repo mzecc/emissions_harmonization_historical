@@ -36,6 +36,22 @@
     "SSP3 - High Emissions": "7ad011cca8e09d76bfcdde1c040b5d08f367d45aba67cdca585e3c4faf3b396a",
     "SSP5 - High Emissions": "6042bb0567d1a389ff493bd76135b4bc60515fceadb28812c5b85461290b689f"
   },
+  "MESSAGEix-GLOBIOM-GAINS 2.1-M-R12": {
+    "SSP1 - Low Emissions": "6593d86b47417041c1d174ce513412502bbf297db19a65e19623c5c276a52447",
+    "SSP1 - Low Emissions_a": "17b3591c5bcac991ba4ad4f3a9fe14e865ba1ea9482ff83030045020ee767d26",
+    "SSP1 - Very Low Emissions": "70f0d723bf9aa45bd352f14be1dfa962df03d1747afd1932680fa2ab70ae5ce3",
+    "SSP2 - Low Emissions": "8d2dabe933fbaaf45bb4bd7343d4f8e4002d3ecb8afa83e583ce302baa25e4ac",
+    "SSP2 - Low Emissions_a": "3db38d948d7d1b19175b2afbe6db9097eb803a2b90d3e4d918b1ab9d8d7f7d74",
+    "SSP2 - Low Overshoot": "c3850a66beaa3cb198d293f023e5bea91c06886f68114519e48844cfe294da90",
+    "SSP2 - Low Overshoot_a": "6d0f49c64cabde4b72531c515d74681b54eb326abb68494ab1f5d2be409540e3",
+    "SSP2 - Medium Emissions": "aaa15890b99a90f2b52a0af1cfed469ceaae56535502a2574a7d54c80574639c",
+    "SSP2 - Medium-Low Emissions": "736e59d2871b6c65e7a79504c298f971ff1965333c74f16cac2409cbbb96d12e",
+    "SSP2 - Very Low Emissions": "72f85f1975b63da2f1b72bba8421f8b9dd725d74a02f075c5f695df9fe05d0ba",
+    "SSP3 - High Emissions": "d5890cd77b680945ce5b2e593ba4a9451eb963e4716bba332fbe02a6025d2d4e",
+    "SSP4 - Low Overshoot": "c8e6095fc5d5109970ebcdcb8a15aad808bfadb696bc136e9993f30daebbf0fe",
+    "SSP5 - High Emissions": "33ec606b0ed7a9d08250c5eb3146890b377e53da354125f8b37988cd827fa56a",
+    "SSP5 - Low Overshoot": "014854c4b3e177a0a094cd8c82885bf33706a1e19b67ac3627d21ac1ad5bfa3e"
+  },
   "REMIND-MAgPIE 3.5-4.10": {
     "SSP1 - Low Emissions": "dbf4536211e63fee213a73eb053ee67e46d2af9d2812f00cb2dc5d7638a7f8ec",
     "SSP1 - Low Emissions_c": "1007d11a45e8828605f97f67a30969d6477233c171e31bf1e5c50bb0df58fe7b",
@@ -59,5 +75,17 @@
     "SSP3 - High Emissions": "703b8a5c024a38cd880e01ad339163fe4d90b492d6b15acb8205a85001314a2e",
     "SSP3 - Medium Emissions": "8d7819f690ca4377ebb6aa83e4b02c0a321ac22030033bedd2bb38723ae098ee",
     "SSP3 - Medium-Low Emissions": "2aa73adac20e52db8cef055e4e32b9198d9ea6b9b6aafdfafe17020d25d9237b"
+  },
+  "WITCH 6.0": {
+    "SSP1 - Low Emissions": "2c60f856e30ecd4f2643a13b6c3b58b1204506f19e55f41a45a14c7cb8fa1f5e",
+    "SSP1 - Low Overshoot": "50cd0d744665b37131ad2f7e0f0c4a0819b4bc697335ee800f8fc9a061795ff1",
+    "SSP1 - Very Low Emissions": "6e2fbeeec68836764cb3857f162982087bff011d1b1645ae93fcc3daba3c848f",
+    "SSP2 - Low Emissions": "777f4ac4c0f409947cb4ac63e089d4038b2da570218c5ba121c7da07e7bdcea2",
+    "SSP2 - Low Overshoot": "cede9aaa75f2435021cc225c6a2305bd13396b850968fd659503fe83efe71dbf",
+    "SSP2 - Medium Emissions": "dba8fbee7b5f7feab18b6509e90f6bedd5eeb355f3ef2236319238c1cf838c91",
+    "SSP2 - Medium-Low Emissions": "ef3ce5ed776310d389b89ce3735f6e53a9f42fc768c32522bacdf63588603cd2",
+    "SSP2 - Very Low Emissions": "9279289b87bc08aa0a76ca8621e714bb289990fe52204ef5cfa5d9d0bae187d7",
+    "SSP5 - High Emissions": "e82cc44642925503f13a8b94bc621d00b772a64009a4f300829a6f3b24aa5895",
+    "SSP5 - Medium-Low Emissions_a": "b8b584379406fb6037d8035365e063b556cd80bd8313d437fa3460064dde90e8"
   }
 }
