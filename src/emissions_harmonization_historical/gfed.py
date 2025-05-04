@@ -4,6 +4,7 @@ from pathlib import Path
 
 import cftime
 import dask
+import dask.array
 import h5py
 import numpy as np
 import pandas as pd
@@ -75,9 +76,10 @@ def concat_group(group, concat_dim, coords, sep=None):
     if sep is None:
         return da
 
-    return da.assign_coords(
-        {concat_dim: da.indexes[concat_dim].str.split(sep, expand=True).rename(concat_dim.split(sep))}
-    ).unstack(concat_dim)
+    mindex_coords = xr.Coordinates.from_pandas_multiindex(
+        da.indexes[concat_dim].str.split(sep, expand=True).rename(concat_dim.split(sep)), concat_dim
+    )
+    return da.assign_coords(mindex_coords).unstack(concat_dim)
 
 
 def read_monthly(group, coords):
