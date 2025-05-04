@@ -44,7 +44,7 @@ from emissions_harmonization_historical.excel_writing import set_cell
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "COFFEE"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model
@@ -70,6 +70,15 @@ if model_raw.empty:
     raise AssertionError
 
 # model_raw
+
+# %% [markdown]
+# ### Properties
+
+# %%
+properties = pd.concat([pd.read_csv(f) for f in output_dir_model.glob("*properties.csv")]).drop(
+    "metadata", axis="columns"
+)
+# properties
 
 # %% [markdown]
 # ## Check completeness
@@ -232,6 +241,24 @@ missing_model_region = missing[~world_locator]
 # %%
 with pd.ExcelWriter(out_file, engine="openpyxl", mode="w") as writer:
     workbook = writer.book
+    sheet_name = "scenario_database_info"
+    set_cell(
+        "Scenario properties as downloaded from the database",
+        row=0,
+        col=0,
+        ws=workbook.create_sheet(title=sheet_name),
+        font=Font(bold=True),
+    )
+    properties.to_excel(
+        writer,
+        sheet_name=sheet_name,
+        startrow=2,
+        index=False,
+    )
+
+# %%
+with pd.ExcelWriter(out_file, engine="openpyxl", mode="a", if_sheet_exists="overlay") as writer:
+    workbook = writer.book
     wms = partial(write_missing_sheet, workbook=workbook, writer=writer)
     wms(
         sheet_name="world",
@@ -269,15 +296,7 @@ with pd.ExcelWriter(out_file, engine="openpyxl", mode="w") as writer:
         display(missing_world_specific_scenarios)  # noqa: F821
 
 # %%
-if out_file.exists():
-    mode = "a"
-    init_kwargs = dict(if_sheet_exists="overlay")
-
-else:
-    mode = "w"
-    init_kwargs = {}
-
-with pd.ExcelWriter(out_file, engine="openpyxl", mode=mode, **init_kwargs) as writer:
+with pd.ExcelWriter(out_file, engine="openpyxl", mode="a", if_sheet_exists="overlay") as writer:
     workbook = writer.book
     wms = partial(write_missing_sheet, workbook=workbook, writer=writer)
 

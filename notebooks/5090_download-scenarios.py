@@ -156,7 +156,7 @@ for _, row in tqdm.auto.tqdm(to_download.iterrows(), total=to_download.shape[0])
     shutil.move(scenario_file_tmp, output_dir_model / scenario_file_name)
     # If we got to this stage, we are fine with an overwrite
     RAW_SCENARIO_DB.save(df_ts, allow_overwrite=True)
-    row.to_csv(output_dir_model / f"{scenario_clean}_properties.csv")
+    row.to_frame().T.to_csv(output_dir_model / f"{scenario_clean}_properties.csv", index=False)
     # break
 
 
