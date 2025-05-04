@@ -32,3 +32,13 @@ RAW_SCENARIO_DB = OpenSCMDB(
     backend_data=FeatherDataBackend(),
     backend_index=FeatherIndexBackend(),
 )
+
+# ID for the scenario download step
+PRE_PROCESSING_ID = "0001"
+
+# Database into which pre-processed scenarios are saved
+PRE_PROCESSED_SCENARIO_DB = OpenSCMDB(
+    db_dir=DATA_ROOT / "processed" / "pre-processed" / f"{DOWNLOAD_SCENARIOS_ID}_{PRE_PROCESSING_ID}" / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)

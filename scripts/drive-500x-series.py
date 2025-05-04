@@ -20,10 +20,11 @@ def get_notebook_parameters(notebook_name: str, iam: str) -> dict[str, str]:
     if notebook_name == "5090_download-scenarios.ipynb":
         res = {"model_search": iam}
 
-    elif notebook_name in ["5091_check-reporting.ipynb"]:
-        res = {"model": iam}
-
-    elif notebook_name in ["5092_check-interal-consistency.ipynb"]:
+    elif notebook_name in [
+        "5091_check-reporting.ipynb",
+        "5092_check-interal-consistency.ipynb",
+        "5093_pre-processing.ipynb",
+    ]:
         res = {"model": iam}
 
     else:
@@ -46,15 +47,15 @@ def main():
     iams = ["COFFEE"]
     # iams = ["WITCH", "MESSAGE"]
     iams = [
-        "REMIND",
         "WITCH",
-        "COFFEE",
+        "REMIND",
         "MESSAGE",
-        "AIM",
         "IMAGE",
+        "COFFEE",
+        "AIM",
     ]
 
-    notebook_prefixes = ["5091", "5092"]
+    notebook_prefixes = ["5093"]
     # notebook_prefixes = ["5090", "5091", "5092"]
 
     all_notebooks = tuple(sorted(notebooks_dir.glob("*.ipynb")))
