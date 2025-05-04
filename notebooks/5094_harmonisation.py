@@ -72,6 +72,7 @@ history_for_gridding_harmonisation
 
 # %%
 # Harmonise needs to:
+# - be separate so we can use it for the infilling db too
 # - harmonise
 # - return harmonised stuff
 # - return the overrides we used, so we can pass them to teams and get tweaks
