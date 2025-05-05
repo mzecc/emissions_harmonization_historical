@@ -272,7 +272,7 @@ regions = ["World", *sorted([r for r in pdf_sectors.index.get_level_values("regi
 species_l = sorted(pdf_sectors.pix.unique("species"))
 
 if output_to_pdf:
-    ctx_manager = PdfPages(output_dir_model / f"gridding-results_{model}.pdf")
+    ctx_manager = PdfPages(output_dir_model / f"harmonisation-results_{model}.pdf")
 
     pn = 1
     toc_l = ["Table of contents", "=================", ""]
@@ -340,7 +340,7 @@ with ctx_manager as output_pdf_file:
 
 # %%
 if output_to_pdf:
-    with open(output_dir_model / f"gridding-results_{model}_table-of-contents.txt", "w") as fh:
+    with open(output_dir_model / f"harmonisation-results_{model}_table-of-contents.txt", "w") as fh:
         fh.write(toc)
 
 # %%
