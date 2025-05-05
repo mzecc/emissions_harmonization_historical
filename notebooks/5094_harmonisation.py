@@ -358,16 +358,16 @@ with ctx_manager as output_pdf_file:
 # ## Save
 
 # %%
+if output_to_pdf:
+    with open(output_dir_model / f"harmonisation-results_{model}_table-of-contents.txt", "w") as fh:
+        fh.write(toc)
+
+# %%
 assert False, "Sort out save"
 # Save:
 # - gridding stuff
 # - global stuff
 # - combo to use for SCMs i.e. gridding stuff aggregated plus global stuff for the rest
-
-# %%
-if output_to_pdf:
-    with open(output_dir_model / f"harmonisation-results_{model}_table-of-contents.txt", "w") as fh:
-        fh.write(toc)
 
 # %%
 harmonise_res.overrides.to_csv(output_dir_model / f"harmonisation-methods_{model}.csv")

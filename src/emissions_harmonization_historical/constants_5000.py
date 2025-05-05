@@ -80,6 +80,43 @@ WMO_2022_PROCESSED_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+VELDERS_ET_AL_2022_RAW_PATH = DATA_ROOT / "raw" / "velders-et-al-2022"
+
+# ID for the Velders et al. 2022 processing step
+VELDERS_ET_AL_2022_PROCESSING_ID = "0001"
+
+VELDERS_ET_AL_2022_PROCESSED_DB = OpenSCMDB(
+    db_dir=DATA_ROOT / "processed" / "velders-et-al-2022" / VELDERS_ET_AL_2022_PROCESSING_ID / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+ADAM_ET_AL_2024_RAW_PATH = DATA_ROOT / "raw" / "adam-et-al-2024"
+
+# ID for the adam et al. 2024 processing step
+ADAM_ET_AL_2024_PROCESSING_ID = "0001"
+
+ADAM_ET_AL_2024_PROCESSED_DB = OpenSCMDB(
+    db_dir=DATA_ROOT / "processed" / "adam-et-al-2024" / ADAM_ET_AL_2024_PROCESSING_ID / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+CMIP7_GHG_VERSION_ID = "CR-CMIP-1-0-0"
+CMIP7_GHG_PUB_DATE = "v20250228"
+
+CMIP7_GHG_RAW_PATH = DATA_ROOT / "raw" / "cmip7-ghgs" / CMIP7_GHG_VERSION_ID
+
+# ID for the CMIP7 GHG processing step
+CMIP7_GHG_PROCESSING_ID = "0001"
+
+CMIP7_GHG_PROCESSED_DIR = DATA_ROOT / "processed" / "cmip7-ghgs" / CMIP7_GHG_PROCESSING_ID
+CMIP7_GHG_PROCESSED_DB = OpenSCMDB(
+    db_dir=CMIP7_GHG_PROCESSED_DIR / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
 
 # Commit from https://github.com/IAMconsortium/common-definitions
 # to use
