@@ -50,8 +50,8 @@ from emissions_harmonization_historical.harmonisation import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
-output_to_pdf: bool = True
+model: str = "REMIND"
+output_to_pdf: bool = False
 
 # %%
 output_dir_model = HARMONISED_OUT_DIR / model
@@ -68,6 +68,9 @@ output_dir_model
 # #### Scenarios
 
 # %%
+PRE_PROCESSED_SCENARIO_DB.load_metadata().get_level_values("stage").unique()
+
+# %%
 model_pre_processed_for_gridding = PRE_PROCESSED_SCENARIO_DB.load(
     pix.ismatch(model=f"*{model}*", stage="gridding_emissions"), progress=True
 )
@@ -77,20 +80,32 @@ if model_pre_processed_for_gridding.empty:
 # model_pre_processed_for_gridding
 
 # %%
-model_pre_processed = pix.concat([model_pre_processed_for_gridding]).reset_index("stage", drop=True)
+model_pre_processed_for_global_workflow = PRE_PROCESSED_SCENARIO_DB.load(
+    pix.ismatch(model=f"*{model}*", stage="global_workflow_emissions_raw_names"), progress=True
+)
+if model_pre_processed_for_global_workflow.empty:
+    raise AssertionError
 
-# model_pre_processed
+# model_pre_processed_for_global_workflow
 
 # %% [markdown]
 # ##### Temporary hack: interpolate model data to annual to allow harmonisation
 
 # %%
-if HARMONISATION_YEAR not in model_pre_processed:
-    model_pre_processed[HARMONISATION_YEAR] = np.nan
-    model_pre_processed = model_pre_processed.sort_index(axis="columns")
-    model_pre_processed = model_pre_processed.T.interpolate(method="index").T
+if HARMONISATION_YEAR not in model_pre_processed_for_gridding:
+    model_pre_processed_for_gridding[HARMONISATION_YEAR] = np.nan
+    model_pre_processed_for_gridding = model_pre_processed_for_gridding.sort_index(axis="columns")
+    model_pre_processed_for_gridding = model_pre_processed_for_gridding.T.interpolate(method="index").T
 
-model_pre_processed.sort_values(by=HARMONISATION_YEAR)
+# model_pre_processed_for_gridding.sort_values(by=HARMONISATION_YEAR)
+
+# %%
+if HARMONISATION_YEAR not in model_pre_processed_for_global_workflow:
+    model_pre_processed_for_global_workflow[HARMONISATION_YEAR] = np.nan
+    model_pre_processed_for_global_workflow = model_pre_processed_for_global_workflow.sort_index(axis="columns")
+    model_pre_processed_for_global_workflow = model_pre_processed_for_global_workflow.T.interpolate(method="index").T
+
+# model_pre_processed_for_global_workflow.sort_values(by=HARMONISATION_YEAR)
 
 # %% [markdown]
 # #### History to use for harmonisation
@@ -100,8 +115,16 @@ history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(pix.ismatch(p
 # history_for_gridding_harmonisation
 
 # %%
+history_for_global_workflow_harmonisation = HISTORY_HARMONISATION_DB.load(
+    pix.ismatch(purpose="global_workflow_emissions")
+)
+# history_for_global_workflow_harmonisation
+
+# %%
 # TODO: expand this to include global workflow emissions too
-history_for_harmonisation = pix.concat([history_for_gridding_harmonisation]).reset_index("purpose", drop=True)
+history_for_harmonisation = pix.concat(
+    [history_for_gridding_harmonisation, history_for_global_workflow_harmonisation]
+).reset_index("purpose", drop=True)
 
 # aneris explodes if any history year is Nan,
 # even ones we don't use
@@ -110,7 +133,7 @@ history_for_harmonisation = history_for_harmonisation.dropna(axis="columns")
 if HARMONISATION_YEAR not in history_for_harmonisation:
     raise AssertionError
 
-# history_for_harmonisation
+history_for_harmonisation
 
 # %% [markdown]
 # ### Harmonise
@@ -121,27 +144,30 @@ if HARMONISATION_YEAR not in history_for_harmonisation:
 user_overrides = None
 
 # %%
-harmonise_res = harmonise(
-    scenarios=model_pre_processed,
-    history=history_for_harmonisation,
-    harmonisation_year=HARMONISATION_YEAR,
-    user_overrides=user_overrides,
-    do_not_update_negative_after_offset=("**CO2**",),
-    offset_methods_to_update=("reduce_offset_2150_cov",),
-    offset_methods_replacement="constant_ratio",
-    silence_aneris=True,
-)
-# harmonise_res
+res = {}
+for key, idf in (
+    ("gridding", model_pre_processed_for_gridding),
+    ("global", model_pre_processed_for_global_workflow),
+):
+    harmonised_key = harmonise(
+        scenarios=idf.reset_index("stage", drop=True),
+        history=history_for_harmonisation,
+        harmonisation_year=HARMONISATION_YEAR,
+        user_overrides=user_overrides,
+    )
+    res[key] = harmonised_key
 
 # %% [markdown]
 # ## Examine results
 
 # %%
-combo = pix.concat(
+combo_gridding = pix.concat(
     [
-        model_pre_processed.pix.assign(stage="pre-processed"),
-        harmonise_res.timeseries.pix.assign(stage="harmonised"),
-        history_for_harmonisation.pix.assign(stage="history"),
+        model_pre_processed_for_gridding.pix.assign(stage="pre-processed"),
+        res["gridding"].timeseries.pix.assign(stage="harmonised"),
+        history_for_harmonisation.openscm.mi_loc(
+            res["gridding"].timeseries.index.droplevel(["model", "scenario"])
+        ).pix.assign(stage="history"),
     ]
 ).sort_index(axis="columns")
 
@@ -150,7 +176,7 @@ combo = pix.concat(
 
 # %%
 pdf = (
-    combo.loc[
+    combo_gridding.loc[
         pix.isin(variable="Emissions|CO2|International Shipping"),
         1990:2100,
     ]
@@ -188,60 +214,58 @@ for ax in fg.axes.flatten():
 # ### Global harmonisation
 
 # %%
-# pdf_global_total = (
-#     combo.loc[
-#         (
-#             pix.isin(region="World")
-#             & (
-#                 ~pix.ismatch(variable="Emissions|*|*")
-#                 | pix.isin(variable=["Emissions|CO2|Fossil", "Emissions|CO2|Biosphere"])
-#             )
-#         ),
-#         1990:2100,
-#     ]
-#     .openscm.to_long_data()
-#     .dropna()
-# )
-# pdf_global_total
+combo_global = pix.concat(
+    [
+        model_pre_processed_for_global_workflow.pix.assign(stage="pre-processed"),
+        res["global"].timeseries.pix.assign(stage="harmonised"),
+        history_for_harmonisation.openscm.mi_loc(
+            res["global"].timeseries.index.droplevel(["model", "scenario"])
+        ).pix.assign(stage="history"),
+    ]
+).sort_index(axis="columns")
 
 # %%
-# fg = sns.relplot(
-#     data=pdf_global_total,
-#     x="time",
-#     y="value",
-#     hue="scenario",
-#     hue_order=sorted(pdf_global_total["scenario"].unique()),
-#     style="stage",
-#     dashes={
-#         "history": "",
-#         "harmonised": "",
-#         "pre-processed": (3, 3),
-#     },
-#     col="variable",
-#     col_order=sorted(pdf_global_total["variable"].unique()),
-#     col_wrap=3,
-#     facet_kws=dict(sharey=False),
-#     kind="line",
-# )
-# for ax in fg.axes.flatten():
-#     if "CO2" in ax.get_title():
-#         ax.axhline(0.0, linestyle="--", color="tab:gray")
+pdf_global_total = (
+    combo_global.loc[
+        :,
+        1990:2100,
+    ]
+    .openscm.to_long_data()
+    .dropna()
+)
+pdf_global_total
 
-#     else:
-#         ax.set_ylim(ymin=0.0)
+# %%
+fg = sns.relplot(
+    data=pdf_global_total,
+    x="time",
+    y="value",
+    hue="scenario",
+    hue_order=sorted(pdf_global_total["scenario"].unique()),
+    style="stage",
+    dashes={
+        "history": "",
+        "harmonised": "",
+        "pre-processed": (3, 3),
+    },
+    col="variable",
+    col_order=sorted(pdf_global_total["variable"].unique()),
+    col_wrap=3,
+    facet_kws=dict(sharey=False),
+    kind="line",
+)
+for ax in fg.axes.flatten():
+    if "CO2" in ax.get_title():
+        ax.axhline(0.0, linestyle="--", color="tab:gray")
+
+    else:
+        ax.set_ylim(ymin=0.0)
 
 # %% [markdown]
 # ### Gridding emissions
 
 # %%
-pdf_gridding = (
-    combo.loc[
-        pix.ismatch(region=harmonise_res.timeseries.index.get_level_values("region").unique())
-        & pix.ismatch(variable="Emissions|*|*")
-    ]
-    .sort_index(axis="columns")
-    .loc[:, 1950:]
-)
+pdf_gridding = combo_gridding.sort_index(axis="columns").loc[:, 1950:]
 
 # %%
 # # If you need to look at negative values only, use this
@@ -332,6 +356,13 @@ with ctx_manager as output_pdf_file:
 
 # %% [markdown]
 # ## Save
+
+# %%
+assert False, "Sort out save"
+# Save:
+# - gridding stuff
+# - global stuff
+# - combo to use for SCMs i.e. gridding stuff aggregated plus global stuff for the rest
 
 # %%
 if output_to_pdf:

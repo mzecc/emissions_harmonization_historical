@@ -55,6 +55,20 @@ GFED4_PROCESSED_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+GCB_VERSION = "2024v1.0"
+
+# ID for the CEDS processing step
+GCB_PROCESSING_ID = "0001"
+
+GCB_RAW_PATH = DATA_ROOT / "raw" / "gcb" / GCB_VERSION
+
+# Database into which the processed GCB data is saved
+GCB_PROCESSED_DB = OpenSCMDB(
+    db_dir=DATA_ROOT / "processed" / "gcb" / GCB_PROCESSING_ID / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
 # Commit from https://github.com/IAMconsortium/common-definitions
 # to use
 COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
