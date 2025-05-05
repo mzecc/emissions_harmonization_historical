@@ -103,17 +103,10 @@ history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(pix.ismatch(p
 # TODO: expand this to include global workflow emissions too
 history_for_harmonisation = pix.concat([history_for_gridding_harmonisation]).reset_index("purpose", drop=True)
 
-# Only keep data relevant to the model we're harmonising
-history_for_harmonisation = history_for_harmonisation.openscm.mi_loc(
-    model_pre_processed.index.droplevel(["model", "scenario"])
-)
-if history_for_harmonisation.empty:
-    raise AssertionError
-
 # aneris explodes if any history year is Nan,
 # even ones we don't use
 history_for_harmonisation = history_for_harmonisation.dropna(axis="columns")
-
+# make sure the harmonisation year is all there
 if HARMONISATION_YEAR not in history_for_harmonisation:
     raise AssertionError
 
@@ -123,7 +116,8 @@ if HARMONISATION_YEAR not in history_for_harmonisation:
 # ### Harmonise
 
 # %%
-# Could load in user overrides from elsewhere here
+# Could load in user overrides from elsewhere here.
+# They need to be a series with name "method".
 user_overrides = None
 
 # %%
@@ -135,6 +129,7 @@ harmonise_res = harmonise(
     do_not_update_negative_after_offset=("**CO2**",),
     offset_methods_to_update=("reduce_offset_2150_cov",),
     offset_methods_replacement="constant_ratio",
+    silence_aneris=True,
 )
 # harmonise_res
 

@@ -10,12 +10,14 @@ from __future__ import annotations
 import logging
 import warnings
 
+import aneris.utils
 import pandas as pd
 import pandas_indexing as pix
 import tqdm.auto
 from aneris.methods import default_methods
 from attrs import define
 from gcages.aneris_helpers import _convert_units_to_match, harmonise_all
+from pandas_openscm.indexing import multi_index_lookup
 
 HARMONISATION_YEAR = 2023
 
@@ -243,9 +245,12 @@ def harmonise(  # noqa: PLR0913
     """
     scenario_grouper_l = list(scenario_grouper)
 
+    # Only keep history relevant to the scenarios we're harmonising
+    history_for_harmonisation = multi_index_lookup(history, scenarios.index.droplevel(scenario_grouper_l))
+
     aneris_defaults = get_aneris_defaults(
         scenarios=scenarios,
-        history=history,
+        history=history_for_harmonisation,
         harmonisation_year=harmonisation_year,
         region_level=region_level,
         unit_level=unit_level,
@@ -259,7 +264,7 @@ def harmonise(  # noqa: PLR0913
     # for all species except CO<sub>2</sub>.
     overrides_auto_inferred = avoid_offset_with_negative_results(
         scenarios=scenarios,
-        history=history,
+        history=history_for_harmonisation,
         harmonisation_year=harmonisation_year,
         overrides_in=aneris_defaults,
         unit_level=unit_level,
@@ -285,21 +290,21 @@ def harmonise(  # noqa: PLR0913
         )
 
     if silence_aneris:
-        root_logger = logging.getLogger()
-        root_logger_level_in = root_logger.level
-        root_logger.setLevel(logging.WARNING)
+        aneris_logger = aneris.utils.logger()
+        aneris_logger_level_in = aneris_logger.level
+        aneris_logger.setLevel(logging.WARNING)
 
     # Supress warnings about divide by zero
     with warnings.catch_warnings(action="ignore", category=RuntimeWarning):
         harmonised = harmonise_all(
             scenarios=scenarios,
-            history=history,
+            history=history_for_harmonisation,
             year=harmonisation_year,
             overrides=overrides_to_use,
         )
 
     if silence_aneris:
         # Reset logger
-        root_logger.setLevel(root_logger_level_in)
+        aneris_logger.setLevel(aneris_logger_level_in)
 
     return HarmonisationResult(timeseries=harmonised, overrides=overrides_to_use)
