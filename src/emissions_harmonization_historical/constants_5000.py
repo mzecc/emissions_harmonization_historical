@@ -63,12 +63,19 @@ COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
 # ID for the creation of a historical emissions dataset for gridding
 CREATE_HISTORY_FOR_GRIDDING_ID = "0001"
 
-# Directory in which the history for harmonisation information lives
-HISTORY_HARMONISATION_DIR = (
-    DATA_ROOT / "processed" / "history-for-harmonisation" / f"{CEDS_PROCESSING_ID}_{CREATE_HISTORY_FOR_GRIDDING_ID}"
+# ID for the created history for harmonisation
+HISTORY_FOR_HARMONISATION_ID = "_".join(
+    [
+        CEDS_PROCESSING_ID,
+        GFED4_PROCESSING_ID,
+        CREATE_HISTORY_FOR_GRIDDING_ID,
+    ]
 )
 
-REGION_MAPPING_FILE = HISTORY_HARMONISATION_DIR / "region-mapping.csv"
+# Directory in which the history for harmonisation information lives
+HISTORY_HARMONISATION_DIR = DATA_ROOT / "processed" / "history-for-harmonisation" / HISTORY_FOR_HARMONISATION_ID
+
+REGION_MAPPING_FILE = HISTORY_HARMONISATION_DIR / f"region-mapping_{COMMON_DEFINITIONS_COMMIT}.csv"
 
 # Database to hold historical emissions for harmonisation
 HISTORY_HARMONISATION_DB = OpenSCMDB(
@@ -88,12 +95,29 @@ RAW_SCENARIO_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
-# ID for the scenario download step
+# ID for the pre-processing step
 PRE_PROCESSING_ID = "0001"
 
 # Database into which pre-processed scenarios are saved
 PRE_PROCESSED_SCENARIO_DB = OpenSCMDB(
     db_dir=DATA_ROOT / "processed" / "pre-processed" / f"{DOWNLOAD_SCENARIOS_ID}_{PRE_PROCESSING_ID}" / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+# ID for the harmonisation step
+HARMONISATION_ID = "0001"
+
+HARMONISED_OUT_DIR = (
+    DATA_ROOT
+    / "processed"
+    / "harmonised"
+    / f"{DOWNLOAD_SCENARIOS_ID}_{PRE_PROCESSING_ID}_{HISTORY_FOR_HARMONISATION_ID}_{HARMONISATION_ID}"
+)
+
+# Database into which harmonised scenarios are saved
+HARMONISED_SCENARIO_DB = OpenSCMDB(
+    db_dir=HARMONISED_OUT_DIR / "db",
     backend_data=FeatherDataBackend(),
     backend_index=FeatherIndexBackend(),
 )

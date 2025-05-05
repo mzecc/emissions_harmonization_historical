@@ -27,6 +27,11 @@ def get_notebook_parameters(notebook_name: str, iam: str) -> dict[str, str]:
     ]:
         res = {"model": iam}
 
+    elif notebook_name in [
+        "5094_harmonisation.ipynb",
+    ]:
+        res = {"model": iam, "output_to_pdf": True}
+
     else:
         raise NotImplementedError(notebook_name)
 
@@ -55,7 +60,7 @@ def main():
         "AIM",
     ]
 
-    notebook_prefixes = ["5093"]
+    notebook_prefixes = ["5094"]
     # notebook_prefixes = ["5090", "5091", "5092"]
 
     all_notebooks = tuple(sorted(notebooks_dir.glob("*.ipynb")))

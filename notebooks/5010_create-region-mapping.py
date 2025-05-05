@@ -21,7 +21,6 @@
 # %%
 from git import Repo
 
-# from emissions_harmonization_historical.constants import COMBINED_HISTORY_ID, DATA_ROOT, IAMC_REGION_PROCESSING_ID
 from emissions_harmonization_historical.constants_5000 import (
     COMMON_DEFINITIONS_COMMIT,
     COMMON_DEFINITIONS_PATH,
