@@ -30,6 +30,7 @@ from pandas_openscm.index_manipulation import update_index_levels_func
 from emissions_harmonization_historical.constants_5000 import (
     GCB_PROCESSED_DB,
     HISTORY_HARMONISATION_DB,
+    WMO_2022_PROCESSED_DB,
 )
 from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR
 
@@ -93,6 +94,13 @@ gcb = GCB_PROCESSED_DB.load()
 # gcb
 
 # %% [markdown]
+# ### WMO 2022
+
+# %%
+wmo_2022 = WMO_2022_PROCESSED_DB.load()
+wmo_2022
+
+# %% [markdown]
 # ### Compile
 
 # %%
@@ -103,7 +111,7 @@ all_sources = pix.concat(
         # cmip_inversions,
         gcb,
         # velders_et_al_2022,
-        # wmo_2022,
+        wmo_2022,
     ]
 )
 # all_sources
@@ -111,8 +119,8 @@ all_sources = pix.concat(
 # %%
 global_variable_sources = {
     "Emissions|BC": "gridding-emissions",
-    # "Emissions|CF4": "WMO 2022 AGAGE inversions",
-    # "Emissions|C2F6": "WMO 2022 AGAGE inversions",
+    "Emissions|CF4": "WMO 2022 AGAGE inversions",
+    "Emissions|C2F6": "WMO 2022 AGAGE inversions",
     # "Emissions|C3F8": "CR-CMIP-1-0-0-inverse-smooth",
     # "Emissions|cC4F8": "CR-CMIP-1-0-0-inverse-smooth",
     # "Emissions|C4F10": "CR-CMIP-1-0-0-inverse-smooth",
@@ -135,30 +143,30 @@ global_variable_sources = {
     # "Emissions|HFC32": "Velders et al., 2022",
     # "Emissions|HFC365mfc": "Velders et al., 2022",
     # "Emissions|HFC4310mee": "Velders et al., 2022",
-    # "Emissions|CCl4": "WMO 2022",
-    # "Emissions|CFC11": "WMO 2022",
-    # "Emissions|CFC113": "WMO 2022",
-    # "Emissions|CFC114": "WMO 2022",
-    # "Emissions|CFC115": "WMO 2022",
-    # "Emissions|CFC12": "WMO 2022",
+    "Emissions|CCl4": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|CFC11": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|CFC113": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|CFC114": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|CFC115": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|CFC12": "WMO 2022 projections v20250129 smoothed",
     # "Emissions|CH2Cl2": "CR-CMIP-1-0-0-inverse-smooth",
     # "Emissions|CH3Br": "CR-CMIP-1-0-0-inverse-smooth",
-    # "Emissions|CH3CCl3": "WMO 2022",
+    "Emissions|CH3CCl3": "WMO 2022 projections v20250129 smoothed",
     # "Emissions|CH3Cl": "CR-CMIP-1-0-0-inverse-smooth",
     # "Emissions|CHCl3": "CR-CMIP-1-0-0-inverse-smooth",
-    # "Emissions|HCFC141b": "WMO 2022",
-    # "Emissions|HCFC142b": "WMO 2022",
-    # "Emissions|HCFC22": "WMO 2022",
-    # "Emissions|Halon1202": "WMO 2022",
-    # "Emissions|Halon1211": "WMO 2022",
-    # "Emissions|Halon1301": "WMO 2022",
-    # "Emissions|Halon2402": "WMO 2022",
+    "Emissions|HCFC141b": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|HCFC142b": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|HCFC22": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|Halon1202": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|Halon1211": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|Halon1301": "WMO 2022 projections v20250129 smoothed",
+    "Emissions|Halon2402": "WMO 2022 projections v20250129 smoothed",
     "Emissions|N2O": "gridding-emissions",
     # "Emissions|NF3": "CR-CMIP-1-0-0-inverse-smooth",
     "Emissions|NH3": "gridding-emissions",
     "Emissions|NOx": "gridding-emissions",
     "Emissions|OC": "gridding-emissions",
-    # "Emissions|SF6": "WMO 2022 AGAGE inversions",
+    "Emissions|SF6": "WMO 2022 AGAGE inversions",
     # "Emissions|SO2F2": "CR-CMIP-1-0-0-inverse-smooth",
     "Emissions|SOx": "gridding-emissions",
     "Emissions|NMVOC": "gridding-emissions",

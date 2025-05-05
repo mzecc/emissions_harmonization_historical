@@ -69,6 +69,18 @@ GCB_PROCESSED_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+WMO_2022_RAW_PATH = DATA_ROOT / "raw" / "wmo-2022"
+
+# ID for the WMO 2022 processing step
+WMO_2022_PROCESSING_ID = "0001"
+
+WMO_2022_PROCESSED_DB = OpenSCMDB(
+    db_dir=DATA_ROOT / "processed" / "wmo-2022" / WMO_2022_PROCESSING_ID / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+
 # Commit from https://github.com/IAMconsortium/common-definitions
 # to use
 COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
