@@ -15,15 +15,18 @@
 # %% [markdown]
 # # Explore results
 #
-# Here we post process the results.
+# Here we explore the results.
 
 # %% [markdown]
 # ## Imports
 
 # %%
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
+from pandas_openscm.indexing import multi_index_lookup
 
 from emissions_harmonization_historical.constants_5000 import (
     POST_PROCESSED_METADATA_CATEGORIES_DB,
@@ -36,6 +39,9 @@ from emissions_harmonization_historical.constants_5000 import (
 
 # %%
 pandas_openscm.register_pandas_accessor()
+
+# %%
+pd.set_option("display.max_rows", 100)
 
 # %% [markdown]
 # ## Load data
@@ -67,11 +73,134 @@ temperatures_in_line_with_assessment = POST_PROCESSED_TIMESERIES_RUN_ID_DB.load(
 categories.unstack(["metric", "climate_model"])["category_name"].sort_values(by=["MAGICCv7.6.0a3"])
 
 # %%
-metadata_quantile.unstack(["climate_model", "metric", "unit", "quantile"]).loc[
+tmp = (
+    metadata_quantile.unstack(["metric", "unit", "quantile"])
+    .loc[
+        :,
+        [
+            (metric, "K", p)
+            for (metric, p) in [
+                ("max", 0.33),
+                ("max", 0.5),
+                ("max", 0.67),
+                ("2100", 0.5),
+            ]
+        ],
+    ]
+    .reset_index("region", drop=True)
+    .reorder_levels(["model", "scenario", "variable", "climate_model"])
+    .sort_values(by=[("max", "K", 0.33)])
+    .round(3)
+)
+
+tmp.loc[
+    # (tmp[("max", "K", 0.33)] > 0.0)
+    # & (tmp[("max", "K", 0.33)] < 1.6)
+    # (tmp[("max", "K", 0.67)] > 1.8)
+    # & (tmp[("max", "K", 0.67)] < 2.05)
+    # (tmp[("2100", "K", 0.5)] > 1.7)
+    # & (tmp[("2100", "K", 0.5)] < 2.0)
+    # (tmp[("2100", "K", 0.5)] > 2.1)
+    # & (tmp[("2100", "K", 0.5)] < 2.5)
+    # (tmp[("2100", "K", 0.5)] > 2.5)
+    # & (tmp[("2100", "K", 0.5)] < 3.0)
+    (tmp[("2100", "K", 0.5)] > 3.0) & (tmp[("2100", "K", 0.5)] < 3.6)
+]
+
+# %% [markdown]
+# ## Exploratory marker selection
+#
+# You'd probably want to look at emissions too
+# before making such a decision,
+# but as an exploration here is something.
+
+# %%
+scratch_selection_l = [
+    # ("#7f3e3e", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - High Emissions")),
+    # ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP5 - High Emissions")),
+    ("#7f3e3e", ("IMAGE 3.4", "SSP5 - High Emissions")),
+    # ("#f7a84f", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Medium Emissions")),
+    # ("#f7a84f", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium Emissions")),
+    # ("#f7a84f", ("IMAGE 3.4", "SSP2 - Medium Emissions")),
+    ("#f7a84f", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Medium Emissions")),
+    # ("#e1ad01", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - Medium-Low Emissions")),
+    # ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
+    ("#e1ad01", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium-Low Emissions")),
+    # ("#586643", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Medium-Low Emissions")),
+    # ("#2e9e68", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Emissions")),
+    # ("#2e9e68", ("COFFEE 1.6", "SSP2 - Low Emissions")),
+    ("#2e9e68", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions")),
+    ("#4b3d89", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Overshoot_d")),
+    # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),
+    # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions_c")),
+    ("#499edb", ("COFFEE 1.6", "SSP2 - Very Low Emissions")),
+    # ("#499edb", ("WITCH 6.0", "SSP2 - Low Overshoot")),
+]
+
+# %%
+ms_separator = " || "
+palette = {ms_separator.join(v[1]): v[0] for v in scratch_selection_l}
+scratch_selection = pd.MultiIndex.from_tuples([v[1] for v in scratch_selection_l], names=["model", "scenario"])
+pdf = temperatures_in_line_with_assessment.loc[pix.isin(climate_model="MAGICCv7.6.0a3"), 2000:].openscm.mi_loc(
+    scratch_selection
+)
+
+ms_level = "model || scenario"
+
+# Push ability to create a new level from multiple other levels into pandas-openscm
+new_name = ms_level
+new_level = (
+    pdf.index.droplevel(pdf.index.names.difference(["model", "scenario"]))
+    .drop_duplicates()
+    .map(lambda x: ms_separator.join(x))
+)
+
+if new_level.shape[0] != pdf.shape[0]:
+    dup_level = pdf.index.get_level_values("model") + " || " + pdf.index.get_level_values("scenario")
+    new_level = dup_level.unique()
+    new_codes = new_level.get_indexer(dup_level)
+else:
+    new_codes = np.arange(new_level.shape[0])
+
+pdf.index = pd.MultiIndex(
+    levels=[*pdf.index.levels, new_level],
+    codes=[*pdf.index.codes, new_codes],
+    names=[*pdf.index.names, new_name],
+)
+
+
+# %%
+def create_legend(ax, handles) -> None:
+    ax.legend(handles=handles, loc="center left", bbox_to_anchor=(1.05, 0.0))
+
+
+fig, axes = plt.subplots(nrows=2, figsize=(4, 8), sharex=True)
+for i, (ax, yticks) in enumerate(zip(axes, [np.arange(0.5, 4.01, 0.5), np.arange(0.7, 2.21, 0.1)])):
+    pdf.openscm.plot_plume_after_calculating_quantiles(
+        quantile_over="run_id",
+        hue_var=ms_level,
+        style_var="climate_model",
+        palette=palette,
+        quantiles_plumes=((0.5, 1.0), ((0.33, 0.67), 0.3), ((0.05, 0.95), 0.0)),
+        ax=ax,
+        create_legend=(lambda x, y: None) if i > 0 else create_legend,
+    )
+    ax.set_xlim([2000, 2100])
+    ax.set_yticks(yticks)
+    ax.set_ylim(ymin=yticks.min(), ymax=yticks.max())
+    # ax.set_ylim(ymax=ymax)
+    ax.grid()
+
+# %%
+multi_index_lookup(categories, scratch_selection).unstack(["metric", "climate_model"]).sort_values(
+    ("category", "MAGICCv7.6.0a3")
+).sort_index(axis="columns")
+
+# %%
+multi_index_lookup(metadata_quantile, scratch_selection).unstack(["metric", "unit", "quantile"]).loc[
     :,
     [
-        (cm, metric, "K", p)
-        for cm in [v for v in ["MAGICCv7.6.0a3", "MAGICCv7.5.3"] if v in metadata_quantile.pix.unique("climate_model")]
+        (metric, "K", p)
         for (metric, p) in [
             ("max", 0.33),
             ("max", 0.5),
@@ -79,7 +208,9 @@ metadata_quantile.unstack(["climate_model", "metric", "unit", "quantile"]).loc[
             ("2100", 0.5),
         ]
     ],
-].sort_values(by=[("MAGICCv7.6.0a3", "max", "K", 0.33)]).round(3)
+].reset_index("region", drop=True).reorder_levels(["model", "scenario", "variable", "climate_model"]).sort_values(
+    by=[("max", "K", 0.33)]
+).round(3)
 
 # %% [markdown]
 # ### How much difference is the MAGICC update making?

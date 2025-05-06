@@ -138,7 +138,6 @@ def main():
 
     # SCM related notebooks
     notebook_prefixes = ["5096", "5097"]
-    notebook_prefixes = []
     scms = ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]
     for iam, scm in itertools.product(iams, scms):
         for notebook in all_notebooks:
