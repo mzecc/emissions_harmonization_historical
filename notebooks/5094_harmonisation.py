@@ -234,30 +234,43 @@ pdf_global_total = (
 pdf_global_total
 
 # %%
-fg = sns.relplot(
-    data=pdf_global_total,
-    x="time",
-    y="value",
-    hue="scenario",
-    hue_order=sorted(pdf_global_total["scenario"].unique()),
-    style="stage",
-    dashes={
-        "history": "",
-        "harmonised": "",
-        "pre-processed": (3, 3),
-    },
-    col="variable",
-    col_order=sorted(pdf_global_total["variable"].unique()),
-    col_wrap=3,
-    facet_kws=dict(sharey=False),
-    kind="line",
-)
-for ax in fg.axes.flatten():
-    if "CO2" in ax.get_title():
-        ax.axhline(0.0, linestyle="--", color="tab:gray")
+if output_to_pdf:
+    ctx_manager = PdfPages(output_dir_model / f"harmonisation-results-global_{model}.pdf")
 
+else:
+    ctx_manager = nullcontext()
+
+with ctx_manager as output_pdf_file:
+    fg = sns.relplot(
+        data=pdf_global_total,
+        x="time",
+        y="value",
+        hue="scenario",
+        hue_order=sorted(pdf_global_total["scenario"].unique()),
+        style="stage",
+        dashes={
+            "history": "",
+            "harmonised": "",
+            "pre-processed": (3, 3),
+        },
+        col="variable",
+        col_order=sorted(pdf_global_total["variable"].unique()),
+        col_wrap=3,
+        facet_kws=dict(sharey=False),
+        kind="line",
+    )
+    for ax in fg.axes.flatten():
+        if "CO2" in ax.get_title():
+            ax.axhline(0.0, linestyle="--", color="tab:gray")
+
+        else:
+            ax.set_ylim(ymin=0.0)
+
+    if output_to_pdf:
+        output_pdf_file.savefig(bbox_inches="tight")
+        plt.close()
     else:
-        ax.set_ylim(ymin=0.0)
+        plt.show()
 
 # %% [markdown]
 # ### Global vs. gridding harmonisation

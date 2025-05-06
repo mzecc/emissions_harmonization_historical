@@ -18,11 +18,16 @@ def main():
     OUT_PATH = REPO_ROOT / "harmonisation-for-sharepoint" / SEARCH_PATH.name
 
     for file in [
-        *SEARCH_PATH.rglob("harmonisation-results_*.pdf"),
-        *SEARCH_PATH.rglob("harmonisation-results_*.txt"),
-        *SEARCH_PATH.rglob("harmonisation-methods_*.csv"),
+        *SEARCH_PATH.rglob("harmonisation-results*.pdf"),
+        *SEARCH_PATH.rglob("harmonisation-results*.txt"),
+        *SEARCH_PATH.rglob("harmonisation-methods*.csv"),
     ]:
-        model = file.stem.split("_")[1]
+        if file.name.endswith(".txt"):
+            # I am so stupid to have made this issue,
+            # apologies to all who have to deal with this.
+            model = file.stem.split("_")[1]
+        else:
+            model = file.stem.split("_")[-1]
 
         out_dir = OUT_PATH / model
         out_dir.mkdir(exist_ok=True, parents=True)
