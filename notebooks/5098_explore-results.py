@@ -94,7 +94,7 @@ tmp = (
 )
 
 tmp.loc[
-    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 1.6)
+    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 1.6)  # noqa: PLR2004
     # # (tmp[("max", "K", 0.67)] > 1.8)
     # # & (tmp[("max", "K", 0.67)] < 2.05)
     # # (tmp[("2100", "K", 0.5)] > 1.7)
@@ -172,6 +172,7 @@ pdf.index = pd.MultiIndex(
 
 # %%
 def create_legend(ax, handles) -> None:
+    """Create legend helper"""
     ax.legend(handles=handles, loc="center left", bbox_to_anchor=(1.05, 0.0))
 
 

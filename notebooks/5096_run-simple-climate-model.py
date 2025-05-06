@@ -22,6 +22,7 @@
 
 # %%
 import json
+import multiprocessing
 import os
 import platform
 from functools import partial
@@ -29,11 +30,14 @@ from functools import partial
 import openscm_units
 import pandas_indexing as pix
 import pandas_openscm
+import seaborn as sns
 from gcages.renaming import SupportedNamingConventions, convert_variable_name
 from gcages.scm_running import convert_openscm_runner_output_names_to_magicc_output_names, run_scms
 from pandas_openscm.index_manipulation import update_index_levels_func
+from pandas_openscm.io import load_timeseries_csv
 
 from emissions_harmonization_historical.constants_5000 import (
+    DATA_ROOT,
     HISTORY_HARMONISATION_DB,
     INFILLED_SCENARIOS_DB,
     REPO_ROOT,
@@ -209,11 +213,6 @@ else:
 #
 # Answer: not ideal but we're going to have to live with it.
 
-# %%
-import seaborn as sns
-from pandas_openscm.io import load_timeseries_csv
-
-from emissions_harmonization_historical.constants_5000 import DATA_ROOT
 
 # %%
 if scm.startswith("MAGICC"):
@@ -279,9 +278,6 @@ complete_openscm_runner = update_index_levels_func(
     },
 )
 # complete_openscm_runner
-
-# %%
-import multiprocessing
 
 # %%
 run_scms(
