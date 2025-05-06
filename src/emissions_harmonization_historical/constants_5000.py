@@ -184,3 +184,63 @@ HARMONISED_SCENARIO_DB = OpenSCMDB(
     backend_data=FeatherDataBackend(),
     backend_index=FeatherIndexBackend(),
 )
+
+# ID for the infilling database creation step
+INFILLING_DB_CREATION_ID = "0001"
+
+INFILLING_DB_DIR = (
+    DATA_ROOT
+    / "processed"
+    / "infilling-db"
+    / f"{DOWNLOAD_SCENARIOS_ID}_{WMO_2022_PROCESSING_ID}_{HARMONISATION_ID}_{INFILLING_DB_CREATION_ID}"
+)
+
+# Database into which pre-processed scenarios are saved
+INFILLING_DB = OpenSCMDB(
+    db_dir=INFILLING_DB_DIR / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+# ID for the infilling step
+INFILLING_ID = "0001"
+
+INFILLED_OUT_DIR = (
+    DATA_ROOT
+    / "processed"
+    / "infilled"
+    / f"{DOWNLOAD_SCENARIOS_ID}_{PRE_PROCESSING_ID}_{HISTORY_FOR_HARMONISATION_ID}_{HARMONISATION_ID}_{INFILLING_ID}"
+)
+
+# Database into which infilled data is saved
+INFILLED_SCENARIOS_DB = OpenSCMDB(
+    db_dir=INFILLED_OUT_DIR / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+# ID for the simple climate model running step
+SCM_RUNNING_ID = "0001"
+
+SCM_OUT_DIR = (
+    DATA_ROOT
+    / "processed"
+    / "scm-output"
+    / "_".join(
+        [
+            DOWNLOAD_SCENARIOS_ID,
+            PRE_PROCESSING_ID,
+            HISTORY_FOR_HARMONISATION_ID,
+            HARMONISATION_ID,
+            INFILLING_ID,
+            SCM_RUNNING_ID,
+        ]
+    )
+)
+
+# Database into which SCM output is saved
+SCM_OUTPUT_DB = OpenSCMDB(
+    db_dir=SCM_OUT_DIR / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)

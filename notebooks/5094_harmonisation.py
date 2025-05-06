@@ -61,13 +61,10 @@ output_dir_model.mkdir(exist_ok=True, parents=True)
 output_dir_model
 
 # %% [markdown]
-# ## Harmonise for gridding emissions
+# ## Load data
 
 # %% [markdown]
-# ### Load data
-
-# %% [markdown]
-# #### Scenarios
+# ### Scenarios
 
 # %%
 PRE_PROCESSED_SCENARIO_DB.load_metadata().get_level_values("stage").unique()
@@ -91,7 +88,7 @@ if model_pre_processed_for_global_workflow.empty:
 # model_pre_processed_for_global_workflow
 
 # %% [markdown]
-# ##### Temporary hack: interpolate model data to annual to allow harmonisation
+# #### Temporary hack: interpolate scenario data to annual to allow harmonisation
 
 # %%
 if HARMONISATION_YEAR not in model_pre_processed_for_gridding:
@@ -110,7 +107,7 @@ if HARMONISATION_YEAR not in model_pre_processed_for_global_workflow:
 # model_pre_processed_for_global_workflow.sort_values(by=HARMONISATION_YEAR)
 
 # %% [markdown]
-# #### History to use for harmonisation
+# ### History to use for harmonisation
 
 # %%
 history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(pix.ismatch(purpose="gridding_emissions"))
@@ -137,7 +134,7 @@ if HARMONISATION_YEAR not in history_for_harmonisation:
 history_for_harmonisation
 
 # %% [markdown]
-# ### Harmonise
+# ## Harmonise
 
 # %%
 # Could load in user overrides from elsewhere here.
@@ -263,7 +260,7 @@ for ax in fg.axes.flatten():
         ax.set_ylim(ymin=0.0)
 
 # %% [markdown]
-# ### Compare global and gridding harmonisation
+# ### Global vs. gridding harmonisation
 
 # %%
 history_gridding_aggregate = to_global_workflow_emissions(
@@ -447,18 +444,20 @@ with ctx_manager as output_pdf_file:
             else:
                 plt.show()
 
-        # Don't plot all for now
-        if region != "World":
-            break
+        # # Don't plot all for now
+        # if region != "World":
+        #     break
 
 # %% [markdown]
 # ## Create combination to use for simple climate models
 #
 # Use the aggregate of the gridding emissions where we can,
+# except for CO<sub>2</sub> AFOLU,
 # globally harmonised timeseries otherwise.
 
 # %%
 from_gridding = harmonised_gridding_aggregate.reset_index(["workflow", "stage"], drop=True)
+from_gridding = from_gridding.loc[~pix.isin(variable="Emissions|CO2|AFOLU")]
 # from_gridding
 
 # %%

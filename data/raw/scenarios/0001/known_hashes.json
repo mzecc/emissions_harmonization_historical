@@ -20,6 +20,18 @@
     "SSP2 - Medium-Low Emissions": "5c00daa0fda5b8b46ae1c6cc3c478c96323bc5f1297cd061802c0c0843c6d3ae",
     "SSP2 - Very Low Emissions": "537131385a7600939a9dd9d5e82436ee21aaa17da7eff71b499bfc869edd4168"
   },
+  "GCAM 7.1 scenarioMIP": {
+    "SSP1 - Low Overshoot": "3418e879d28204afcb4bfe2981e47be5b49fe0546ab6afbdaa22c0052f11ae23",
+    "SSP1 - Very Low Emissions": "104e5c14bbfffe2636d07224ae6af42dd3232149ab6af3c180999c65c9aa4fb2",
+    "SSP2 - High Emissions": "0a8a56217d92a29daa414b7ff6466e52158e0778ebb2aec218d7a825e2337e9a",
+    "SSP2 - Low Emissions": "2a933ccf516e684d18fc16bae9696893ca3f3f682c6f5d99befc7b2ccc69dbbe",
+    "SSP2 - Low Overshoot": "47c70a2195b0b905e173a4f44358227da199f2860337bbf6ec4d559569dc391e",
+    "SSP2 - Medium Emissions": "d93ce98ccc51d42ba819736d7df415711f9c579937c7d518658ab05c5a1c1fee",
+    "SSP2 - Medium-Low Emissions": "ca6aa3ef7cbd5f4a99ac35bef6c575b2757f0c6fa2a59b1713079c8a3ee4dd4a",
+    "SSP2 - Very Low Emissions": "9e372199cf38269aacda2c4c4541023406151b731f0d0ee4f094b2b4608afd07",
+    "SSP3 - High Emissions": "85ab5d26291c797888e8ce572ac76eabfb3180e3ccba4d950b9bd8d1e411992d",
+    "SSP5 - High Emissions": "dca343bce905befe08abfbaeaa0449b9af69d2b64fa6645c8631ffe8fb7019c7"
+  },
   "IMAGE 3.4": {
     "SSP1 - Low Emissions": "661224b7d4e3937830199598ceb78ee2bc6a6affad13a12bac0687de098644e3",
     "SSP1 - Low Overshoot": "e7816a41fe6e02e6f5a60f25309013d42255872304c35222e0145534fc6e8170",

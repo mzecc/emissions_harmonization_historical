@@ -7,6 +7,7 @@ of IAM and simple climate model by hand
 
 from pathlib import Path
 
+import jupytext
 import papermill as pm
 
 
@@ -17,18 +18,18 @@ def get_notebook_parameters(notebook_name: str, iam: str) -> dict[str, str]:
     A bit yuck that we have to do it like this,
     but the notebooks don't all use the same names.
     """
-    if notebook_name == "5090_download-scenarios.ipynb":
+    if notebook_name == "5090_download-scenarios.py":
         res = {"model_search": iam}
 
     elif notebook_name in [
-        "5091_check-reporting.ipynb",
-        "5092_check-interal-consistency.ipynb",
-        "5093_pre-processing.ipynb",
+        "5091_check-reporting.py",
+        "5092_check-interal-consistency.py",
+        "5093_pre-processing.py",
     ]:
         res = {"model": iam}
 
     elif notebook_name in [
-        "5094_harmonisation.ipynb",
+        "5094_harmonisation.py",
     ]:
         res = {"model": iam, "output_to_pdf": True}
 
@@ -50,30 +51,43 @@ def main():
 
     iams = ["REMIND"]
     iams = ["COFFEE"]
+    iams = ["GCAM"]
     # iams = ["WITCH", "MESSAGE"]
-    iams = [
-        "WITCH",
-        "REMIND",
-        "MESSAGE",
-        "IMAGE",
-        "COFFEE",
-        "AIM",
-    ]
+    # iams = [
+    #     "WITCH",
+    #     "REMIND",
+    #     "MESSAGE",
+    #     "IMAGE",
+    #     "GCAM",
+    #     "COFFEE",
+    #     "AIM",
+    # ]
+    #
+    # notebook_prefixes = ["5094"]
+    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
 
-    notebook_prefixes = ["5094"]
-    # notebook_prefixes = ["5090", "5091", "5092"]
-
-    all_notebooks = tuple(sorted(notebooks_dir.glob("*.ipynb")))
+    all_notebooks = tuple(sorted(notebooks_dir.glob("*.py")))
     for iam in iams:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
                 parameters = get_notebook_parameters(notebook.name, iam=iam)
+
+                notebook_jupytext = jupytext.read(notebook)
+
+                # Write the .py file as .ipynb
+                in_notebook = RUN_NOTEBOOKS_DIR / f"{notebook.stem}_{iam}_unexecuted.ipynb"
+                in_notebook.parent.mkdir(exist_ok=True, parents=True)
+                jupytext.write(notebook_jupytext, in_notebook, fmt="ipynb")
+
                 output_notebook = RUN_NOTEBOOKS_DIR / f"{notebook.stem}_{iam}.ipynb"
                 output_notebook.parent.mkdir(exist_ok=True, parents=True)
 
-                print(f"Executing {notebook.name=} for {iam=} with {parameters=}. Writing to {output_notebook=}")
+                print(
+                    f"Executing {notebook.name=} for {iam=} with {parameters=} from {in_notebook=}. "
+                    f"Writing to {output_notebook=}"
+                )
                 # Execute to specific directory
-                pm.execute_notebook(notebook, output_notebook, parameters=parameters)
+                pm.execute_notebook(in_notebook, output_notebook, parameters=parameters)
 
 
 if __name__ == "__main__":
