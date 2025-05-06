@@ -29,7 +29,9 @@ import pandas_indexing as pix
 import pandas_openscm
 import seaborn as sns
 import tqdm.auto
+from gcages.cmip7_scenariomip.gridding_emissions import to_global_workflow_emissions
 from gcages.index_manipulation import split_sectors
+from gcages.testing import compare_close
 from matplotlib.backends.backend_pdf import PdfPages
 
 from emissions_harmonization_historical.constants_5000 import (
@@ -50,7 +52,7 @@ from emissions_harmonization_historical.harmonisation import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "WITCH"
 output_to_pdf: bool = False
 
 # %%
@@ -121,7 +123,6 @@ history_for_global_workflow_harmonisation = HISTORY_HARMONISATION_DB.load(
 # history_for_global_workflow_harmonisation
 
 # %%
-# TODO: expand this to include global workflow emissions too
 history_for_harmonisation = pix.concat(
     [history_for_gridding_harmonisation, history_for_global_workflow_harmonisation]
 ).reset_index("purpose", drop=True)
@@ -262,6 +263,102 @@ for ax in fg.axes.flatten():
         ax.set_ylim(ymin=0.0)
 
 # %% [markdown]
+# ### Compare global and gridding harmonisation
+
+# %%
+history_gridding_aggregate = to_global_workflow_emissions(
+    history_for_gridding_harmonisation.loc[pix.isin(region=res["gridding"].timeseries.pix.unique("region"))]
+    .reset_index("purpose", drop=True)
+    .rename_axis("year", axis="columns")
+    .pix.assign(model="CEDS-BB4CMIP"),
+    global_workflow_co2_fossil_sector="Energy and Industrial Processes",
+    global_workflow_co2_biosphere_sector="AFOLU",
+).pix.assign(workflow="gridding", stage="history")
+# history_gridding_aggregate
+
+# %%
+harmonised_gridding_aggregate = to_global_workflow_emissions(
+    res["gridding"].timeseries,
+    global_workflow_co2_fossil_sector="Energy and Industrial Processes",
+    global_workflow_co2_biosphere_sector="AFOLU",
+).pix.assign(
+    workflow="gridding",
+    stage="harmonised",
+)
+# harmonised_gridding_aggregate
+
+# %%
+gridding_aggregates = pix.concat(
+    [
+        history_gridding_aggregate,
+        harmonised_gridding_aggregate,
+    ]
+)
+combo_global_v_gridding = pix.concat(
+    [
+        combo_global.loc[~pix.isin(stage="pre-processed")]
+        .pix.assign(workflow="global")
+        .loc[pix.isin(variable=gridding_aggregates.pix.unique("variable"))],
+        gridding_aggregates,
+    ]
+).sort_index(axis="columns")
+# combo_global_v_gridding
+
+# %% [markdown]
+# Key difference in historical emissions
+# between gridding and global workflows is CO2 AFOLU
+# (make sense as they use different data sources).
+
+# %%
+tmp = combo_global_v_gridding.loc[pix.isin(stage="history")].dropna(axis="columns")
+compare_close(
+    tmp.loc[pix.isin(workflow="global")].reset_index(["workflow", "model"], drop=True),
+    tmp.loc[pix.isin(workflow="gridding")].reset_index(["workflow", "model"], drop=True),
+    left_name="global",
+    right_name="gridding",
+).rename_axis("source", axis="columns").unstack().stack("source", future_stack=True).pix.project(
+    ["variable", "source"]
+).T.plot()
+
+# %%
+pdf_global_v_gridding = (
+    combo_global_v_gridding.loc[
+        :,
+        1990:2100,
+    ]
+    .openscm.to_long_data()
+    .dropna()
+)
+# pdf_global_v_gridding
+
+# %%
+fg = sns.relplot(
+    data=pdf_global_v_gridding,
+    x="time",
+    y="value",
+    hue="scenario",
+    hue_order=sorted(pdf_global_v_gridding["scenario"].unique()),
+    style="workflow",
+    dashes={
+        "gridding": "",
+        "global": (3, 3),
+    },
+    col="variable",
+    col_order=sorted(pdf_global_v_gridding["variable"].unique()),
+    col_wrap=3,
+    units="stage",
+    estimator=None,
+    facet_kws=dict(sharey=False),
+    kind="line",
+)
+for ax in fg.axes.flatten():
+    if "CO2" in ax.get_title():
+        ax.axhline(0.0, linestyle="--", color="tab:gray")
+
+    else:
+        ax.set_ylim(ymin=0.0)
+
+# %% [markdown]
 # ### Gridding emissions
 
 # %%
@@ -350,9 +447,28 @@ with ctx_manager as output_pdf_file:
             else:
                 plt.show()
 
-        # # Don't plot all for now
-        # if region != "World":
-        #     break
+        # Don't plot all for now
+        if region != "World":
+            break
+
+# %% [markdown]
+# ## Create combination to use for simple climate models
+#
+# Use the aggregate of the gridding emissions where we can,
+# globally harmonised timeseries otherwise.
+
+# %%
+from_gridding = harmonised_gridding_aggregate.reset_index(["workflow", "stage"], drop=True)
+# from_gridding
+
+# %%
+from_global = res["global"].timeseries.loc[~pix.isin(variable=from_gridding.pix.unique("variable"))]
+if from_global.empty:
+    for_scms = from_gridding
+else:
+    for_scms = pix.concat([from_gridding, from_global])
+
+for_scms
 
 # %% [markdown]
 # ## Save
@@ -363,14 +479,9 @@ if output_to_pdf:
         fh.write(toc)
 
 # %%
-assert False, "Sort out save"
-# Save:
-# - gridding stuff
-# - global stuff
-# - combo to use for SCMs i.e. gridding stuff aggregated plus global stuff for the rest
+for idr, res_h in res.items():
+    res_h.overrides.to_csv(output_dir_model / f"harmonisation-methods_{idr}_{model}.csv")
+    HARMONISED_SCENARIO_DB.save(res_h.timeseries.pix.assign(workflow=idr), allow_overwrite=True)
 
 # %%
-harmonise_res.overrides.to_csv(output_dir_model / f"harmonisation-methods_{model}.csv")
-
-# %%
-HARMONISED_SCENARIO_DB.save(harmonise_res.timeseries, allow_overwrite=True)
+HARMONISED_SCENARIO_DB.save(for_scms.pix.assign(workflow="for_scms"), allow_overwrite=True)
