@@ -1,3 +1,6 @@
+# Reporting checking outputs
+data/reporting-checking
+
 # Output plots
 *.pdf
 
