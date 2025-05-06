@@ -94,17 +94,16 @@ tmp = (
 )
 
 tmp.loc[
-    # (tmp[("max", "K", 0.33)] > 0.0)
-    # & (tmp[("max", "K", 0.33)] < 1.6)
-    # (tmp[("max", "K", 0.67)] > 1.8)
-    # & (tmp[("max", "K", 0.67)] < 2.05)
-    # (tmp[("2100", "K", 0.5)] > 1.7)
-    # & (tmp[("2100", "K", 0.5)] < 2.0)
+    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 1.6)
+    # # (tmp[("max", "K", 0.67)] > 1.8)
+    # # & (tmp[("max", "K", 0.67)] < 2.05)
+    # # (tmp[("2100", "K", 0.5)] > 1.7)
+    # # & (tmp[("2100", "K", 0.5)] < 2.0)
     # (tmp[("2100", "K", 0.5)] > 2.1)
     # & (tmp[("2100", "K", 0.5)] < 2.5)
-    # (tmp[("2100", "K", 0.5)] > 2.5)
-    # & (tmp[("2100", "K", 0.5)] < 3.0)
-    (tmp[("2100", "K", 0.5)] > 3.0) & (tmp[("2100", "K", 0.5)] < 3.6)
+    # # (tmp[("2100", "K", 0.5)] > 2.5)
+    # # & (tmp[("2100", "K", 0.5)] < 3.0)
+    # # (tmp[("2100", "K", 0.5)] > 3.0) & (tmp[("2100", "K", 0.5)] < 3.6)
 ]
 
 # %% [markdown]
@@ -118,11 +117,13 @@ tmp.loc[
 scratch_selection_l = [
     # ("#7f3e3e", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - High Emissions")),
     # ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP5 - High Emissions")),
-    ("#7f3e3e", ("IMAGE 3.4", "SSP5 - High Emissions")),
+    # ("#7f3e3e", ("IMAGE 3.4", "SSP5 - High Emissions")),
+    ("#7f3e3e", ("AIM 3.0", "SSP5 - High Emissions")),
     # ("#f7a84f", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Medium Emissions")),
     # ("#f7a84f", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium Emissions")),
     # ("#f7a84f", ("IMAGE 3.4", "SSP2 - Medium Emissions")),
-    ("#f7a84f", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Medium Emissions")),
+    # ("#f7a84f", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Medium Emissions")),
+    ("#f7a84f", ("WITCH 6.0", "SSP2 - Medium Emissions")),
     # ("#e1ad01", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - Medium-Low Emissions")),
     # ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
     ("#e1ad01", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium-Low Emissions")),
@@ -238,4 +239,4 @@ tmp = metadata_quantile.unstack("climate_model")
 magicc_diff = tmp["MAGICCv7.6.0a3"] - tmp["MAGICCv7.5.3"]
 magicc_diff.unstack(["metric", "unit", "quantile"])[
     [(metric, "K", percentile) for metric in ["max", "2100"] for percentile in [0.33, 0.5, 0.67, 0.95]]
-].sort_values(by=("max", "K", 0.5)).round(3)
+].sort_values(by=("max", "K", 0.5)).describe().round(3)
