@@ -244,6 +244,7 @@ infilled_silicone = infill(
 )
 complete_silicone = get_complete(harmonised, infilled_silicone)
 
+
 # %%
 # TODO: some plots here
 
@@ -251,6 +252,7 @@ complete_silicone = get_complete(harmonised, infilled_silicone)
 # ### WMO 2022
 
 
+# %%
 def get_direct_copy_infiller(variable: str, copy_from: pd.DataFrame) -> Callable[[pd.DataFrame], pd.DataFrame]:
     """Get an infiller which just copies the scenario from another scenario"""
 

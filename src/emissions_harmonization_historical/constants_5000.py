@@ -16,6 +16,8 @@ but they also require more effort :)
 from pathlib import Path
 
 from pandas_openscm.db import (
+    CSVDataBackend,
+    CSVIndexBackend,
     FeatherDataBackend,
     FeatherIndexBackend,
     OpenSCMDB,
@@ -241,6 +243,73 @@ SCM_OUT_DIR = (
 # Database into which SCM output is saved
 SCM_OUTPUT_DB = OpenSCMDB(
     db_dir=SCM_OUT_DIR / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+# ID for the post-processing step
+POST_PROCESSING_ID = "0001"
+
+POST_PROCESSING_DIR = (
+    DATA_ROOT
+    / "processed"
+    / "post-processed"
+    / "_".join(
+        [
+            DOWNLOAD_SCENARIOS_ID,
+            PRE_PROCESSING_ID,
+            HISTORY_FOR_HARMONISATION_ID,
+            HARMONISATION_ID,
+            INFILLING_ID,
+            SCM_RUNNING_ID,
+            POST_PROCESSING_ID,
+        ]
+    )
+)
+
+# Databases intwo which post-processed output is saved.
+# There are lots of these because each kind of data
+# has slightly different axes,
+# so we don't want to use the same ones.
+
+POST_PROCESSED_METADATA_CATEGORIES_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-metadata-categories",
+    backend_data=CSVDataBackend(),
+    backend_index=CSVIndexBackend(),
+)
+
+POST_PROCESSED_METADATA_EXCEEDANCE_PROBABILITIES_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-metadata-exceedance-probabilities-db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+POST_PROCESSED_METADATA_QUANTILE_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-metadata-quantile",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+POST_PROCESSED_METADATA_RUN_ID_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-metadata-run-id",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+POST_PROCESSED_TIMESERIES_EXCEEDANCE_PROBABILITIES_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-timeseries-exceedance-probabilities",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+POST_PROCESSED_TIMESERIES_QUANTILE_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-timeseries-quantile",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+POST_PROCESSED_TIMESERIES_RUN_ID_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-timeseries-run-id",
     backend_data=FeatherDataBackend(),
     backend_index=FeatherIndexBackend(),
 )

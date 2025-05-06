@@ -41,7 +41,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
+model: str = "GCAM"
 
 # %% [markdown]
 # ## Load data
@@ -172,6 +172,10 @@ pre_processor = CMIP7ScenarioMIPPreProcessor(
 
 # %%
 pre_processor.run_checks = False
+
+# %%
+# Urgh, GCAM has some unexpected reporting for stuff we've never heard of
+model_df = model_df.loc[~pix.ismatch(variable="Emissions|C2F6|**")]
 
 # %%
 pre_processing_res = pre_processor(model_df)
