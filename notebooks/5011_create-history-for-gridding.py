@@ -27,6 +27,7 @@ import pandas_openscm
 import tqdm.auto
 from gcages.cmip7_scenariomip.gridding_emissions import get_complete_gridding_index
 from gcages.completeness import assert_all_groups_are_complete
+from gcages.index_manipulation import split_sectors
 
 from emissions_harmonization_historical.constants_5000 import (
     CEDS_PROCESSED_DB,
@@ -106,7 +107,7 @@ for model, iso_codes in model_included_codes.items():
     missing_isos_l.append(model_row)
 
 missing_isos = pd.DataFrame(missing_isos_l)
-missing_isos
+missing_isos  # .set_index("model").loc["AIM 3.0"]["missing_vs_GFED4"]
 
 # %% [markdown]
 # ## Aggregate into regions we need for harmonising gridding emissions
@@ -189,6 +190,16 @@ for (variable, region), vrdf in tqdm.auto.tqdm(history_for_gridding.groupby(["va
     history_for_gridding_smoothed_l.append(tmp)
 
 history_for_gridding_smoothed = pix.concat(history_for_gridding_smoothed_l)
+
+# %%
+split_sectors(
+    history_for_gridding_smoothed.loc[pix.ismatch(variable="**|OC|**Burning", region="AIM**")]
+).openscm.groupby_except(["region", "sectors"]).sum(min_count=1)
+
+# %%
+split_sectors(
+    history_for_gridding_smoothed.loc[pix.ismatch(variable="**|OC|**", region="AIM**")]
+).openscm.groupby_except(["region", "sectors"]).sum(min_count=1)
 
 # %% [markdown]
 # ## Last checks

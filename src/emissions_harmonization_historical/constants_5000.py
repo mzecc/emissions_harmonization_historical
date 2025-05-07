@@ -46,6 +46,8 @@ CEDS_PROCESSED_DB = OpenSCMDB(
 
 # ID for the GFED4 processing step
 GFED4_PROCESSING_ID = "0001"
+# Fix a bug in regridding handling
+GFED4_PROCESSING_ID = "0002"
 
 GFED4_TOP_LEVEL_RAW_PATH = DATA_ROOT / "raw" / "gfed4"
 GFED4_RAW_PATH = GFED4_TOP_LEVEL_RAW_PATH

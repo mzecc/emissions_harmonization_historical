@@ -21,12 +21,14 @@
 # ## Imports
 
 # %%
+import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
 import pint
 import tqdm.auto
 import xarray as xr
+import xarray_regrid  # noqa: F401
 
 from emissions_harmonization_historical.constants_5000 import GFED4_PROCESSED_DB, GFED4_RAW_PATH, HISTORY_SCENARIO_NAME
 from emissions_harmonization_historical.gfed import (
@@ -102,7 +104,8 @@ emissions_factors = pd.read_csv(
 
 # %%
 country_mask = xr.open_dataarray(GFED4_RAW_PATH / "iso_mask.nc").compute()
-# country_mask
+# If you want to check that the mask sums to 1
+# np.unique(country_mask.sum(["iso"]))
 
 # %% [markdown]
 # ## Process
@@ -141,13 +144,27 @@ for filename in tqdm.auto.tqdm(sorted(GFED4_RAW_PATH.glob("*.hdf5"))):
     emissions["C"].attrs.update(dict(unit="g C m-2 / month"))
     emissions = emissions[["DM", "cell_area"]].compute()
 
-    # regrid conservatively
-    emissions_regridded = emissions.regrid.conservative(country_mask)
+    dry_matter_regridded = emissions["DM"].regrid.linear(country_mask)
+    # Super hacky and only works because the iso mask
+    # is half the resolution of GFED, anyway.
+    # (I couldn't get conservative regridding to do what I expected,
+    # so I moved on).
+    cell_area_regridded = (
+        emissions["cell_area"]
+        .rolling(lat=2, lon=2)
+        .sum()
+        .sel(lat=np.arange(89.625, -90, -0.5), lon=np.arange(-179.625, 180, 0.5))
+        .assign_coords(
+            lat=(emissions.lat[::2].values + emissions.lat[1::2].values) / 2.0,
+            lon=(emissions.lon[::2].values + emissions.lon[1::2].values) / 2.0,
+        )
+        .sel(lat=country_mask.lat, lon=country_mask.lon)
+    )
+
+    emissions_per_cell_regridded = dry_matter_regridded * cell_area_regridded
 
     # Get dry matter by country per year
-    dry_matter_by_country = (
-        (emissions_regridded["DM"] * emissions_regridded["cell_area"] * country_mask).sum(["lat", "lon"]).compute()
-    )
+    dry_matter_by_country = (emissions_per_cell_regridded * country_mask).sum(["lat", "lon"]).compute()
 
     dry_matter_by_country_per_year = (
         dry_matter_by_country.groupby("time.year").sum().assign_attrs(dict(unit="kg DM / a"))
@@ -156,8 +173,14 @@ for filename in tqdm.auto.tqdm(sorted(GFED4_RAW_PATH.glob("*.hdf5"))):
     emissions_by_country = (dry_matter_by_country_per_year * xr.DataArray(emissions_factors_per_DM)).compute()
     res_l.append(emissions_by_country)
 
-emissions_by_country = xr.concat(res_l, dim="time")
+emissions_by_country = xr.concat(res_l, dim="year")
 # emissions_by_country
+
+# %%
+# A quick check from a number that matters a lot
+np.testing.assert_allclose(
+    28.05 * 1e9, emissions_by_country.sum(["sector", "iso"]).sel(em="OC", year=2023).values, atol=0.01 * 1e9
+)
 
 # %% [markdown]
 # #### Convert units
@@ -252,6 +275,10 @@ tmp = res.reset_index("unit")
 tmp["unit"] = tmp["unit"].str.replace("Mt C/yr", "Mt BC/yr")
 res = tmp.set_index("unit", append=True).reorder_levels(res.index.names)
 res
+
+# %%
+# Another handy quick check
+res.groupby(["variable", "unit"]).sum().loc[pix.ismatch(variable="**|OC|**")].sum().round(2)
 
 # %%
 assert_units_match_wishes(res)

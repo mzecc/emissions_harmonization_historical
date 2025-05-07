@@ -52,7 +52,7 @@ from emissions_harmonization_historical.harmonisation import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "WITCH"
+model: str = "AIM"
 output_to_pdf: bool = False
 
 # %%
@@ -154,6 +154,12 @@ for key, idf in (
         user_overrides=user_overrides,
     )
     res[key] = harmonised_key
+
+# %%
+tmp = res["gridding"].overrides.loc[pix.ismatch(variable="**Peat**")]
+# # These cause issues as the history is zero but the model is not
+# # so the result isn't actually harmonised
+# tmp[tmp == "hist_zero"].loc[pix.ismatch(variable="**CO2**") & pix.isin(scenario=tmp.pix.unique("scenario")[0])]
 
 # %% [markdown]
 # ## Examine results
@@ -321,14 +327,24 @@ combo_global_v_gridding = pix.concat(
 
 # %%
 tmp = combo_global_v_gridding.loc[pix.isin(stage="history")].dropna(axis="columns")
-compare_close(
-    tmp.loc[pix.isin(workflow="global")].reset_index(["workflow", "model"], drop=True),
-    tmp.loc[pix.isin(workflow="gridding")].reset_index(["workflow", "model"], drop=True),
-    left_name="global",
-    right_name="gridding",
-).rename_axis("source", axis="columns").unstack().stack("source", future_stack=True).pix.project(
-    ["variable", "source"]
-).T.plot()
+diffs = (
+    compare_close(
+        tmp.loc[pix.isin(workflow="global")].reset_index(["workflow", "model"], drop=True),
+        tmp.loc[pix.isin(workflow="gridding")].reset_index(["workflow", "model"], drop=True),
+        left_name="global",
+        right_name="gridding",
+        rtol=1e-4,
+    )
+    .rename_axis("source", axis="columns")
+    .unstack()
+    .stack("source", future_stack=True)
+    .pix.project(["variable", "source"])
+)
+
+for variable, vdf in diffs.groupby("variable"):
+    ax = vdf.T.plot()
+    ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
+    plt.show()
 
 # %%
 pdf_global_v_gridding = (
@@ -372,7 +388,16 @@ for ax in fg.axes.flatten():
 # ### Gridding emissions
 
 # %%
-pdf_gridding = combo_gridding.sort_index(axis="columns").loc[:, 1950:]
+pdf_gridding = pix.concat(
+    [
+        combo_gridding,
+        combo_gridding.openscm.groupby_except("region").sum(min_count=1).pix.assign(region="World"),
+    ]
+).sort_index(axis="columns")
+pdf_gridding.columns = pdf_gridding.columns.astype(int)
+pdf_gridding = pdf_gridding.loc[:, 1950:]
+pdf_gridding = pdf_gridding.loc[pix.ismatch(variable="**OC**"), :]
+# pdf_gridding
 
 # %%
 # # If you need to look at negative values only, use this
@@ -460,6 +485,7 @@ with ctx_manager as output_pdf_file:
         # # Don't plot all for now
         # if region != "World":
         #     break
+        break
 
 # %% [markdown]
 # ## Create combination to use for simple climate models
