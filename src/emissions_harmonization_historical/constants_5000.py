@@ -119,6 +119,20 @@ CMIP7_GHG_PROCESSED_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+RCMIP_VERSION_ID = "v5.1.0"
+
+RCMIP_RAW_PATH = DATA_ROOT / "raw" / "rcmip" / RCMIP_VERSION_ID
+
+# ID for the CMIP7 GHG processing step
+RCMIP_PROCESSING_ID = "0001"
+
+RCMIP_PROCESSED_DIR = DATA_ROOT / "processed" / "rcmip" / RCMIP_PROCESSING_ID
+RCMIP_PROCESSED_DB = OpenSCMDB(
+    db_dir=RCMIP_PROCESSED_DIR / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
 
 # Commit from https://github.com/IAMconsortium/common-definitions
 # to use
@@ -205,7 +219,10 @@ INFILLING_DB = OpenSCMDB(
 )
 
 # ID for the infilling step
-INFILLING_ID = "0001"
+# INFILLING_ID = "0001"
+# Fixed a bug in how some Montreal gases were infilled
+# (some had emissions that were becoming way too low in future).
+INFILLING_ID = "0002"
 
 INFILLED_OUT_DIR = (
     DATA_ROOT

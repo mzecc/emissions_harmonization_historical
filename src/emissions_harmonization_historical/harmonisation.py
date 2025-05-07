@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import warnings
+from typing import TYPE_CHECKING
 
 import aneris.utils
 import pandas as pd
@@ -17,7 +18,12 @@ import tqdm.auto
 from aneris.methods import default_methods
 from attrs import define
 from gcages.aneris_helpers import _convert_units_to_match, harmonise_all
+from gcages.harmonisation.common import align_history_to_data_at_time
+from gcages.testing import compare_close
 from pandas_openscm.indexing import multi_index_lookup
+
+if TYPE_CHECKING:
+    from gcages.typing import PINT_SCALAR
 
 HARMONISATION_YEAR = 2023
 
@@ -308,3 +314,76 @@ def harmonise(  # noqa: PLR0913
         aneris_logger.setLevel(aneris_logger_level_in)
 
     return HarmonisationResult(timeseries=harmonised, overrides=overrides_to_use)
+
+
+def assert_harmonised(
+    scenarios: pd.DataFrame,
+    history: pd.DataFrame,
+    species_tolerances: dict[str, dict[str, float | PINT_SCALAR]] | None = None,
+) -> None:
+    """
+    Assert that scenarios are harmonised to a given history
+
+    TODO: move to gcages/update the existing gcages function
+
+    Parameters
+    ----------
+    scenarios
+        Scenarios
+
+    history
+        History
+
+    species_tolerances
+        Tolerance to apply while checking harmonisation of different species
+    """
+    # Protect this with try except in gcagees
+    import openscm_units
+
+    Q = openscm_units.unit_registry.Quantity
+
+    if species_tolerances is None:
+        species_tolerances = {
+            "BC": dict(rtol=1e-3, atol=Q(1e-3, "Mt BC/yr")),
+            "CH4": dict(rtol=1e-3, atol=Q(1e-2, "Mt CH4/yr")),
+            "CO": dict(rtol=1e-3, atol=Q(1e-1, "Mt CO/yr")),
+            "CO2": dict(rtol=1e-3, atol=Q(1e-3, "Gt CO2/yr")),
+            "NH3": dict(rtol=1e-3, atol=Q(1e-2, "Mt NH3/yr")),
+            "NOx": dict(rtol=1e-3, atol=Q(1e-2, "Mt NO2/yr")),
+            "OC": dict(rtol=1e-3, atol=Q(1e-3, "Mt OC/yr")),
+            "Sulfur": dict(rtol=1e-3, atol=Q(1e-2, "Mt SO2/yr")),
+            "VOC": dict(rtol=1e-3, atol=Q(1e-2, "Mt VOC/yr")),
+            "N2O": dict(rtol=1e-3, atol=Q(1e-1, "kt N2O/yr")),
+        }
+
+    scenarios_a, history_a = align_history_to_data_at_time(
+        scenarios,
+        history=history.loc[pix.isin(variable=scenarios.pix.unique("variable"))].reset_index(
+            ["model", "scenario"], drop=True
+        ),
+        time=HARMONISATION_YEAR,
+    )
+    for variable, scen_a_vdf in scenarios_a.groupby("variable"):
+        history_a_vdf = history_a.loc[pix.isin(variable=variable)]
+        species = variable.split("|")[1]
+        if species in species_tolerances:
+            unit_l = scen_a_vdf.pix.unique("unit").tolist()
+            if len(unit_l) != 1:
+                raise AssertionError(unit_l)
+            unit = unit_l[0]
+
+            rtol = species_tolerances[species]["rtol"]
+            atol = species_tolerances[species]["atol"].to(unit).m
+
+        else:
+            rtol = 1e-4
+            atol = 1e-6
+
+        compare_close(
+            scen_a_vdf.unstack("region"),
+            history_a_vdf.unstack("region"),
+            left_name="scenario",
+            right_name="history",
+            rtol=rtol,
+            atol=atol,
+        )

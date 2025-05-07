@@ -21,7 +21,6 @@
 # ## Imports
 
 # %%
-import json
 import multiprocessing
 import os
 import platform
@@ -32,18 +31,18 @@ import pandas_indexing as pix
 import pandas_openscm
 import seaborn as sns
 from gcages.renaming import SupportedNamingConventions, convert_variable_name
-from gcages.scm_running import convert_openscm_runner_output_names_to_magicc_output_names, run_scms
+from gcages.scm_running import run_scms
 from pandas_openscm.index_manipulation import update_index_levels_func
-from pandas_openscm.io import load_timeseries_csv
 
 from emissions_harmonization_historical.constants_5000 import (
-    DATA_ROOT,
     HISTORY_HARMONISATION_DB,
     INFILLED_SCENARIOS_DB,
+    RCMIP_PROCESSED_DB,
     REPO_ROOT,
     SCM_OUT_DIR,
     SCM_OUTPUT_DB,
 )
+from emissions_harmonization_historical.scm_running import get_complete_scenarios_for_magicc, load_magicc_cfgs
 
 # %% [markdown]
 # ## Set up
@@ -57,7 +56,7 @@ Q = UR.Quantity
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
 model: str = "COFFEE"
-scm: str = "MAGICCv7.5.3"
+scm: str = "MAGICCv7.6.0a3"
 
 # %%
 output_dir_model = SCM_OUT_DIR / model
@@ -159,49 +158,16 @@ if scm in ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]:
 
     os.environ["MAGICC_EXECUTABLE_7"] = str(magicc_exe_path)
 
-    with open(magicc_prob_distribution_path) as fh:
-        cfgs_raw = json.load(fh)
-
-    cfgs_physical = [
-        {
-            "run_id": c["paraset_id"],
-            **{k.lower(): v for k, v in c["nml_allcfgs"].items()},
-        }
-        for c in cfgs_raw["configurations"]
-    ]
-
-    startyear = 1750
-    common_cfg = {
-        "startyear": startyear,
-        "out_dynamic_vars": convert_openscm_runner_output_names_to_magicc_output_names(output_variables),
-        "out_ascii_binary": "BINARY",
-        "out_binary_format": 2,
-    }
-
-    run_config = [{**common_cfg, **physical_cfg} for physical_cfg in cfgs_physical]
-    # len(run_config)
-    climate_models_cfgs = {"MAGICC7": run_config}
-
-    complete_start_year = complete_scenarios.columns.min()
-
-    magicc_start_year = 2015
-
-    history_to_add = (
-        history.openscm.mi_loc(complete_scenarios.reset_index(["model", "scenario"], drop=True).drop_duplicates().index)
-        .reset_index(["model", "scenario"], drop=True)
-        .align(complete_scenarios)[0]
-        .loc[:, magicc_start_year : complete_start_year - 1]
+    climate_models_cfgs = load_magicc_cfgs(
+        prob_distribution_path=magicc_prob_distribution_path,
+        output_variables=output_variables,
+        startyear=1750,
     )
 
-    complete_scm = pix.concat(
-        [
-            history_to_add.reorder_levels(complete_scenarios.index.names),
-            complete_scenarios,
-        ],
-        axis="columns",
+    complete_scm = get_complete_scenarios_for_magicc(
+        scenarios=complete_scenarios,
+        history=history,
     )
-    # Also interpolate for MAGICC
-    complete_scm = complete_scm.T.interpolate(method="index").T
 
 else:
     raise NotImplementedError(scm)
@@ -216,9 +182,6 @@ else:
 
 # %%
 if scm.startswith("MAGICC"):
-    # TODO: sort out RCMIP download in separate notebook
-    RCMIP_PATH = DATA_ROOT / "global/rcmip/data_raw/rcmip-emissions-annual-means-v5-1-0.csv"
-
     reporting_to_rcmip = partial(
         convert_variable_name,
         to_convention=SupportedNamingConventions.RCMIP,
@@ -229,20 +192,15 @@ if scm.startswith("MAGICC"):
         from_convention=SupportedNamingConventions.RCMIP,
         to_convention=SupportedNamingConventions.CMIP7_SCENARIOMIP,
     )
-    rcmip = load_timeseries_csv(
-        RCMIP_PATH,
-        lower_column_names=True,
-        index_columns=["model", "scenario", "variable", "region", "unit", "mip_era", "activity_id"],
-        out_column_type=int,
-    ).reset_index(["mip_era", "activity_id"], drop=True)
-    rcmip_hist = rcmip.loc[
+
+    rcmip_hist = RCMIP_PROCESSED_DB.load(
         pix.isin(
             region="World",
             scenario="ssp245",
             variable=complete_scenarios.pix.unique("variable").map(reporting_to_rcmip),
         ),
-        1990:2014,
-    ]
+        progress=True,
+    ).loc[:, 1990:2014]
     rcmip_hist = rcmip_hist.openscm.update_index_levels({"variable": rcmip_to_reporting})
     # rcmip_hist
 

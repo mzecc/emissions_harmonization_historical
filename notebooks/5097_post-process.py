@@ -21,7 +21,6 @@
 # ## Imports
 
 # %%
-
 import numpy as np
 import pandas as pd
 import pandas_indexing as pix
@@ -108,6 +107,20 @@ temperatures_in_line_with_assessment = update_index_levels_func(
     {"variable": lambda x: assessed_gsat_variable},
 )
 # temperatures_in_line_with_assessment
+
+# %%
+temperatures_in_line_with_assessment
+
+# %%
+ax = temperatures_in_line_with_assessment.loc[:, 2010:2100].openscm.plot_plume_after_calculating_quantiles(
+    quantile_over="run_id", hue_var="scenario", style_var="climate_model"
+)
+ax.grid()
+
+# %%
+temperatures_in_line_with_assessment.loc[:, 2010:2030].openscm.plot_plume_after_calculating_quantiles(
+    quantile_over="run_id", hue_var="scenario", style_var="climate_model"
+)
 
 # %%
 temperatures_in_line_with_assessment_quantiles = fix_index_name_after_groupby_quantile(

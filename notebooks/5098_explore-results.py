@@ -26,12 +26,14 @@ import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
+import seaborn as sns
 from pandas_openscm.indexing import multi_index_lookup
 
 from emissions_harmonization_historical.constants_5000 import (
     POST_PROCESSED_METADATA_CATEGORIES_DB,
     POST_PROCESSED_METADATA_QUANTILE_DB,
     POST_PROCESSED_TIMESERIES_RUN_ID_DB,
+    SCM_OUTPUT_DB,
 )
 
 # %% [markdown]
@@ -191,6 +193,57 @@ for i, (ax, yticks) in enumerate(zip(axes, [np.arange(0.5, 4.01, 0.5), np.arange
     ax.set_yticks(yticks)
     ax.set_ylim(ymin=yticks.min(), ymax=yticks.max())
     # ax.set_ylim(ymax=ymax)
+    ax.grid()
+
+# %%
+scm_emissions = SCM_OUTPUT_DB.load(pix.ismatch(variable="Emissions|**"))
+# scm_emissions
+pdf = scm_emissions.openscm.mi_loc(scratch_selection)
+
+# Push ability to create a new level from multiple other levels into pandas-openscm
+new_name = ms_level
+new_level = (
+    pdf.index.droplevel(pdf.index.names.difference(["model", "scenario"]))
+    .drop_duplicates()
+    .map(lambda x: ms_separator.join(x))
+)
+
+if new_level.shape[0] != pdf.shape[0]:
+    dup_level = pdf.index.get_level_values("model") + " || " + pdf.index.get_level_values("scenario")
+    new_level = dup_level.unique()
+    new_codes = new_level.get_indexer(dup_level)
+else:
+    new_codes = np.arange(new_level.shape[0])
+
+pdf.index = pd.MultiIndex(
+    levels=[*pdf.index.levels, new_level],
+    codes=[*pdf.index.codes, new_codes],
+    names=[*pdf.index.names, new_name],
+)
+pdf = pdf.loc[pix.ismatch(variable=["**CO2**", "**CH4", "**BC", "**Sulfur", "**OC", "**VOC"])]
+
+pdf = pdf.pix.format(variable="{variable} ({unit})", drop=True).openscm.to_long_data()
+# pdf
+
+# %%
+fg = sns.relplot(
+    data=pdf,
+    x="time",
+    y="value",
+    hue="model || scenario",
+    palette=palette,
+    col="variable",
+    col_wrap=3,
+    col_order=sorted(pdf["variable"].unique()),
+    facet_kws=dict(sharey=False),
+    kind="line",
+)
+for ax in fg.axes.flatten():
+    if "CO2" in ax.get_title():
+        ax.axhline(0.0, linestyle="--", color="gray")
+    else:
+        ax.set_ylim(ymin=0.0)
+
     ax.grid()
 
 # %%

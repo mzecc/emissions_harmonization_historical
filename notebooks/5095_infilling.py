@@ -21,22 +21,19 @@
 # ## Imports
 
 # %%
-
-from collections.abc import Callable
 from functools import partial
 
+import matplotlib.pyplot as plt
 import numpy as np
 import openscm_units
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
-import pyam
+import seaborn as sns
 import silicone.database_crunchers
 import tqdm.auto
 from gcages.completeness import assert_all_groups_are_complete
-from gcages.harmonisation.common import align_history_to_data_at_time
 from gcages.renaming import SupportedNamingConventions, convert_variable_name
-from gcages.testing import compare_close
 from pandas_openscm.index_manipulation import update_index_levels_func
 
 from emissions_harmonization_historical.constants_5000 import (
@@ -46,10 +43,20 @@ from emissions_harmonization_historical.constants_5000 import (
     INFILLED_OUT_DIR,
     INFILLED_SCENARIOS_DB,
     INFILLING_DB,
+    WMO_2022_PROCESSED_DB,
 )
 from emissions_harmonization_historical.harmonisation import (
     HARMONISATION_YEAR,
+    assert_harmonised,
 )
+from emissions_harmonization_historical.infilling import (
+    get_complete,
+    get_direct_copy_infiller,
+    get_direct_scaling_infiller,
+    get_silicone_based_infiller,
+    infill,
+)
+from emissions_harmonization_historical.scm_running import complete_index_reporting_names
 
 # %% [markdown]
 # ## Set up
@@ -62,7 +69,7 @@ Q = UR.Quantity
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
+model: str = "WITCH"
 output_to_pdf: bool = False
 
 # %%
@@ -113,62 +120,24 @@ cmip7_ghg_inversions = CMIP7_GHG_PROCESSED_DB.load()
 
 
 # %%
-def assert_harmonised(  # noqa: D103 # TODO: move to module
-    scenarios: pd.DataFrame,
-    history: pd.DataFrame,
-    species_tolerances: dict[str, dict[str, float | Q]] | None = None,
-) -> None:
-    if species_tolerances is None:
-        species_tolerances = {
-            "BC": dict(rtol=1e-3, atol=Q(1e-3, "Mt BC/yr")),
-            "CH4": dict(rtol=1e-3, atol=Q(1e-2, "Mt CH4/yr")),
-            "CO": dict(rtol=1e-3, atol=Q(1e-1, "Mt CO/yr")),
-            "CO2": dict(rtol=1e-3, atol=Q(1e0, "Mt CO2/yr")),
-            "NH3": dict(rtol=1e-3, atol=Q(1e-2, "Mt NH3/yr")),
-            "NOx": dict(rtol=1e-3, atol=Q(1e-2, "Mt NO2/yr")),
-            "OC": dict(rtol=1e-3, atol=Q(1e-3, "Mt OC/yr")),
-            "Sulfur": dict(rtol=1e-3, atol=Q(1e-2, "Mt SO2/yr")),
-            "VOC": dict(rtol=1e-3, atol=Q(1e-2, "Mt VOC/yr")),
-            "N2O": dict(rtol=1e-3, atol=Q(1e-1, "kt N2O/yr")),
-        }
-
-    scenarios_a, history_a = align_history_to_data_at_time(
-        scenarios,
-        history=history.loc[pix.isin(variable=scenarios.pix.unique("variable"))].reset_index(
-            ["model", "scenario"], drop=True
-        ),
-        time=HARMONISATION_YEAR,
-    )
-    for variable, scen_a_vdf in scenarios_a.groupby("variable"):
-        history_a_vdf = history_a.loc[pix.isin(variable=variable)]
-        species = variable.split("|")[1]
-        if species in species_tolerances:
-            unit_l = scen_a_vdf.pix.unique("unit").tolist()
-            if len(unit_l) != 1:
-                raise AssertionError(unit_l)
-            unit = unit_l[0]
-
-            rtol = species_tolerances[species]["rtol"]
-            atol = species_tolerances[species]["atol"].to(unit).m
-        else:
-            rtol = 1e-4
-            atol = 1e-6
-
-        compare_close(
-            scen_a_vdf.unstack("region"),
-            history_a_vdf.unstack("region"),
-            left_name="scenario",
-            right_name="history",
-            rtol=rtol,
-            atol=atol,
-        )
-
+species_tolerances = {
+    "BC": dict(rtol=1e-3, atol=Q(1e-3, "Mt BC/yr")),
+    "CH4": dict(rtol=1e-3, atol=Q(1e-2, "Mt CH4/yr")),
+    "CO": dict(rtol=1e-3, atol=Q(1e-1, "Mt CO/yr")),
+    "CO2": dict(rtol=1e-3, atol=Q(1e0, "Mt CO2/yr")),
+    "NH3": dict(rtol=1e-3, atol=Q(1e-2, "Mt NH3/yr")),
+    "NOx": dict(rtol=1e-3, atol=Q(1e-2, "Mt NO2/yr")),
+    "OC": dict(rtol=1e-3, atol=Q(1e-3, "Mt OC/yr")),
+    "Sulfur": dict(rtol=1e-3, atol=Q(1e-2, "Mt SO2/yr")),
+    "VOC": dict(rtol=1e-3, atol=Q(1e-2, "Mt VOC/yr")),
+    "N2O": dict(rtol=1e-3, atol=Q(1e-1, "kt N2O/yr")),
+}
 
 # %%
-assert_harmonised(harmonised, history)
+assert_harmonised(harmonised, history, species_tolerances=species_tolerances)
 
 # %%
-assert_harmonised(infilling_db, history)
+assert_harmonised(infilling_db, history, species_tolerances=species_tolerances)
 
 # %%
 wmo_locator = pix.ismatch(model="WMO**")
@@ -180,49 +149,7 @@ infilling_db_silicone = infilling_db.loc[~wmo_locator]
 # ## Infill
 
 # %% [markdown]
-# ### Helper functions
-
-
-# %%
-def infill(indf: pd.DataFrame, infillers) -> pd.DataFrame | None:  # noqa: D103 # TODO: move to module
-    infilled_l = []
-    for variable in tqdm.auto.tqdm(infillers):
-        for (model, scenario), msdf in indf.groupby(["model", "scenario"]):
-            if variable not in msdf.index.get_level_values("variable"):
-                tmp = infillers[variable](msdf)
-                infilled_l.append(tmp)
-
-    if not infilled_l:
-        return None
-
-    return pix.concat(infilled_l)
-
-
-# %%
-def get_complete(indf: pd.DataFrame, infilled: pd.DataFrame | None) -> pd.DataFrame:  # noqa: D103 # TODO: move to module
-    if infilled is not None:
-        complete = pix.concat([indf, infilled])
-
-    else:
-        complete = indf
-
-    return complete
-
-
-# %% [markdown]
 # ### Silicone
-
-
-# %%
-def get_silicone_based_infiller(infiller):  # noqa: D103 # TODO: move to module
-    def res(inp: pd.DataFrame) -> pd.DataFrame:
-        res_h = infiller(pyam.IamDataFrame(inp)).timeseries()
-        # The fact that this is needed suggests there's a bug in silicone
-        res_h = res_h.loc[:, inp.dropna(axis="columns", how="all").columns]
-
-        return res_h
-
-    return res
 
 
 # %%
@@ -230,10 +157,10 @@ lead = "Emissions|CO2|Energy and Industrial Processes"
 infillers_silicone = {}
 for variable in tqdm.auto.tqdm([v for v in infilling_db_silicone.pix.unique("variable") if v != lead]):
     infillers_silicone[variable] = get_silicone_based_infiller(
-        silicone.database_crunchers.RMSClosest(pyam.IamDataFrame(infilling_db_silicone)).derive_relationship(
-            variable_follower=variable,
-            variable_leaders=[lead],
-        )
+        infilling_db=infilling_db_silicone,
+        follower_variable=variable,
+        lead_variables=[lead],
+        silicone_db_cruncher=silicone.database_crunchers.RMSClosest,
     )
 
 # %%
@@ -244,35 +171,79 @@ infilled_silicone = infill(
 )
 complete_silicone = get_complete(harmonised, infilled_silicone)
 
-
 # %%
-# TODO: some plots here
+if infilled_silicone is None:
+    print("Nothing infilled with silicone")
+
+else:
+    col_order = [lead, *sorted(infilled_silicone.pix.unique("variable"))]
+    infilling_db_silicone_plt = infilling_db_silicone.loc[pix.isin(variable=col_order)]
+    # # This is why we get the crazy spike in HFC43-10.
+    # # Have emailed the REMIND team to get them to check.
+    # hfc4310 = infilling_db_silicone_plt.loc[pix.isin(variable="Emissions|HFC|HFC43-10")]
+    # display(hfc4310.sort_values(by=2050).loc[:, [2023, 2050]])
+
+    infilled_silicone_pdf = complete_silicone.loc[pix.isin(variable=col_order)].openscm.to_long_data()
+    fg = sns.relplot(
+        infilled_silicone_pdf,
+        x="time",
+        y="value",
+        hue="scenario",
+        col="variable",
+        col_wrap=5,
+        col_order=col_order,
+        kind="line",
+        facet_kws=dict(sharey=False),
+        linewidth=3.0,
+        zorder=3.0,
+    )
+    for ax in fg.axes.flatten():
+        variable = ax.get_title().split("variable = ")[1]
+        infiller_ts = infilling_db_silicone_plt.loc[pix.isin(variable=variable)].T
+        ax.plot(
+            infiller_ts.index.values,
+            infiller_ts.values,
+            color="gray",
+            zorder=1.0,
+            linewidth=0.25,
+        )
 
 # %% [markdown]
 # ### WMO 2022
+#
+# Some of the infilling timeseries look super weird in isolation.
+# However, this is mostly rounding errors,
+# which is much clearer when you plot them in their historical context.
 
 
 # %%
-def get_direct_copy_infiller(variable: str, copy_from: pd.DataFrame) -> Callable[[pd.DataFrame], pd.DataFrame]:
-    """Get an infiller which just copies the scenario from another scenario"""
+wmo_2022_smoothed_full = WMO_2022_PROCESSED_DB.load(pix.isin(model=infilling_db_wmo.pix.unique("model")))
 
-    def infiller(inp: pd.DataFrame) -> pd.DataFrame:
-        model = inp.pix.unique("model")
-        if len(model) != 1:
-            raise AssertionError(model)
-        model = model[0]
+# %%
+pdf = pix.concat(
+    [
+        infilling_db_wmo.pix.assign(use="infilling_db"),
+        wmo_2022_smoothed_full.pix.assign(use="full_ts"),
+    ]
+).openscm.to_long_data()
+sns.relplot(
+    data=pdf,
+    x="time",
+    y="value",
+    hue="use",
+    style="use",
+    dashes={
+        "infilling_db": "",
+        "full_ts": (1, 2),
+    },
+    col="variable",
+    col_wrap=7,
+    kind="line",
+    facet_kws=dict(sharey=False),
+)
 
-        scenario = inp.pix.unique("scenario")
-        if len(scenario) != 1:
-            raise AssertionError(scenario)
-        scenario = scenario[0]
-
-        res = copy_from.loc[pix.isin(variable=variable)].pix.assign(model=model, scenario=scenario)
-
-        return res
-
-    return infiller
-
+# %% [markdown]
+# #### Infill
 
 # %%
 infillers_wmo = {}
@@ -287,38 +258,27 @@ infilled_wmo = infill(complete_silicone, infillers_wmo)
 complete_wmo = get_complete(complete_silicone, infilled_wmo)
 
 
+# %%
+# Just checking all scenarios get the same
+pdf = infilled_wmo.openscm.to_long_data()
+sns.relplot(
+    data=pdf,
+    x="time",
+    y="value",
+    hue="scenario",
+    col="variable",
+    col_wrap=7,
+    kind="line",
+    facet_kws=dict(sharey=False),
+)
+
 # %% [markdown]
 # ### Scale timeseries
-
-
-# %%
-def get_direct_scaling_infiller(  # noqa: PLR0913
-    leader: str,
-    follower: str,
-    scaling_factor: float,
-    l_0: float,
-    f_0: float,
-    f_unit: str,
-    calculation_year: int,
-    f_calculation_year: float,
-) -> Callable[[pd.DataFrame], pd.DataFrame]:
-    """
-    Get an infiller which just scales one set of emissions to create the next set
-
-    This is basically silicone's constant ratio infiller
-    with smarter handling of pre-industrial levels.
-    """
-
-    def infiller(inp: pd.DataFrame) -> pd.DataFrame:
-        lead_df = inp.loc[pix.isin(variable=[leader])]
-
-        follow_df = (scaling_factor * (lead_df - l_0) + f_0).pix.assign(variable=follower, unit=f_unit)
-        if not np.isclose(follow_df[calculation_year], f_calculation_year).all():
-            raise AssertionError
-
-        return follow_df
-
-    return infiller
+#
+# Surprisingly, this is the most mucking around of all.
+# The hard part here is that the scaling needs to be aware
+# of the fact that the pre-industrial value is different for each tiemseries.
+# The naming mucking around also adds to the fun of course.
 
 
 # %%
@@ -328,7 +288,6 @@ to_reporting_names = partial(
     to_convention=SupportedNamingConventions.CMIP7_SCENARIOMIP,
 )
 
-# %%
 scaling_leaders_gcages = {
     "Emissions|C3F8": "Emissions|C2F6",
     "Emissions|C4F10": "Emissions|C2F6",
@@ -351,19 +310,40 @@ scaling_leaders = {to_reporting_names(k): to_reporting_names(v) for k, v in scal
 # %%
 cmip7_ghg_inversions_reporting_names = update_index_levels_func(cmip7_ghg_inversions, {"variable": to_reporting_names})
 
+# %% [markdown]
+# We considered breaking the following out,
+# but for now it's better to see the logic.
+# We can move it later if we need
+# into a function like `get_pre_industrial_aware_direct_scaling_infiller`.
+
 # %%
 PI_YEAR = 1750
 infillers_scaling = {}
 for follower, leader in tqdm.auto.tqdm(scaling_leaders.items()):
-    # Need:
-    # - f_harmonisation_year
-    # - l_harmonisation_year,
-    # - f_0
-    # - l_0
+    # For each follower, leader pair we need:
+    # - f_harmonisation_year: The value of the follower in the harmonisation year
+    # - l_harmonisation_year: The value of the leader in the harmonisation year
+    # - f_0: The value of the follower at pre-industrial
+    # - l_0: The value of the leader at pre-industrial
+    #
+    # We can then do 'pre-industrial aware scaling' with
+    # f_future =  (l_future - l_0) * (f_harmonisation_year - f_0) / (l_harmonisation_year - l_0) + f_0
+    #
+    # so that:
+    #
+    # - f_future(l_0) = f_0 i.e. if the lead goes to its pre-industrial value,
+    #   the result is the follower's pre-industrial value
+    #
+    # - f_future(l_harmonisation_year) = f_harmonisation_year
+    #   i.e. we preserve harmonisation of the follower
+    #
+    # - there is a linear transition between these two points
+    #   as the lead variable's emissions change
 
     lead_df = history.loc[pix.isin(variable=[leader])]
     follow_df = history.loc[pix.isin(variable=[follower])]
-    cmip7_inverse_df = cmip7_ghg_inversions_reporting_names.loc[pix.isin(variable=[leader])]
+    lead_cmip7_inverse_df = cmip7_ghg_inversions_reporting_names.loc[pix.isin(variable=[leader])]
+    follow_cmip7_inverse_df = cmip7_ghg_inversions_reporting_names.loc[pix.isin(variable=[follower])]
 
     f_unit = follow_df.pix.unique("unit")
     if len(f_unit) != 1:
@@ -383,8 +363,8 @@ for follower, leader in tqdm.auto.tqdm(scaling_leaders.items()):
     else:
         raise AssertionError
 
-    f_0 = float(cmip7_inverse_df[PI_YEAR].values.squeeze())
-    l_0 = float(cmip7_inverse_df[PI_YEAR].values.squeeze())
+    f_0 = float(follow_cmip7_inverse_df[PI_YEAR].values.squeeze())
+    l_0 = float(lead_cmip7_inverse_df[PI_YEAR].values.squeeze())
 
     # if (f_harmonisation_year - f_0) == 0.0:
     #     scaling_factor = 0.0
@@ -411,71 +391,29 @@ for follower, leader in tqdm.auto.tqdm(scaling_leaders.items()):
 infilled_scaling = infill(complete_wmo, infillers_scaling)
 complete = get_complete(complete_wmo, infilled_scaling)
 
+# %%
+for follower, leader in tqdm.auto.tqdm(scaling_leaders.items()):
+    pdf = complete.loc[pix.isin(variable=[follower, leader])].openscm.to_long_data()
+    fg = sns.relplot(
+        data=pdf,
+        x="time",
+        y="value",
+        hue="scenario",
+        col="variable",
+        col_wrap=2,
+        col_order=[leader, follower],
+        kind="line",
+        facet_kws=dict(sharey=False),
+        height=2.5,
+        aspect=1.25,
+    )
+    for ax in fg.axes.flatten():
+        ax.set_ylim(ymin=0.0)
+
+    plt.show()
+
 # %% [markdown]
 # ## Check completeness
-
-# %%
-complete_variables = [
-    "Emissions|CO2|Biosphere",
-    "Emissions|CO2|Fossil",
-    "Emissions|BC",
-    "Emissions|CH4",
-    "Emissions|CO",
-    "Emissions|N2O",
-    "Emissions|NH3",
-    "Emissions|NMVOC",
-    "Emissions|NOx",
-    "Emissions|OC",
-    "Emissions|SOx",
-    "Emissions|C2F6",
-    "Emissions|C6F14",
-    "Emissions|CF4",
-    "Emissions|SF6",
-    "Emissions|HFC125",
-    "Emissions|HFC134a",
-    "Emissions|HFC143a",
-    "Emissions|HFC227ea",
-    "Emissions|HFC23",
-    "Emissions|HFC245fa",
-    "Emissions|HFC32",
-    "Emissions|HFC4310mee",
-    "Emissions|CCl4",
-    "Emissions|CFC11",
-    "Emissions|CFC113",
-    "Emissions|CFC114",
-    "Emissions|CFC115",
-    "Emissions|CFC12",
-    "Emissions|CH3CCl3",
-    "Emissions|HCFC141b",
-    "Emissions|HCFC142b",
-    "Emissions|HCFC22",
-    "Emissions|Halon1202",
-    "Emissions|Halon1211",
-    "Emissions|Halon1301",
-    "Emissions|Halon2402",
-    "Emissions|C3F8",
-    "Emissions|C4F10",
-    "Emissions|C5F12",
-    "Emissions|C7F16",
-    "Emissions|C8F18",
-    "Emissions|cC4F8",
-    "Emissions|SO2F2",
-    "Emissions|HFC236fa",
-    "Emissions|HFC152a",
-    "Emissions|HFC365mfc",
-    "Emissions|CH2Cl2",
-    "Emissions|CHCl3",
-    "Emissions|CH3Br",
-    "Emissions|CH3Cl",
-    "Emissions|NF3",
-]
-len(complete_variables)
-
-# %%
-complete_index_reporting_names = pd.MultiIndex.from_product(
-    [[to_reporting_names(v) for v in complete_variables], ["World"]],
-    names=["variable", "region"],
-)
 
 # %%
 assert_all_groups_are_complete(complete, complete_index_reporting_names)
