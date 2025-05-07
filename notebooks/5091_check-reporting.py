@@ -44,7 +44,7 @@ from emissions_harmonization_historical.excel_writing import set_cell
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
+model: str = "AIM"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model
@@ -309,59 +309,60 @@ with pd.ExcelWriter(out_file, engine="openpyxl", mode="a", if_sheet_exists="over
     if missing_model_region.empty:
         print("Nothing missing at the model-region level")
 
-    missing_model_region_all_scenarios_regions = get_missing_across_facets(
-        missing_model_region, group_facets=["model", "scenario", "region"]
-    )
-    wms(
-        sheet_name="mr_all_scenarios_regions",
-        df=missing_model_region_all_scenarios_regions.reset_index(drop=True),
-        first_row_comment=(
-            "The following timeseries are missing at the model region level for all scenarios and regions"
-        ),
-        first_row_comment_if_empty=(
-            "As far as we can tell, "
-            "there are no timeseries missing at the model region level for all scenarios and regions"
-        ),
-    )
-    if not missing_model_region_all_scenarios_regions.empty:
-        print("The following timeseries are missing at the model region level for all scenarios and regions")
-        display(missing_model_region_all_scenarios_regions)  # noqa: F821
+    else:
+        missing_model_region_all_scenarios_regions = get_missing_across_facets(
+            missing_model_region, group_facets=["model", "scenario", "region"]
+        )
+        wms(
+            sheet_name="mr_all_scenarios_regions",
+            df=missing_model_region_all_scenarios_regions.reset_index(drop=True),
+            first_row_comment=(
+                "The following timeseries are missing at the model region level for all scenarios and regions"
+            ),
+            first_row_comment_if_empty=(
+                "As far as we can tell, "
+                "there are no timeseries missing at the model region level for all scenarios and regions"
+            ),
+        )
+        if not missing_model_region_all_scenarios_regions.empty:
+            print("The following timeseries are missing at the model region level for all scenarios and regions")
+            display(missing_model_region_all_scenarios_regions)  # noqa: F821
 
-    missing_model_region_all_scenarios = get_variants_not_common(
-        missing_model_region[["region", "variable"]].drop_duplicates(),
-        missing_model_region_all_scenarios_regions,
-    )
-    wms(
-        sheet_name="mr_all_scenarios",
-        df=missing_model_region_all_scenarios.reset_index(),
-        first_row_comment="The following timeseries are missing at the model region level for all scenarios",
-        first_row_comment_if_empty=(
-            "As far as we can tell, there are no timeseries missing at the model region level for all scenarios"
-        ),
-    )
-    if not missing_model_region_all_scenarios.empty:
-        print("The following timeseries are missing at the model region level for all scenarios")
-        display(missing_model_region_all_scenarios)  # noqa: F821
+        missing_model_region_all_scenarios = get_variants_not_common(
+            missing_model_region[["region", "variable"]].drop_duplicates(),
+            missing_model_region_all_scenarios_regions,
+        )
+        wms(
+            sheet_name="mr_all_scenarios",
+            df=missing_model_region_all_scenarios.reset_index(),
+            first_row_comment="The following timeseries are missing at the model region level for all scenarios",
+            first_row_comment_if_empty=(
+                "As far as we can tell, there are no timeseries missing at the model region level for all scenarios"
+            ),
+        )
+        if not missing_model_region_all_scenarios.empty:
+            print("The following timeseries are missing at the model region level for all scenarios")
+            display(missing_model_region_all_scenarios)  # noqa: F821
 
-    missing_model_region_specific_scenarios_regions = get_variants_not_common(
-        missing_model_region,
-        missing_model_region_all_scenarios,
-    )
-    missing_model_region_specific_scenarios_regions = get_variants_not_common(
-        missing_model_region_specific_scenarios_regions,
-        missing_model_region_all_scenarios_regions,
-    )
-    wms(
-        sheet_name="mr_specific_region_scenarios",
-        df=missing_model_region_specific_scenarios_regions.reset_index(drop=True),
-        first_row_comment=(
-            "The following timeseries are missing at the model region level for specific regions and scenarios"
-        ),
-        first_row_comment_if_empty=(
-            "As far as we can tell, "
-            "there are no timeseries missing at the model region level for specific regions and scenarios"
-        ),
-    )
-    if not missing_model_region_specific_scenarios_regions.empty:
-        print("The following timeseries are missing for specifc regions and scenarios")
-        display(missing_model_region_specific_scenarios_regions)  # noqa: F821
+        missing_model_region_specific_scenarios_regions = get_variants_not_common(
+            missing_model_region,
+            missing_model_region_all_scenarios,
+        )
+        missing_model_region_specific_scenarios_regions = get_variants_not_common(
+            missing_model_region_specific_scenarios_regions,
+            missing_model_region_all_scenarios_regions,
+        )
+        wms(
+            sheet_name="mr_specific_region_scenarios",
+            df=missing_model_region_specific_scenarios_regions.reset_index(drop=True),
+            first_row_comment=(
+                "The following timeseries are missing at the model region level for specific regions and scenarios"
+            ),
+            first_row_comment_if_empty=(
+                "As far as we can tell, "
+                "there are no timeseries missing at the model region level for specific regions and scenarios"
+            ),
+        )
+        if not missing_model_region_specific_scenarios_regions.empty:
+            print("The following timeseries are missing for specifc regions and scenarios")
+            display(missing_model_region_specific_scenarios_regions)  # noqa: F821

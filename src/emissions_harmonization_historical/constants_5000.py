@@ -166,6 +166,8 @@ HISTORY_HARMONISATION_DB = OpenSCMDB(
 
 # ID for the scenario download step
 DOWNLOAD_SCENARIOS_ID = "0001"
+# Updated May 6 for revised AIM scenarios
+DOWNLOAD_SCENARIOS_ID = "0002"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
