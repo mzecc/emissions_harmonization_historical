@@ -28,6 +28,8 @@ import pandas_indexing as pix
 
 from emissions_harmonization_historical.constants_5000 import (
     HISTORY_HARMONISATION_DB,
+    INFILLED_OUT_DIR,
+    INFILLED_OUT_DIR_ID,
     INFILLING_DB,
     PRE_PROCESSED_SCENARIO_DB,
     WMO_2022_PROCESSED_DB,
@@ -36,6 +38,7 @@ from emissions_harmonization_historical.harmonisation import (
     HARMONISATION_YEAR,
     harmonise,
 )
+from emissions_harmonization_historical.zenodo import upload_to_zenodo
 
 # %% [markdown]
 # ## Set up
@@ -137,3 +140,16 @@ out = out.T.interpolate(method="index").T
 
 # %%
 INFILLING_DB.save(out, allow_overwrite=True)
+
+# %% [markdown]
+# ## Upload to Zenodo
+
+# %%
+# Rewrite as single file
+out_file_infilling_db = INFILLED_OUT_DIR / f"infilling-db_{INFILLED_OUT_DIR_ID}.csv"
+out = INFILLING_DB.load()
+out.to_csv(out_file_infilling_db)
+out_file_infilling_db
+
+# %%
+upload_to_zenodo([out_file_infilling_db], remove_existing=False, update_metadata=True)

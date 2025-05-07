@@ -19,23 +19,28 @@
 # ## Imports
 
 # %%
+import sys
 from functools import partial
 
 import pandas_indexing as pix
 import pandas_openscm
 from gcages.cmip7_scenariomip.gridding_emissions import to_global_workflow_emissions
 from gcages.renaming import SupportedNamingConventions, convert_variable_name
+from loguru import logger
 from pandas_openscm.index_manipulation import update_index_levels_func
 
 from emissions_harmonization_historical.constants_5000 import (
     ADAM_ET_AL_2024_PROCESSED_DB,
     CMIP7_GHG_PROCESSED_DB,
     GCB_PROCESSED_DB,
+    HISTORY_FOR_HARMONISATION_ID,
     HISTORY_HARMONISATION_DB,
+    HISTORY_HARMONISATION_DIR,
     VELDERS_ET_AL_2022_PROCESSED_DB,
     WMO_2022_PROCESSED_DB,
 )
 from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR
+from emissions_harmonization_historical.zenodo import upload_to_zenodo
 
 # %% [markdown]
 # ## Setup
@@ -255,3 +260,27 @@ HISTORY_HARMONISATION_DB.save(
     global_workflow_harmonisation_emissions_reporting_names.pix.assign(purpose="global_workflow_emissions"),
     allow_overwrite=True,
 )
+
+# %% [markdown]
+# ## Upload to Zenodo
+
+# %%
+# Rewrite as single file
+out_file_gwe = HISTORY_HARMONISATION_DIR / f"history-for-global-workflow_{HISTORY_FOR_HARMONISATION_ID}.csv"
+gwe = HISTORY_HARMONISATION_DB.load(pix.isin(purpose="global_workflow_emissions")).loc[:, :HARMONISATION_YEAR]
+gwe.to_csv(out_file_gwe)
+out_file_gwe
+
+# %%
+# Rewrite as single file
+out_file_grid = HISTORY_HARMONISATION_DIR / f"history-for-gridding-workflow_{HISTORY_FOR_HARMONISATION_ID}.csv"
+gridding = HISTORY_HARMONISATION_DB.load(pix.isin(purpose="gridding_emissions")).loc[:, :HARMONISATION_YEAR]
+gridding.to_csv(out_file_grid)
+out_file_grid
+
+# %%
+logger.configure(handlers=[dict(sink=sys.stderr, level="INFO")])
+logger.enable("openscm_zenodo")
+
+# %%
+upload_to_zenodo([out_file_grid, out_file_gwe], remove_existing=False, update_metadata=True)

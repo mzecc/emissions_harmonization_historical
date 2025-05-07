@@ -226,12 +226,17 @@ INFILLING_DB = OpenSCMDB(
 # (some had emissions that were becoming way too low in future).
 INFILLING_ID = "0002"
 
-INFILLED_OUT_DIR = (
-    DATA_ROOT
-    / "processed"
-    / "infilled"
-    / f"{DOWNLOAD_SCENARIOS_ID}_{PRE_PROCESSING_ID}_{HISTORY_FOR_HARMONISATION_ID}_{HARMONISATION_ID}_{INFILLING_ID}"
+INFILLED_OUT_DIR_ID = "_".join(
+    [
+        DOWNLOAD_SCENARIOS_ID,
+        PRE_PROCESSING_ID,
+        HISTORY_FOR_HARMONISATION_ID,
+        HARMONISATION_ID,
+        INFILLING_ID,
+    ]
 )
+
+INFILLED_OUT_DIR = DATA_ROOT / "processed" / "infilled" / INFILLED_OUT_DIR_ID
 
 # Database into which infilled data is saved
 INFILLED_SCENARIOS_DB = OpenSCMDB(
