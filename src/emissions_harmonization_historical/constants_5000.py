@@ -78,6 +78,12 @@ GFED4_PROCESSED_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+BB4CMIP7_INTERIM_OUTPUT_DIR = DATA_ROOT / "interim" / "bb4cmip7"
+
+# ID for the processing to annual, sectoral emissions
+BB4CMIP7_ANNUAL_SECTORAL_ID = "0001"
+BB4CMIP7_ANNUAL_SECTORAL_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4CMIP7_ANNUAL_SECTORAL_ID
+
 GCB_VERSION = "2024v1.0"
 
 # ID for the CEDS processing step
