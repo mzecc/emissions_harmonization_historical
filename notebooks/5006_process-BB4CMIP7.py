@@ -29,18 +29,18 @@
 # ## Imports
 
 # %%
-from functools import partial
+import os
 
+import matplotlib.pyplot as plt
 import numpy as np
-import pandas_indexing as pix
 import pooch
-import seaborn as sns
+import tqdm.auto
 import xarray as xr
-from gcages.renaming import SupportedNamingConventions, convert_variable_name
-from pandas_openscm.index_manipulation import update_index_levels_func
+from dask.diagnostics import ProgressBar
 
 from emissions_harmonization_historical.constants_5000 import (
-    CMIP7_GHG_PROCESSED_DB,
+    BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR,
+    GFED4_RAW_PATH,
 )
 from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR
 
@@ -52,11 +52,25 @@ species: str = "BC"
 
 
 # %% [markdown]
+# ## Load data
+
+# %%
+country_mask = (
+    xr.open_dataarray(GFED4_RAW_PATH / "iso_mask.nc").compute().rename({"lat": "latitude", "lon": "longitude"})
+)
+# If you want to check that the mask sums to 1
+# np.unique(country_mask.sum(["iso"]))
+# country_mask
+
+# %% [markdown]
 # ## Download data
 
 
 # %%
 def get_download_urls(species: str) -> tuple[str, ...]:
+    """
+    Get URLs to download
+    """
     total_files = (
         f"https://esgf1.dkrz.de/thredds/fileServer/input4mips/input4MIPs/CMIP7/CMIP/DRES/DRES-CMIP-BB4CMIP7-2-0/atmos/mon/{species}smoothed/gn/v20250403/{species}smoothed_input4MIPs_emissions_CMIP_DRES-CMIP-BB4CMIP7-2-0_gn_{tp}.nc"
         for tp in [
@@ -107,88 +121,158 @@ cell_area = alldat["gridcellarea"]
 
 
 # %%
-def to_annual_global_sum(ds: xr.Dataset, variable_of_interest: str, cell_area: xr.DataArray) -> xr.DataArray:
+def to_annual_sum(da: xr.DataArray, time_bounds: xr.DataArray) -> xr.DataArray:
+    """
+    Convert to an annual sum
+    """
     # Much easier with cf-python
-    seconds_per_step = (ds["time_bnds"].sel(bound=1) - ds["time_bnds"].sel(bound=0)).compute() / 1e9
+    seconds_per_step = ((time_bounds.sel(bound=1) - time_bounds.sel(bound=0)) / 1e9).compute()
 
-    return (ds[variable_of_interest] * cell_area * seconds_per_step.astype(int)).sum(["latitude", "longitude", "time"])
+    return (da * seconds_per_step.astype(int)).groupby("time.year").sum()
 
+
+def to_annual_global_sum(ds: xr.Dataset, variable_of_interest: str, cell_area: xr.DataArray) -> xr.DataArray:
+    """
+    Convert to an annual- global-sum
+    """
+    # Much easier with cf-python
+    annual_sum = to_annual_sum(
+        ds[variable_of_interest],
+        time_bounds=ds["time_bnds"],
+    ).compute()
+
+    return (annual_sum * cell_area).sum(["latitude", "longitude"])
+
+
+# %%
+latest_file_l = [f for f in downloaded_files_l if "2021" in str(f) and f"{species}smoothed_" in str(f)]
+if len(latest_file_l) != 1:
+    raise AssertionError(latest_file_l)
+
+latest_file = latest_file_l[0]
+# latest_file
+exp_last_year_annual_total_Tg = float(xr.open_dataset(latest_file).attrs["annual_total_last_year_Tg_yr"])
+exp_last_year_annual_total_Tg
 
 # %%
 # Make sure we can sum correctly
 np.testing.assert_allclose(
     to_annual_global_sum(
-        alldat.isel(time=range(12)), variable_of_interest=f"{species}smoothed", cell_area=cell_area
-    ).compute(),
-    float(alldat.attrs["annual_total_first_year_Tg_yr"]) * 1e9,
+        alldat.isel(time=range(-12, 0)), variable_of_interest=f"{species}smoothed", cell_area=cell_area
+    )
+    .sel(year=2021)
+    .compute(),
+    exp_last_year_annual_total_Tg * 1e9,
     atol=0.01 * 1e9,
 )
 
 # %%
-assert False
-
-# %% [markdown]
-# ## Extrapolate
+total_var = alldat[f"{species}smoothed"]
+# total_var
 
 # %%
-pdf = inverse_info.loc[pix.ismatch(model="**smooth")].openscm.to_long_data()
-sns.relplot(
-    data=pdf,
-    x="time",
-    y="value",
-    col="variable",
-    col_order=sorted(pdf["variable"].unique()),
-    col_wrap=3,
-    kind="line",
-    facet_kws=dict(sharey=False),
-)
+sector_variables = [v for v in alldat.data_vars if "percentage" in v]
+# sector_variables
 
 # %%
-inverse_extrapolated = (
-    inverse_info.loc[pix.ismatch(model="**smooth")].copy().pix.assign(model="CR-CMIP-1-0-0-inverse-smooth-extrapolated")
-)
-for y in range(inverse_extrapolated.columns.max(), HARMONISATION_YEAR + 1):
-    # Very basic linear extrapolation
-    inverse_extrapolated[y] = 2 * inverse_extrapolated[y - 1] - inverse_extrapolated[y - 2]
+for sv_name in tqdm.auto.tqdm(sector_variables):
+    sv = alldat[sv_name]
+    if sv.attrs["units"] != "%":
+        raise AssertionError
 
-# Just in case
-inverse_extrapolated[inverse_extrapolated < 0.0] = 0.0
+    sector_per_area = (total_var * sv / 100.0).assign_attrs(dict(units=total_var.attrs["units"]))
 
-# inverse_extrapolated
+    if "m^2" not in cell_area.attrs["long_name"]:
+        raise AssertionError
 
-# %%
-pdf = inverse_extrapolated.openscm.to_long_data()
-sns.relplot(
-    data=pdf,
-    x="time",
-    y="value",
-    col="variable",
-    col_order=sorted(pdf["variable"].unique()),
-    col_wrap=3,
-    kind="line",
-    facet_kws=dict(sharey=False),
-)
+    if "m-2" not in sector_per_area.attrs["units"]:
+        raise AssertionError
 
-# %% [markdown]
-# ## Save
+    sector_per_cell = (sector_per_area * cell_area).assign_attrs(
+        dict(units=sector_per_area.attrs["units"].replace(" m-2", ""))
+    )
 
-# %% [markdown]
-# ### Pre-industrial emissions
+    # Super hacky and only works because the iso mask
+    # is half the resolution of GFED, anyway.
+    # (I couldn't get conservative regridding to do what I expected,
+    # so I moved on).
 
-# %% [markdown]
-# Make sure we can convert the variable names
+    resolution_decrease_factor = 2
+    rdf = resolution_decrease_factor
 
-# %%
-update_index_levels_func(
-    inverse_extrapolated,
-    {
-        "variable": partial(
-            convert_variable_name,
-            from_convention=SupportedNamingConventions.GCAGES,
-            to_convention=SupportedNamingConventions.CMIP7_SCENARIOMIP,
+    in_lat = sector_per_cell.latitude
+    in_lon = sector_per_cell.longitude
+
+    if rdf != 2:  # noqa: PLR2004
+        # The below will explode
+        raise NotImplementedError(rdf)
+
+    target_lat = (in_lat[::rdf].values + in_lat[1::rdf].values) / rdf
+    target_lon = (in_lon[::rdf].values + in_lon[1::rdf].values) / rdf
+
+    sector_per_cell_regridded = (
+        sector_per_cell.rolling(latitude=rdf, longitude=rdf)
+        .sum()
+        .sel(latitude=in_lat[1::rdf], longitude=in_lon[1::rdf])
+        .assign_coords(
+            latitude=target_lat,
+            longitude=target_lon,
         )
-    },
-)
+        .sel(latitude=country_mask.latitude, longitude=country_mask.longitude)
+    )
+
+    sector_per_cell_regridded_per_year = to_annual_sum(
+        da=sector_per_cell_regridded,
+        time_bounds=alldat["time_bnds"],
+    )
+
+    n_years_for_regression = 10
+    coeffs_ds = sector_per_cell_regridded_per_year.isel(year=range(-10, 0)).polyfit("year", deg=1, skipna=True)
+
+    years_interp = np.arange(
+        sector_per_cell_regridded_per_year["year"].max() + 1,
+        HARMONISATION_YEAR + 1,
+    )
+    year_factor = xr.DataArray(years_interp, dims=("year",), coords=dict(year=years_interp))
+
+    extrapolated = coeffs_ds["polyfit_coefficients"].sel(degree=1) * year_factor + coeffs_ds[
+        "polyfit_coefficients"
+    ].sel(degree=0)
+
+    full = xr.concat([sector_per_cell_regridded_per_year, extrapolated], dim="year")
+
+    selectors = dict(latitude=8.125, longitude=0.0, method="nearest")
+    # Plot extrapolation
+    fig, ax = plt.subplots()
+    full.sel(**selectors).sel(year=range(2013, 2023 + 1)).plot.line(ax=ax)
+    ax.set_title(sv_name)
+
+    plt.show()
+
+    sector = sv_name.split("percentage")[-1]
+    # sector
+
+    full_by_country = (full * country_mask).sum(["latitude", "longitude"])
+    print("Starting to compute data by country")
+    with ProgressBar(dt=5.0):
+        full_by_country_res = full_by_country.compute().assign_coords(sector=sector)
+
+    print("Finished computing data by country")
+    # full_by_country
+
+    out_file = BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR / f"{species}_{sector}.nc"
+    BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
+    print(f"Writing {out_file}")
+    full_by_country_res.to_netcdf(out_file)
+    print(f"Wrote {out_file}")
+
+    # break
+
+# %% [markdown]
+# ## Delete raw files
+#
+# Save our disks
 
 # %%
-CMIP7_GHG_PROCESSED_DB.save(inverse_extrapolated, groupby=["model"], allow_overwrite=True)
+for fp in downloaded_files_l:
+    os.unlink(fp)

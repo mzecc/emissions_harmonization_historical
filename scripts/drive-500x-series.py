@@ -100,6 +100,41 @@ def main():
     RUN_NOTEBOOKS_DIR = HERE.parent / "notebooks-papermill"
 
     notebooks_dir = DEFAULT_NOTEBOOKS_DIR
+    all_notebooks = tuple(sorted(notebooks_dir.glob("*.py")))
+
+    species = ["CH4"]
+    # # All species
+    species = [
+        "BC",
+        "CH4",
+        "CO",
+        "CO2",
+        "N2O",  # new, to have regional, was global in CMIP6
+        "NH3",
+        # TODO: fix this up as this won't download,
+        # # we need to use NMVOCBulk
+        # "NMVOC",  # assumed to be equivalent to IAMC-style reported VOC
+        "NOx",
+        "OC",
+        "SO2",
+    ]
+
+    # Single notebook
+    notebook_prefixes = ["5006"]
+    # # Skip this step
+    # notebook_prefixes = []
+    # # Everything
+    # notebook_prefixes = ["5006"]
+
+    for sp in species[::-1]:
+        for notebook in all_notebooks:
+            if any(notebook.name.startswith(np) for np in notebook_prefixes):
+                run_notebook(
+                    notebook=notebook,
+                    run_notebooks_dir=RUN_NOTEBOOKS_DIR,
+                    parameters={"species": sp},
+                    idn=sp,
+                )
 
     # Individual IAMs
     # iams = ["REMIND"]
@@ -118,17 +153,16 @@ def main():
     #     "AIM",
     # ]
 
-    # Skip this step
-    notebook_prefixes = ["5094"]
     # # Single notebook
     # notebook_prefixes = ["5095"]
     # Everything except downloads and reporting checking
     notebook_prefixes = ["5093", "5094", "5095"]
     notebook_prefixes = ["5090", "5091", "5092"]
+    # Skip this step
+    notebook_prefixes = []
     # # Everything
     # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5095"]
 
-    all_notebooks = tuple(sorted(notebooks_dir.glob("*.py")))
     for iam in iams:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
@@ -140,6 +174,7 @@ def main():
 
     # SCM related notebooks
     notebook_prefixes = ["5096", "5097"]
+    # Skip this step
     notebook_prefixes = []
     # notebook_prefixes = []
     scms = ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]
