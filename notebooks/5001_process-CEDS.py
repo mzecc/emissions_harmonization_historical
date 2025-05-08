@@ -21,7 +21,6 @@
 # ## Imports
 
 # %%
-
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm

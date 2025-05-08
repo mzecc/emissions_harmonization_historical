@@ -44,7 +44,7 @@ from emissions_harmonization_historical.excel_writing import set_cell
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "AIM"
+model: str = "MESSAGE"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model
@@ -105,6 +105,7 @@ model_df.columns.name = "year"
 model_regions = [r for r in model_df.pix.unique("region") if r.startswith(model.split(" ")[0])]
 if not model_regions:
     raise AssertionError
+
 # model_regions
 
 # %% [markdown]
@@ -117,7 +118,7 @@ if not model_regions:
 required_timeseries_index = gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.get_required_timeseries_index(
     model_regions
 )
-# required_timeseries_index
+# required_timeseries_index.to_frame(index=False)
 
 # %% [markdown]
 # ### Get the missing timeseries

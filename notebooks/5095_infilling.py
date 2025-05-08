@@ -418,6 +418,9 @@ for follower, leader in tqdm.auto.tqdm(scaling_leaders.items()):
 # %%
 assert_all_groups_are_complete(complete, complete_index_reporting_names)
 
+# %%
+# complete
+
 # %% [markdown]
 # ## Save
 

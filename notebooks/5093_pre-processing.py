@@ -41,7 +41,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "COFFEE"
 
 # %% [markdown]
 # ## Load data
@@ -209,6 +209,9 @@ for ax in fg.axes.flatten():
 
 # %%
 sorted(pre_processing_res.assumed_zero_emissions.pix.unique("variable"))
+
+# %%
+pre_processing_res.gridding_workflow_emissions
 
 # %%
 for stage, df in (

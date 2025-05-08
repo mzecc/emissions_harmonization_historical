@@ -46,11 +46,11 @@ from emissions_harmonization_historical.excel_writing import set_cell
 # %% [markdown]
 # ## Set up
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "AIM"
+model: str = "MESSAGE"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model
@@ -306,7 +306,7 @@ def write_errors_sheet(  # noqa: PLR0913
 tols = gcages.cmip7_scenariomip.pre_processing.reaggregation.basic.get_default_internal_conistency_checking_tolerances()
 # tols
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 for variable in tqdm.auto.tqdm(sorted(totals_exp.pix.unique("variable")), desc="Reported total variables"):
     species = variable.split("|")[1]
 

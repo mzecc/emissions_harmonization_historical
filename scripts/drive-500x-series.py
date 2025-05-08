@@ -103,10 +103,10 @@ def main():
 
     # Individual IAMs
     # iams = ["REMIND"]
-    # iams = ["COFFEE"]
+    iams = ["COFFEE"]
     # iams = ["GCAM"]
     # iams = ["WITCH", "MESSAGE"]
-    iams = ["AIM"]
+    # iams = ["AIM"]
     # # All
     # iams = [
     #     "WITCH",
@@ -124,6 +124,7 @@ def main():
     # notebook_prefixes = ["5095"]
     # Everything except downloads and reporting checking
     notebook_prefixes = ["5093", "5094", "5095"]
+    notebook_prefixes = ["5090", "5091", "5092"]
     # # Everything
     # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5095"]
 
@@ -139,6 +140,7 @@ def main():
 
     # SCM related notebooks
     notebook_prefixes = ["5096", "5097"]
+    notebook_prefixes = []
     # notebook_prefixes = []
     scms = ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]
     for iam, scm in itertools.product(iams, scms):

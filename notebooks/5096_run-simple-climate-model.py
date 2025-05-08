@@ -126,6 +126,7 @@ output_variables = (
     # # Permafrost
     # "Net Land to Atmosphere Flux|CO2|Earth System Feedbacks|Permafrost",
     # "Net Land to Atmosphere Flux|CH4|Earth System Feedbacks|Permafrost",
+    # "Sea Level Rise",
 )
 
 # %%
