@@ -42,7 +42,7 @@ pixi run pre-commit install
 ```
 
 These steps are also captured in the `Makefile` so if you want a single
-command, you can instead simply run `make virtual-enviroment`.
+command, you can instead simply run `make virtual-environment`.
 
 Having installed your virtual environment, you can now run commands in your
 virtual environment using
