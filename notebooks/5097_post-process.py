@@ -57,7 +57,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
+model: str = "AIM"
 scm: str = "MAGICCv7.6.0a3"
 output_to_pdf: bool = False
 
@@ -181,7 +181,9 @@ categories = categorise_scenarios(
     group_levels=["climate_model", "model", "scenario"],
     quantile_level="quantile",
 )
+categories.sort_values()
 
+# %%
 timeseries_run_id = pd.concat([temperatures_in_line_with_assessment])
 timeseries_quantile = pd.concat([temperatures_in_line_with_assessment_quantiles])
 timeseries_exceedance_probabilities = pd.concat([exceedance_probabilities_over_time])

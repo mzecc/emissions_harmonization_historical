@@ -44,17 +44,36 @@ CEDS_PROCESSED_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+GFED4_INTERIM_OUTPUT_DIR = DATA_ROOT / "interim" / "gfed4"
+
 # ID for the GFED4 processing step
-GFED4_PROCESSING_ID = "0001"
-# Fix a bug in regridding handling
-GFED4_PROCESSING_ID = "0002"
+# GFED4_PROCESSING_ID = "0001"
+# # Fix a bug in regridding handling
+# GFED4_PROCESSING_ID = "0002"
+# Split into multiple steps now
+
+# ID for the GFED4 annual sum step
+GFED4_ANNUAL_SUM_ID = "0001"
+GFED4_ANNUAL_SUM_OUTPUT_DIR = GFED4_INTERIM_OUTPUT_DIR / GFED4_ANNUAL_SUM_ID
+
+# ID for the GFED4 regridding, smoothing and extension step
+GFED4_REGRIDDING_SMOOTHING_EXTENSION_ID = "_".join([GFED4_ANNUAL_SUM_ID, "0001"])
+GFED4_REGRIDDING_SMOOTHING_EXTENSION_OUTPUT_DIR = GFED4_INTERIM_OUTPUT_DIR / GFED4_REGRIDDING_SMOOTHING_EXTENSION_ID
+
+GFED4_SPLIT_INTO_SPECIES_AND_COUNTRIES_ID = "_".join(
+    [
+        GFED4_ANNUAL_SUM_ID,
+        GFED4_REGRIDDING_SMOOTHING_EXTENSION_ID,
+        "0001",
+    ]
+)
 
 GFED4_TOP_LEVEL_RAW_PATH = DATA_ROOT / "raw" / "gfed4"
 GFED4_RAW_PATH = GFED4_TOP_LEVEL_RAW_PATH
 
 # Database into which the processed GFED4 data is saved
 GFED4_PROCESSED_DB = OpenSCMDB(
-    db_dir=DATA_ROOT / "processed" / "gfed4" / GFED4_PROCESSING_ID / "db",
+    db_dir=DATA_ROOT / "processed" / "gfed4" / GFED4_SPLIT_INTO_SPECIES_AND_COUNTRIES_ID / "db",
     backend_data=FeatherDataBackend(),
     backend_index=FeatherIndexBackend(),
 )
@@ -143,12 +162,14 @@ COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
 
 # ID for the creation of a historical emissions dataset for gridding
 CREATE_HISTORY_FOR_GRIDDING_ID = "0001"
+# Update to make the smoothing consistent with CMIP7
+CREATE_HISTORY_FOR_GRIDDING_ID = "0002"
 
 # ID for the created history for harmonisation
 HISTORY_FOR_HARMONISATION_ID = "_".join(
     [
         CEDS_PROCESSING_ID,
-        GFED4_PROCESSING_ID,
+        GFED4_SPLIT_INTO_SPECIES_AND_COUNTRIES_ID,
         CREATE_HISTORY_FOR_GRIDDING_ID,
     ]
 )

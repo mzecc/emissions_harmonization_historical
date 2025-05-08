@@ -396,7 +396,7 @@ pdf_gridding = pix.concat(
 ).sort_index(axis="columns")
 pdf_gridding.columns = pdf_gridding.columns.astype(int)
 pdf_gridding = pdf_gridding.loc[:, 1950:]
-pdf_gridding = pdf_gridding.loc[pix.ismatch(variable="**OC**"), :]
+# pdf_gridding = pdf_gridding.loc[pix.ismatch(variable="**OC**"), :]
 # pdf_gridding
 
 # %%
@@ -485,7 +485,7 @@ with ctx_manager as output_pdf_file:
         # # Don't plot all for now
         # if region != "World":
         #     break
-        break
+        # break
 
 # %% [markdown]
 # ## Create combination to use for simple climate models

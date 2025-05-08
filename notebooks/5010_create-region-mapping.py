@@ -39,7 +39,6 @@ else:
     print("Cloning common-definitions")
     repo = Repo.clone_from("https://github.com/IAMconsortium/common-definitions", COMMON_DEFINITIONS_PATH)
 
-# %%
 repo.git.checkout(COMMON_DEFINITIONS_COMMIT)
 
 # %% [markdown]

@@ -19,8 +19,6 @@
 # ## Imports
 
 # %%
-
-import matplotlib.pyplot as plt
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
@@ -129,93 +127,31 @@ for model_region, iso_list in tqdm.auto.tqdm(region_mapping[["model_region", "is
 history_for_gridding = pix.concat(history_for_gridding_l)
 history_for_gridding
 
-# %% [markdown]
-# ## Smooth high variability biomass burning emissions
+# %%
+split_sectors(history_for_gridding.loc[pix.ismatch(variable="**|OC|**Burning", region="AIM**")]).openscm.groupby_except(
+    ["region", "sectors"]
+).sum(min_count=1)
 
 # %%
-# TODO: decide which variables exactly to use averaging with
-high_variability_variables = sorted(
-    [
-        v
-        for v in history_for_gridding.pix.unique("variable")
-        if "Burning" in v
-        and any(
-            s in v
-            for s in (
-                "BC",
-                "CO",
-                "CH4",
-                # # Having looked at the data, I'm not sure I would do this for CO2
-                # "CO2",
-                "N2O",
-                "NH3",
-                "NOx",
-                "OC",
-                "VOC",
-            )
-        )
-    ]
-)
-high_variability_variables
-
-# %%
-history_for_gridding.pix.unique("region")
-
-# %%
-# Match biomass burning smoothing
-n_years_for_average = 5
-plot_regions = [
-    "AIM 3.0|Brazil",
-    # "AIM 3.0|New Zealand and Australia",
-    "REMIND-MAgPIE 3.5-4.10|Canada, Australia, New Zealand",
-]
-# plot_regions = []
-
-history_for_gridding_smoothed_l = []
-for (variable, region), vrdf in tqdm.auto.tqdm(history_for_gridding.groupby(["variable", "region"])):
-    if variable in high_variability_variables:
-        tmp = vrdf.T.rolling(window=n_years_for_average, min_periods=n_years_for_average, center=False).mean().T
-
-        if region in plot_regions:
-            ax = vrdf.pix.project(["variable", "region"]).loc[:, 1990:].T.plot()
-            tmp.pix.project(["variable", "region"]).loc[:, 1990:].T.plot(ax=ax)
-            ax.grid(which="major")
-            # ax.set_xticks(regress_vals.columns, minor=True)
-            # ax.grid(which="minor")
-            plt.show()
-
-    else:
-        tmp = vrdf
-
-    history_for_gridding_smoothed_l.append(tmp)
-
-history_for_gridding_smoothed = pix.concat(history_for_gridding_smoothed_l)
-
-# %%
-split_sectors(
-    history_for_gridding_smoothed.loc[pix.ismatch(variable="**|OC|**Burning", region="AIM**")]
-).openscm.groupby_except(["region", "sectors"]).sum(min_count=1)
-
-# %%
-split_sectors(
-    history_for_gridding_smoothed.loc[pix.ismatch(variable="**|OC|**", region="AIM**")]
-).openscm.groupby_except(["region", "sectors"]).sum(min_count=1)
+split_sectors(history_for_gridding.loc[pix.ismatch(variable="**|OC|**", region="AIM**")]).openscm.groupby_except(
+    ["region", "sectors"]
+).sum(min_count=1)
 
 # %% [markdown]
 # ## Last checks
 
 # %%
-model_regions = [r for r in history_for_gridding_smoothed.pix.unique("region") if r != "World"]
+model_regions = [r for r in history_for_gridding.pix.unique("region") if r != "World"]
 complete_gridding_index = get_complete_gridding_index(model_regions=model_regions)
 # complete_gridding_index
 assert_all_groups_are_complete(
-    history_for_gridding_smoothed.pix.assign(model="history"),
+    history_for_gridding.pix.assign(model="history"),
     complete_gridding_index,
 )
 
 # %%
-if history_for_gridding_smoothed[HARMONISATION_YEAR].isnull().any():
-    missing = history_for_gridding_smoothed.loc[history_for_gridding_smoothed[HARMONISATION_YEAR].isnull()]
+if history_for_gridding[HARMONISATION_YEAR].isnull().any():
+    missing = history_for_gridding.loc[history_for_gridding[HARMONISATION_YEAR].isnull()]
 
     display(missing)  # noqa: F821
     raise AssertionError
@@ -224,6 +160,4 @@ if history_for_gridding_smoothed[HARMONISATION_YEAR].isnull().any():
 # ## Save
 
 # %%
-HISTORY_HARMONISATION_DB.save(
-    history_for_gridding_smoothed.pix.assign(purpose="gridding_emissions"), allow_overwrite=True
-)
+HISTORY_HARMONISATION_DB.save(history_for_gridding.pix.assign(purpose="gridding_emissions"), allow_overwrite=True)

@@ -108,6 +108,23 @@ tmp.loc[
     # # (tmp[("2100", "K", 0.5)] > 3.0) & (tmp[("2100", "K", 0.5)] < 3.6)
 ]
 
+# %%
+tmp = (
+    metadata_quantile.unstack(["metric", "unit", "quantile"])
+    .loc[
+        :,
+        [
+            ("max", "K", 0.5),
+            ("max_year", "yr", 0.5),
+        ],
+    ]
+    .reset_index("region", drop=True)
+    .reorder_levels(["model", "scenario", "variable", "climate_model"])
+    .sort_values(by=[("max", "K", 0.5)])
+    .round(3)
+)
+tmp
+
 # %% [markdown]
 # ## Exploratory marker selection
 #
@@ -267,16 +284,39 @@ multi_index_lookup(metadata_quantile, scratch_selection).unstack(["metric", "uni
     by=[("max", "K", 0.33)]
 ).round(3)
 
+# %%
+multi_index_lookup(metadata_quantile, scratch_selection).unstack(["metric", "unit", "quantile"])["max_year"]["yr"][0.5]
+
 # %% [markdown]
 # ### How much difference is the MAGICC update making?
 
 # %%
-iam = "COFFEE"
+iam = "AIM"
 tmp = temperatures_in_line_with_assessment.loc[pix.ismatch(model=f"{iam}**"), 2000:]
-ax = tmp.openscm.plot_plume_after_calculating_quantiles(
-    quantile_over="run_id", style_var="climate_model", quantiles_plumes=[(0.5, 0.9), (0.33, 0.9)]
-)
-ax.grid()
+
+fig, axes = plt.subplots(ncols=2, figsize=(16, 4))
+
+
+def create_legend(ax, lh):
+    """Create legend for our plots"""
+    ax.legend(handles=lh, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncols=2)
+
+
+for i, (ax, quantile_plumes) in enumerate(
+    zip(axes, [[(0.33, 0.9), ((0.05, 0.95), 0.4)], [(0.5, 0.9), ((0.33, 0.67), 0.4)]])
+):
+    tmp.openscm.plot_plume_after_calculating_quantiles(
+        quantile_over="run_id",
+        style_var="climate_model",
+        quantiles_plumes=quantile_plumes,
+        ax=ax,
+        create_legend=create_legend,
+    )
+    ax.set_yticks(np.arange(0.5, 5.01, 0.5))
+    ax.axhline(1.5, linestyle="--", color="k")
+    ax.axhline(2.0, linestyle="--", color="k")
+    ax.grid()
+
 plt.show()
 
 magicc_diff = (

@@ -284,7 +284,7 @@ res.groupby(["variable", "unit"]).sum().loc[pix.ismatch(variable="**|OC|**")].su
 assert_units_match_wishes(res)
 
 # %% [markdown]
-# ## Save formatted CEDS data
+# ## Save formatted GFED data
 
 # %%
 GFED4_PROCESSED_DB.save(res.pix.assign(stage="iso3c"), allow_overwrite=True)

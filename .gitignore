@@ -8,6 +8,7 @@ reporting-checking
 
 # Data created by the 500x series
 data/raw/
+data/interim/
 data/processed
 
 # Notebooks run with papermill

@@ -13,9 +13,10 @@
 # ---
 
 # %% [markdown]
-# # Download GFED
+# # Download GFED4
 #
-# Download data from [GFED](https://www.globalfiredata.org/).
+# Download data from [GFED4](https://www.globalfiredata.org/)
+# (specifically GFED4S).
 
 # %% [markdown]
 # ## Imports
