@@ -272,15 +272,8 @@ gwe.to_csv(out_file_gwe)
 out_file_gwe
 
 # %%
-# Rewrite as single file
-out_file_grid = HISTORY_HARMONISATION_DIR / f"history-for-gridding-workflow_{HISTORY_FOR_HARMONISATION_ID}.csv"
-gridding = HISTORY_HARMONISATION_DB.load(pix.isin(purpose="gridding_emissions")).loc[:, :HARMONISATION_YEAR]
-gridding.to_csv(out_file_grid)
-out_file_grid
-
-# %%
 logger.configure(handlers=[dict(sink=sys.stderr, level="INFO")])
 logger.enable("openscm_zenodo")
 
 # %%
-upload_to_zenodo([out_file_grid, out_file_gwe], remove_existing=False, update_metadata=True)
+upload_to_zenodo([out_file_gwe], remove_existing=False, update_metadata=True)
