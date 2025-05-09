@@ -96,8 +96,9 @@ tmp = (
 )
 
 tmp.loc[
+    :, :
     # (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 1.6)
-    (tmp[("max", "K", 0.67)] > 1.8) & (tmp[("max", "K", 0.67)] < 2.05)  # noqa: PLR2004
+    # (tmp[("max", "K", 0.67)] > 1.8) & (tmp[("max", "K", 0.67)] < 2.05)
     # (tmp[("2100", "K", 0.5)] > 1.7)
     # & (tmp[("2100", "K", 0.5)] < 2.0)
     # (tmp[("2100", "K", 0.5)] > 2.1)
@@ -153,7 +154,9 @@ scratch_selection_l = [
     # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),
     # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions_c")),
     ("#499edb", ("COFFEE 1.6", "SSP2 - Very Low Emissions")),
-    # ("#499edb", ("WITCH 6.0", "SSP2 - Low Overshoot")),
+    ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions_a")),
+    # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions")),
+    ("#499edb", ("WITCH 6.0", "SSP2 - Low Overshoot")),
 ]
 
 # %%
@@ -257,6 +260,11 @@ fg = sns.relplot(
 for ax in fg.axes.flatten():
     if "CO2" in ax.get_title():
         ax.axhline(0.0, linestyle="--", color="gray")
+        if "Energy" in ax.get_title():
+            ax.set_yticks(np.arange(-1e5, 6e5 + 1, 1e5))
+        else:
+            ax.set_yticks(np.arange(-3e4, 5e4 + 1, 1e4))
+
     else:
         ax.set_ylim(ymin=0.0)
 

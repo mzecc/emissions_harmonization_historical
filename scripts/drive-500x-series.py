@@ -177,7 +177,7 @@ def main():
     # # Skip this step
     # notebook_prefixes = []
     # # notebook_prefixes = []
-    scms = ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]
+    scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]
     for iam, scm in itertools.product(iams, scms):
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
