@@ -29,6 +29,7 @@
 # ## Imports
 
 # %%
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -126,9 +127,22 @@ def to_annual_sum(da: xr.DataArray, time_bounds: xr.DataArray) -> xr.DataArray:
     Convert to an annual sum
     """
     # Much easier with cf-python
-    seconds_per_step = ((time_bounds.sel(bound=1) - time_bounds.sel(bound=0)) / 1e9).compute()
+    seconds_per_step = (time_bounds.sel(bound=1) - time_bounds.sel(bound=0)).compute()
 
-    return (da * seconds_per_step.astype(int)).groupby("time.year").sum()
+    # Yuck but ok
+    if str(seconds_per_step.values.dtype) != "timedelta64[ns]":
+        raise AssertionError
+
+    seconds_per_step = seconds_per_step / 1e9
+
+    if " s-1" not in da.attrs["units"]:
+        raise AssertionError
+
+    out_units = da.attrs["units"].replace(" s-1", "")
+
+    res = (da * seconds_per_step.astype(int)).groupby("time.year").sum().assign_attrs(dict(units=out_units))
+
+    return res
 
 
 def to_annual_global_sum(ds: xr.Dataset, variable_of_interest: str, cell_area: xr.DataArray) -> xr.DataArray:
@@ -194,7 +208,15 @@ def to_regridded_per_cell(
     (We tried other tools for this,
     but they weren't conserving mass).
     """
+    if "m^2" not in cell_area.attrs["long_name"]:
+        raise AssertionError
+
+    if "m-2" not in da.attrs["units"]:
+        raise AssertionError
+
     da_per_cell = da * cell_area
+
+    da_per_cell = da_per_cell.assign_attrs(dict(units=da.attrs["units"].replace(" m-2", "")))
 
     rdf = resolution_decrease_factor
     in_lat = da_per_cell.latitude
@@ -250,12 +272,6 @@ for sv_name in tqdm.auto.tqdm(sector_variables):
 
     sector_per_area = (total_var * sv / 100.0).assign_attrs(dict(units=total_var.attrs["units"]))
 
-    if "m^2" not in cell_area.attrs["long_name"]:
-        raise AssertionError
-
-    if "m-2" not in sector_per_area.attrs["units"]:
-        raise AssertionError
-
     sector_per_cell_regridded = to_regridded_per_cell(
         da=sector_per_area,
         cell_area=cell_area,
@@ -276,7 +292,7 @@ for sv_name in tqdm.auto.tqdm(sector_variables):
 
     extrapolated = coeffs_ds["polyfit_coefficients"].sel(degree=1) * year_factor + coeffs_ds[
         "polyfit_coefficients"
-    ].sel(degree=0)
+    ].sel(degree=0).assign_attrs(dict(units=sector_per_cell_regridded_per_year.attrs["units"]))
 
     full = xr.concat([sector_per_cell_regridded_per_year, extrapolated], dim="year")
 
@@ -291,8 +307,9 @@ for sv_name in tqdm.auto.tqdm(sector_variables):
     sector = sv_name.split("percentage")[-1]
     # sector
 
-    full_by_country = (full * country_mask).sum(["latitude", "longitude"])
-    full_by_country = full_by_country.sel(year=[2020, 2021, 2022, 2023])
+    full_by_country = (full * country_mask).sum(["latitude", "longitude"]).assign_attrs(dict(units=full.attrs["units"]))
+    # # Comment this out to crunch full dataset
+    # full_by_country = full_by_country.sel(year=[2020, 2021, 2022, 2023])
     print("Starting to compute data by country")
     with ProgressBar(dt=5.0):
         full_by_country_res = full_by_country.compute().assign_coords(sector=sector)
@@ -312,5 +329,5 @@ for sv_name in tqdm.auto.tqdm(sector_variables):
 # Save our disks
 
 # %%
-# for fp in downloaded_files_l:
-#     os.unlink(fp)
+for fp in downloaded_files_l:
+    os.unlink(fp)

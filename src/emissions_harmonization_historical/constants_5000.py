@@ -87,8 +87,9 @@ BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4C
 BB4CMIP7_FORMATTING_ID = "0001"
 
 # Database into which the processed GFED4 data is saved
+BB4CMIP7_PROCESSED_DIR = DATA_ROOT / "processed" / "bb4cmip7" / BB4CMIP7_FORMATTING_ID
 BB4CMIP7_PROCESSED_DB = OpenSCMDB(
-    db_dir=DATA_ROOT / "processed" / "bb4cmip7" / BB4CMIP7_FORMATTING_ID / "db",
+    db_dir=BB4CMIP7_PROCESSED_DIR / "db",
     backend_data=FeatherDataBackend(),
     backend_index=FeatherIndexBackend(),
 )
