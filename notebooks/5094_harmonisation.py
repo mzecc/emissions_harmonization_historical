@@ -52,7 +52,7 @@ from emissions_harmonization_historical.harmonisation import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
+model: str = "AIM"
 output_to_pdf: bool = False
 
 # %%
@@ -156,7 +156,7 @@ for key, idf in (
     res[key] = harmonised_key
 
 # %%
-tmp = res["gridding"].overrides.loc[pix.ismatch(variable="**Peat**")]
+# tmp = res["gridding"].overrides.loc[pix.ismatch(variable="**Peat**")]
 # # These cause issues as the history is zero but the model is not
 # # so the result isn't actually harmonised
 # tmp[tmp == "hist_zero"].loc[pix.ismatch(variable="**CO2**") & pix.isin(scenario=tmp.pix.unique("scenario")[0])]
@@ -174,6 +174,7 @@ combo_gridding = pix.concat(
         ).pix.assign(stage="history"),
     ]
 ).sort_index(axis="columns")
+combo_gridding.columns = combo_gridding.columns.astype(int)
 
 # %% [markdown]
 # ### Single variable
@@ -227,6 +228,7 @@ combo_global = pix.concat(
         ).pix.assign(stage="history"),
     ]
 ).sort_index(axis="columns")
+combo_global.columns = combo_global.columns.astype(int)
 
 # %%
 pdf_global_total = (
@@ -420,6 +422,9 @@ pdf_sectors = split_sectors(pdf_gridding)
 
 # %%
 regions = ["World", *sorted([r for r in pdf_sectors.index.get_level_values("region").unique() if r != "World"])]
+regions
+
+# %%
 species_l = sorted(pdf_sectors.pix.unique("species"))
 
 if output_to_pdf:

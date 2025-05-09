@@ -70,10 +70,17 @@ output_dir_model
 # ### Complete scenarios
 
 # %%
+# complete_scenarios = pd.concat([
+#     pd.read_feather(f) for f in INFILLED_SCENARIOS_DB.db_dir.glob("*.feather")
+#     if "index" not in f.name and "filemap" not in f.name
+# ]).loc[pix.isin(stage="complete")].reset_index("stage", drop=True)
+# complete_scenarios
+
+# %%
 complete_scenarios = INFILLED_SCENARIOS_DB.load(
     pix.isin(stage="complete") & pix.ismatch(model=f"*{model}*")
 ).reset_index("stage", drop=True)
-# complete_scenarios
+complete_scenarios
 
 # %% [markdown]
 # ### History
@@ -81,11 +88,18 @@ complete_scenarios = INFILLED_SCENARIOS_DB.load(
 # Just in case we need it for MAGICC
 
 # %%
+# history = pd.concat([
+#     pd.read_feather(f) for f in HISTORY_HARMONISATION_DB.db_dir.glob("*.feather")
+#     if "index" not in f.name and "filemap" not in f.name
+# ]).loc[pix.isin(purpose="global_workflow_emissions")].reset_index("purpose", drop=True)
+# history
+
+# %%
 history = HISTORY_HARMONISATION_DB.load(pix.ismatch(purpose="global_workflow_emissions")).reset_index(
     "purpose", drop=True
 )
 
-# history
+history.loc[:, :2023]
 
 # %% [markdown]
 # ## Configure SCM
@@ -170,6 +184,9 @@ if scm in ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]:
         history=history,
     )
 
+elif scm in ["FAIRv2.2.2"]:
+    raise NotImplementedError(scm)
+
 else:
     raise NotImplementedError(scm)
 
@@ -215,7 +232,7 @@ if scm.startswith("MAGICC"):
         hue="scenario",
         col="variable",
         col_order=sorted(pdf["variable"].unique()),
-        col_wrap=3,
+        col_wrap=4,
         kind="line",
         facet_kws=dict(sharey=False),
     )
@@ -236,9 +253,12 @@ complete_openscm_runner = update_index_levels_func(
         )
     },
 )
-# complete_openscm_runner
+complete_openscm_runner
 
 # %%
+# if scm in ["FAIRv2.2.2"]:
+#    some custom code
+# else:
 run_scms(
     scenarios=complete_openscm_runner,
     climate_models_cfgs=climate_models_cfgs,

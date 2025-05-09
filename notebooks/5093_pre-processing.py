@@ -41,7 +41,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
+model: str = "AIM"
 
 # %% [markdown]
 # ## Load data
@@ -81,6 +81,7 @@ model_df.columns.name = "year"
 model_regions = [r for r in model_df.pix.unique("region") if r.startswith(model.split(" ")[0])]
 if not model_regions:
     raise AssertionError
+
 # model_regions
 
 # %% [markdown]
@@ -208,10 +209,10 @@ for ax in fg.axes.flatten():
     ax.grid()
 
 # %%
-sorted(pre_processing_res.assumed_zero_emissions.pix.unique("variable"))
+# sorted(pre_processing_res.assumed_zero_emissions.pix.unique("variable"))
 
 # %%
-pre_processing_res.gridding_workflow_emissions
+pre_processing_res.global_workflow_emissions
 
 # %%
 for stage, df in (

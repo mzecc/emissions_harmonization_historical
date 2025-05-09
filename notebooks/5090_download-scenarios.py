@@ -24,7 +24,7 @@
 # you will need to run the following in a new terminal
 #
 # ```sh
-# ixmp4 login <your-username>
+# pixi run ixmp4 login <your-username>
 # ```
 #
 # where `<your-username` is the username you use to login to
@@ -53,7 +53,7 @@ from emissions_harmonization_historical.constants_5000 import (
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model_search: str = "MESSAGE"
+model_search: str = "AIM"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model_search

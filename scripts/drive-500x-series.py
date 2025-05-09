@@ -109,16 +109,16 @@ def main():
         ("CH4", "CH4"),
         ("CO", "CO"),
         ("CO2", "CO2"),
-        # ("N2O", "N2O"),  # new, to have regional, was global in CMIP6
-        # ("NH3", "NH3"),
-        # ("NMVOC", "NMVOCbulk"),  # assumed to be equivalent to IAMC-style reported VOC
-        # ("NOx", "NOx"),
-        # ("OC", "OC"),
-        # ("SO2", "SO2"),
+        ("N2O", "N2O"),  # new, to have regional, was global in CMIP6
+        ("NH3", "NH3"),
+        ("NMVOC", "NMVOCbulk"),  # assumed to be equivalent to IAMC-style reported VOC
+        ("NOx", "NOx"),
+        ("OC", "OC"),
+        ("SO2", "SO2"),
     ]
 
     # Single notebook
-    notebook_prefixes = ["5007"]
+    notebook_prefixes = ["5006"]
     # # Skip this step
     # notebook_prefixes = []
     # Everything
