@@ -105,18 +105,16 @@ def main():
     species = ["CH4"]
     # # All species
     species = [
-        "BC",
-        "CH4",
-        "CO",
-        "CO2",
-        "N2O",  # new, to have regional, was global in CMIP6
-        "NH3",
-        # TODO: fix this up as this won't download,
-        # # we need to use NMVOCBulk
-        # "NMVOC",  # assumed to be equivalent to IAMC-style reported VOC
-        "NOx",
-        "OC",
-        "SO2",
+        ("BC", "BC"),
+        ("CH4", "CH4"),
+        ("CO", "CO"),
+        ("CO2", "CO2"),
+        # ("N2O", "N2O"),  # new, to have regional, was global in CMIP6
+        # ("NH3","NH3"),
+        ("NMVOC", "NMVOCbulk"),  # assumed to be equivalent to IAMC-style reported VOC
+        # ("NOx","NOx"),
+        # ("OC","OC"),
+        # ("SO2","SO2"),
     ]
 
     # Single notebook
@@ -126,13 +124,13 @@ def main():
     # # Everything
     # notebook_prefixes = ["5006"]
 
-    for sp in species[::-1]:
+    for sp, sp_esgf in species[::-1]:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
                 run_notebook(
                     notebook=notebook,
                     run_notebooks_dir=RUN_NOTEBOOKS_DIR,
-                    parameters={"species": sp},
+                    parameters={"species": sp, "species_esgf": sp_esgf},
                     idn=sp,
                 )
 

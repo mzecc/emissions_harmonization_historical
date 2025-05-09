@@ -48,7 +48,8 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR
 # ## Setup
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-species: str = "BC"
+species: str = "NMVOC"
+species_esgf: str = "NMVOCbulk"
 
 
 # %% [markdown]
@@ -103,7 +104,7 @@ def get_download_urls(species: str) -> tuple[str, ...]:
 
 # %%
 downloaded_files_l = []
-for download_url in get_download_urls(species):
+for download_url in get_download_urls(species_esgf):
     downloaded_files_l.append(
         pooch.retrieve(
             download_url,
@@ -145,7 +146,7 @@ def to_annual_global_sum(ds: xr.Dataset, variable_of_interest: str, cell_area: x
 
 
 # %%
-latest_file_l = [f for f in downloaded_files_l if "2021" in str(f) and f"{species}smoothed_" in str(f)]
+latest_file_l = [f for f in downloaded_files_l if "2021" in str(f) and f"{species_esgf}smoothed_" in str(f)]
 if len(latest_file_l) != 1:
     raise AssertionError(latest_file_l)
 
@@ -157,17 +158,21 @@ exp_last_year_annual_total_Tg
 # %%
 # Make sure we can sum correctly
 np.testing.assert_allclose(
-    to_annual_global_sum(
-        alldat.isel(time=range(-12, 0)), variable_of_interest=f"{species}smoothed", cell_area=cell_area
-    )
-    .sel(year=2021)
-    .compute(),
-    exp_last_year_annual_total_Tg * 1e9,
-    atol=0.01 * 1e9,
+    np.round(
+        to_annual_global_sum(
+            alldat.isel(time=range(-12, 0)), variable_of_interest=f"{species_esgf}smoothed", cell_area=cell_area
+        )
+        .sel(year=2021)
+        .compute()
+        .values
+        / 1e9,
+        2,
+    ),
+    exp_last_year_annual_total_Tg,
 )
 
 # %%
-total_var = alldat[f"{species}smoothed"]
+total_var = alldat[f"{species_esgf}smoothed"]
 # total_var
 
 # %%
