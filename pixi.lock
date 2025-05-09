@@ -4769,7 +4769,7 @@ packages:
 - pypi: .
   name: emissions-harmonization-historical
   version: 0.1.0
-  sha256: e3c89340d8528128ff2802e45c050e9f4ab4b0e121965225a2401ef134c594f7
+  sha256: 53ad8500f35ec94dd6ec0a7db018ff5d6b652ad8867a4a0da549634a41392236
   requires_dist:
   - pre-commit==3.3.1
   - ptolemy-iamc @ git+https://github.com/gidden/ptolemy.git@015aa843c340bd57464eb7cfd5f3c8e397201266
@@ -4786,6 +4786,7 @@ packages:
   - openscm-zenodo>=0.5.0,<0.6
   - python-dotenv>=1.1.0,<2
   - gcages>=0.6.0
+  - ixmp4>=0.9.8,<0.10
   requires_python: ==3.11.*
   editable: true
 - pypi: https://files.pythonhosted.org/packages/35/a8/365059bbcd4572cbc41de17fd5b682be5868b218c3c5479071865cab9078/entrypoints-0.4-py3-none-any.whl
