@@ -151,14 +151,14 @@ def main():
     #     "AIM",
     # ]
 
-    # # Single notebook
-    # notebook_prefixes = ["5095"]
-    # Everything except downloads and reporting checking
-    notebook_prefixes = ["5093", "5094", "5095"]
-    # # Downloading and reporting checking
-    # notebook_prefixes = ["5090", "5091", "5092"]
-    # Skip this step
-    notebook_prefixes = []
+    # Single notebook
+    notebook_prefixes = ["5095"]
+    # # Everything except downloads and reporting checking
+    # notebook_prefixes = ["5093", "5094", "5095"]
+    # # # Downloading and reporting checking
+    # # notebook_prefixes = ["5090", "5091", "5092"]
+    # # Skip this step
+    # notebook_prefixes = []
     # # Everything
     # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5095"]
 
