@@ -136,10 +136,11 @@ def main():
 
     # Individual IAMs
     # iams = ["REMIND"]
-    iams = ["COFFEE"]
     # iams = ["GCAM"]
     # iams = ["WITCH", "MESSAGE"]
-    iams = ["AIM"]
+    # iams = ["AIM"]
+    # Combos
+    iams = ["COFFEE", "WITCH"]
     # # All
     # iams = [
     #     "WITCH",
@@ -151,16 +152,16 @@ def main():
     #     "AIM",
     # ]
 
-    # Single notebook
-    notebook_prefixes = ["5095"]
+    # # Single notebook
+    # notebook_prefixes = ["5095"]
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093", "5094", "5095"]
     # # # Downloading and reporting checking
     # # notebook_prefixes = ["5090", "5091", "5092"]
     # # Skip this step
     # notebook_prefixes = []
-    # # Everything
-    # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5095"]
+    # Everything
+    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5095"]
 
     for iam in iams:
         for notebook in all_notebooks:

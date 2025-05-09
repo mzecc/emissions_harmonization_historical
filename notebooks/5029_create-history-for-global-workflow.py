@@ -499,10 +499,13 @@ global_workflow_harmonisation_emissions_reporting_names = update_index_levels_fu
 )
 
 # TODO: turn back on
-# exp_n_timeseries = 52
-# if global_workflow_harmonisation_emissions.shape[0] != exp_n_timeseries:
-#     raise AssertionError
+exp_n_timeseries = 52
+if global_workflow_harmonisation_emissions.shape[0] != exp_n_timeseries:
+    raise AssertionError
 
+global_workflow_harmonisation_emissions_reporting_names = (
+    global_workflow_harmonisation_emissions_reporting_names.rename_axis("year", axis="columns")
+)
 global_workflow_harmonisation_emissions_reporting_names
 
 # %% [markdown]

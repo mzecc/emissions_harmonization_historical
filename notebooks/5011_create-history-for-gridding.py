@@ -130,7 +130,7 @@ for model_region, iso_list in tqdm.auto.tqdm(region_mapping[["model_region", "is
     )
     history_for_gridding_l.append(history_model_region)
 
-history_for_gridding = pix.concat(history_for_gridding_l)
+history_for_gridding = pix.concat(history_for_gridding_l).rename_axis("year", axis="columns")
 history_for_gridding
 
 # %%
