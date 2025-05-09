@@ -84,6 +84,28 @@ BB4CMIP7_INTERIM_OUTPUT_DIR = DATA_ROOT / "interim" / "bb4cmip7"
 BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_ID = "0001"
 BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_ID
 
+BB4CMIP7_FORMATTING_ID = "0001"
+
+# Database into which the processed GFED4 data is saved
+BB4CMIP7_PROCESSED_DB = OpenSCMDB(
+    db_dir=DATA_ROOT / "processed" / "bb4cmip7" / BB4CMIP7_FORMATTING_ID / "db",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+# ID for the creation of a historical emissions dataset for gridding
+CREATE_HISTORY_FOR_GRIDDING_ID = "0001"
+# Update to make the smoothing consistent with CMIP7
+CREATE_HISTORY_FOR_GRIDDING_ID = "0002"
+# Update to use BB4CMIP7 data
+CREATE_HISTORY_FOR_GRIDDING_ID = "_".join(
+    [
+        CEDS_PROCESSING_ID,
+        BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_ID,
+        BB4CMIP7_FORMATTING_ID,
+    ]
+)
+
 GCB_VERSION = "2024v1.0"
 
 # ID for the CEDS processing step
@@ -146,6 +168,17 @@ CMIP7_GHG_PROCESSED_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+# ID for creating history from the global workflow
+CREATE_HISTORY_FOR_GLOBAL_WORKFLOW_ID = "_".join(
+    [
+        GCB_PROCESSING_ID,
+        WMO_2022_PROCESSING_ID,
+        VELDERS_ET_AL_2022_PROCESSING_ID,
+        ADAM_ET_AL_2024_PROCESSING_ID,
+        CMIP7_GHG_PROCESSING_ID,
+    ]
+)
+
 RCMIP_VERSION_ID = "v5.1.0"
 
 RCMIP_RAW_PATH = DATA_ROOT / "raw" / "rcmip" / RCMIP_VERSION_ID
@@ -166,17 +199,12 @@ RCMIP_PROCESSED_DB = OpenSCMDB(
 COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
 COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
 
-# ID for the creation of a historical emissions dataset for gridding
-CREATE_HISTORY_FOR_GRIDDING_ID = "0001"
-# Update to make the smoothing consistent with CMIP7
-CREATE_HISTORY_FOR_GRIDDING_ID = "0002"
-
 # ID for the created history for harmonisation
 HISTORY_FOR_HARMONISATION_ID = "_".join(
     [
-        CEDS_PROCESSING_ID,
-        GFED4_SPLIT_INTO_SPECIES_AND_COUNTRIES_ID,
         CREATE_HISTORY_FOR_GRIDDING_ID,
+        CREATE_HISTORY_FOR_GLOBAL_WORKFLOW_ID,
+        COMMON_DEFINITIONS_COMMIT,
     ]
 )
 

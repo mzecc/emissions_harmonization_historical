@@ -31,8 +31,8 @@ from gcages.index_manipulation import split_sectors
 from loguru import logger
 
 from emissions_harmonization_historical.constants_5000 import (
+    BB4CMIP7_PROCESSED_DB,
     CEDS_PROCESSED_DB,
-    GFED4_PROCESSED_DB,
     HISTORY_FOR_HARMONISATION_ID,
     HISTORY_HARMONISATION_DB,
     HISTORY_HARMONISATION_DIR,
@@ -74,7 +74,7 @@ ceds_processed_data = CEDS_PROCESSED_DB.load(pix.isin(stage="iso3c_ish")).reset_
 # ceds_processed_data
 
 # %%
-gfed4_processed_data = GFED4_PROCESSED_DB.load(pix.isin(stage="iso3c")).reset_index("stage", drop=True)
+gfed4_processed_data = BB4CMIP7_PROCESSED_DB.load(pix.isin(stage="iso3c")).reset_index("stage", drop=True)
 # gfed4_processed_data
 
 # %%

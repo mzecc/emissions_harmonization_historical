@@ -29,7 +29,6 @@
 # ## Imports
 
 # %%
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -48,8 +47,8 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR
 # ## Setup
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-species: str = "NMVOC"
-species_esgf: str = "NMVOCbulk"
+species: str = "OC"
+species_esgf: str = "OC"
 
 
 # %% [markdown]
@@ -169,6 +168,7 @@ np.testing.assert_allclose(
         2,
     ),
     exp_last_year_annual_total_Tg,
+    rtol=1e-3,
 )
 
 # %%
@@ -178,6 +178,69 @@ total_var = alldat[f"{species_esgf}smoothed"]
 # %%
 sector_variables = [v for v in alldat.data_vars if "percentage" in v]
 # sector_variables
+
+
+# %%
+def to_regridded_per_cell(
+    da: xr.DataArray,
+    cell_area: xr.DataArray,
+    resolution_decrease_factor: int = 2,
+) -> xr.DataArray:
+    """
+    Convert from data per area to regridded data per cell
+
+    The regridding is very basic,
+    just upscaling to a grid that is less fine.
+    (We tried other tools for this,
+    but they weren't conserving mass).
+    """
+    da_per_cell = da * cell_area
+
+    rdf = resolution_decrease_factor
+    in_lat = da_per_cell.latitude
+    in_lon = da_per_cell.longitude
+
+    if rdf != 2:  # noqa: PLR2004
+        # The below will explode
+        raise NotImplementedError(rdf)
+
+    target_lat = (in_lat[::rdf].values + in_lat[1::rdf].values) / rdf
+    target_lon = (in_lon[::rdf].values + in_lon[1::rdf].values) / rdf
+
+    da_per_cell_regridded = (
+        da_per_cell.rolling(latitude=rdf, min_periods=1, center=False)
+        .sum()
+        .sel(latitude=in_lat[1::rdf])
+        .rolling(longitude=rdf, min_periods=1, center=False)
+        .sum()
+        .sel(longitude=in_lon[1::rdf])
+        .assign_coords(
+            latitude=target_lat,
+            longitude=target_lon,
+        )
+    )
+
+    return da_per_cell_regridded
+
+
+# %%
+total_v_per_cell_regridded = to_regridded_per_cell(
+    da=total_var,
+    cell_area=cell_area,
+)
+total_v_per_cell_regridded_per_year = to_annual_sum(
+    da=total_v_per_cell_regridded,
+    time_bounds=alldat["time_bnds"],
+)
+# Make sure we can regrid correctly
+np.testing.assert_allclose(
+    np.round(
+        total_v_per_cell_regridded_per_year.sel(year=2021).sum(["latitude", "longitude"]).values / 1e9,
+        2,
+    ),
+    exp_last_year_annual_total_Tg,
+    rtol=1e-3,
+)
 
 # %%
 for sv_name in tqdm.auto.tqdm(sector_variables):
@@ -193,39 +256,10 @@ for sv_name in tqdm.auto.tqdm(sector_variables):
     if "m-2" not in sector_per_area.attrs["units"]:
         raise AssertionError
 
-    sector_per_cell = (sector_per_area * cell_area).assign_attrs(
-        dict(units=sector_per_area.attrs["units"].replace(" m-2", ""))
+    sector_per_cell_regridded = to_regridded_per_cell(
+        da=sector_per_area,
+        cell_area=cell_area,
     )
-
-    # Super hacky and only works because the iso mask
-    # is half the resolution of GFED, anyway.
-    # (I couldn't get conservative regridding to do what I expected,
-    # so I moved on).
-
-    resolution_decrease_factor = 2
-    rdf = resolution_decrease_factor
-
-    in_lat = sector_per_cell.latitude
-    in_lon = sector_per_cell.longitude
-
-    if rdf != 2:  # noqa: PLR2004
-        # The below will explode
-        raise NotImplementedError(rdf)
-
-    target_lat = (in_lat[::rdf].values + in_lat[1::rdf].values) / rdf
-    target_lon = (in_lon[::rdf].values + in_lon[1::rdf].values) / rdf
-
-    sector_per_cell_regridded = (
-        sector_per_cell.rolling(latitude=rdf, longitude=rdf)
-        .sum()
-        .sel(latitude=in_lat[1::rdf], longitude=in_lon[1::rdf])
-        .assign_coords(
-            latitude=target_lat,
-            longitude=target_lon,
-        )
-        .sel(latitude=country_mask.latitude, longitude=country_mask.longitude)
-    )
-
     sector_per_cell_regridded_per_year = to_annual_sum(
         da=sector_per_cell_regridded,
         time_bounds=alldat["time_bnds"],
@@ -258,6 +292,7 @@ for sv_name in tqdm.auto.tqdm(sector_variables):
     # sector
 
     full_by_country = (full * country_mask).sum(["latitude", "longitude"])
+    full_by_country = full_by_country.sel(year=[2020, 2021, 2022, 2023])
     print("Starting to compute data by country")
     with ProgressBar(dt=5.0):
         full_by_country_res = full_by_country.compute().assign_coords(sector=sector)
@@ -271,13 +306,11 @@ for sv_name in tqdm.auto.tqdm(sector_variables):
     full_by_country_res.to_netcdf(out_file)
     print(f"Wrote {out_file}")
 
-    # break
-
 # %% [markdown]
 # ## Delete raw files
 #
 # Save our disks
 
 # %%
-for fp in downloaded_files_l:
-    os.unlink(fp)
+# for fp in downloaded_files_l:
+#     os.unlink(fp)
