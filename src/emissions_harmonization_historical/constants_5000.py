@@ -82,6 +82,8 @@ BB4CMIP7_INTERIM_OUTPUT_DIR = DATA_ROOT / "interim" / "bb4cmip7"
 
 # ID for the processing to annual, sectoral emissions
 BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_ID = "0001"
+# Process all the way back to 1750
+BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_ID = "0002"
 BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_ID
 
 BB4CMIP7_FORMATTING_ID = "0001"
@@ -125,6 +127,8 @@ WMO_2022_RAW_PATH = DATA_ROOT / "raw" / "wmo-2022"
 
 # ID for the WMO 2022 processing step
 WMO_2022_PROCESSING_ID = "0001"
+# Fix negative values in smoothing
+WMO_2022_PROCESSING_ID = "0002"
 
 WMO_2022_PROCESSED_DB = OpenSCMDB(
     db_dir=DATA_ROOT / "processed" / "wmo-2022" / WMO_2022_PROCESSING_ID / "db",
@@ -177,6 +181,7 @@ CREATE_HISTORY_FOR_GLOBAL_WORKFLOW_ID = "_".join(
         VELDERS_ET_AL_2022_PROCESSING_ID,
         ADAM_ET_AL_2024_PROCESSING_ID,
         CMIP7_GHG_PROCESSING_ID,
+        "0001",
     ]
 )
 
@@ -200,6 +205,14 @@ RCMIP_PROCESSED_DB = OpenSCMDB(
 COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
 COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
 
+REGION_MAPPING_FILE = (
+    DATA_ROOT
+    / "processed"
+    / "region-mapping"
+    / COMMON_DEFINITIONS_COMMIT
+    / f"region-mapping_{COMMON_DEFINITIONS_COMMIT}.csv"
+)
+
 # ID for the created history for harmonisation
 HISTORY_FOR_HARMONISATION_ID = "_".join(
     [
@@ -212,8 +225,6 @@ HISTORY_FOR_HARMONISATION_ID = "_".join(
 # Directory in which the history for harmonisation information lives
 HISTORY_HARMONISATION_DIR = DATA_ROOT / "processed" / "history-for-harmonisation" / HISTORY_FOR_HARMONISATION_ID
 
-REGION_MAPPING_FILE = HISTORY_HARMONISATION_DIR / f"region-mapping_{COMMON_DEFINITIONS_COMMIT}.csv"
-
 # Database to hold historical emissions for harmonisation
 HISTORY_HARMONISATION_DB = OpenSCMDB(
     db_dir=HISTORY_HARMONISATION_DIR / "db",
@@ -222,10 +233,14 @@ HISTORY_HARMONISATION_DB = OpenSCMDB(
 )
 
 
-# ID for the scenario download step
-DOWNLOAD_SCENARIOS_ID = "0001"
-# Updated May 6 for revised AIM scenarios
-DOWNLOAD_SCENARIOS_ID = "0002"
+# # ID for the scenario download step
+# DOWNLOAD_SCENARIOS_ID = "0001"
+# # Updated May 6 for revised AIM scenarios
+# DOWNLOAD_SCENARIOS_ID = "0002"
+# # Chris workaround
+# DOWNLOAD_SCENARIOS_ID = "0003"
+# Update hashing
+DOWNLOAD_SCENARIOS_ID = "0004"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(

@@ -71,7 +71,7 @@ region_mapping
 
 # %%
 ceds_processed_data = CEDS_PROCESSED_DB.load(pix.isin(stage="iso3c_ish")).reset_index("stage", drop=True)
-# ceds_processed_data
+# ceds_processed_data.loc[pix.ismatch(variable=["**CH4**", "**N2O**"])]
 
 # %%
 gfed4_processed_data = BB4CMIP7_PROCESSED_DB.load(pix.isin(stage="iso3c")).reset_index("stage", drop=True)
@@ -139,7 +139,7 @@ split_sectors(history_for_gridding.loc[pix.ismatch(variable="**|OC|**Burning", r
 ).sum(min_count=1)
 
 # %%
-split_sectors(history_for_gridding.loc[pix.ismatch(variable="**|OC|**", region="AIM**")]).openscm.groupby_except(
+split_sectors(history_for_gridding.loc[pix.ismatch(variable="**|CH4|**", region="AIM**")]).openscm.groupby_except(
     ["region", "sectors"]
 ).sum(min_count=1)
 

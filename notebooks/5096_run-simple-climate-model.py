@@ -70,6 +70,7 @@ output_dir_model
 # ### Complete scenarios
 
 # %%
+# TODO: make the db portable
 # complete_scenarios = pd.concat([
 #     pd.read_feather(f) for f in INFILLED_SCENARIOS_DB.db_dir.glob("*.feather")
 #     if "index" not in f.name and "filemap" not in f.name
@@ -88,6 +89,7 @@ complete_scenarios
 # Just in case we need it for MAGICC
 
 # %%
+# TODO: make the db portable
 # history = pd.concat([
 #     pd.read_feather(f) for f in HISTORY_HARMONISATION_DB.db_dir.glob("*.feather")
 #     if "index" not in f.name and "filemap" not in f.name

@@ -173,6 +173,10 @@ ceds = update_index_levels_func(ceds, {"em": lambda x: x.replace("SO2", "Sulfur"
 
 ceds
 
+# %%
+# TODO: add CEDS extension back to 1750 somewhere
+# ceds.loc[["CH4", "N2O"]]
+
 # %% [markdown]
 # ### Calculate aggregates of interest
 

@@ -146,6 +146,7 @@ INFILLING_DB.save(out, allow_overwrite=True)
 
 # %%
 # Rewrite as single file
+INFILLED_OUT_DIR.mkdir(exist_ok=True, parents=True)
 out_file_infilling_db = INFILLED_OUT_DIR / f"infilling-db_{INFILLED_OUT_DIR_ID}.csv"
 out = INFILLING_DB.load()
 out.to_csv(out_file_infilling_db)

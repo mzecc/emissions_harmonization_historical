@@ -216,6 +216,7 @@ for variable, vdf in wmo_clean.groupby("variable"):
                 vdf[y] = np.nan
 
         vdf = vdf.T.interpolate(method="index").T  # noqa: PLW2901
+        vdf[vdf < 0.0] = 0.0
 
     wmo_emissions_smooth_l.append(vdf)
 

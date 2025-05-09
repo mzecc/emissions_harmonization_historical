@@ -34,14 +34,14 @@
 # ## Imports
 
 # %%
+import hashlib
 import json
-import shutil
 import tempfile
 from pathlib import Path
 
 import pyam
 import tqdm.auto
-from gcages.hashing import get_file_hash
+from pandas.util import hash_pandas_object
 
 from emissions_harmonization_historical.constants_5000 import (
     DATA_ROOT,
@@ -105,13 +105,12 @@ to_download.shape[0]
 # The logic here is the following:
 #
 # 1. get the scenario
-# 2. save it as a CSV to a temporary directory
-# 3. check its hash
-# 4. if the hash doesn't match what we expect, raise an error
+# 2. get its hash
+# 3. if the hash doesn't match what we expect, raise an error
 #    because we need to update to use the new data
-# 5. if the hash matches or it's a new scenario, move the CSV to the raw directory
+# 4. if the hash matches or it's a new scenario, save as CSV to the raw directory
 #    and save to the database
-# 6. also save the properties from the database we can get hold of these later
+# 5. also save the properties from the database we can get hold of these later
 #    for our own records if needed
 
 # %%
@@ -121,39 +120,34 @@ tmpdir = Path(tempfile.mkdtemp(prefix="ssp-submission-db"))
 for _, row in tqdm.auto.tqdm(to_download.iterrows(), total=to_download.shape[0]):
     model = row.model
     scenario = row.scenario
+    scenario_clean = scenario.replace(" ", "_")
 
     df = pyam.read_iiasa("ssp_submission", model=model, scenario=scenario, variable="Emissions|*")
     if df.empty:
         msg = f"No data for {model=} {scenario=}"
         raise AssertionError(msg)
 
-    scenario_clean = scenario.replace(" ", "_")
-
-    scenario_file_name = f"{scenario_clean}.csv"
-    scenario_file_tmp = tmpdir / scenario_file_name
-
     df_ts = df.timeseries()
-    df_ts.to_csv(scenario_file_tmp)
+    to_hash = df_ts.reorder_levels(sorted(df_ts.index.names)).sort_index().sort_index(axis="columns").reset_index()
+    df_ts_hash = hashlib.sha256(hash_pandas_object(to_hash).values).hexdigest()
 
-    scenario_file_hash = get_file_hash(scenario_file_tmp)
     if model not in known_hashes:
         known_hashes[model] = {}
 
     if model in known_hashes and scenario in known_hashes[model]:
-        if scenario_file_hash != known_hashes[model][scenario]:
+        if df_ts_hash != known_hashes[model][scenario]:
             msg = "Scenario data has changed. Please update the value of `DOWNLOAD_SCENARIOS_ID`."
             raise AssertionError(msg)
         # else:
         # Already know about this scenario and data matches the expected hash
     else:
-        known_hashes[model][scenario] = scenario_file_hash
+        known_hashes[model][scenario] = df_ts_hash
 
     with open(known_hashes_file, "w") as fh:
         json.dump(known_hashes, fh, indent=2, sort_keys=True)
         # add new line to end of file
         fh.write("\n")
 
-    shutil.move(scenario_file_tmp, output_dir_model / scenario_file_name)
     # If we got to this stage, we are fine with an overwrite
     RAW_SCENARIO_DB.save(df_ts, allow_overwrite=True)
     row.to_frame().T.to_csv(output_dir_model / f"{scenario_clean}_properties.csv", index=False)

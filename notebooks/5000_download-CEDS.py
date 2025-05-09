@@ -44,3 +44,20 @@ unzipped_files = pooch.retrieve(
     progressbar=True,
 )
 len(unzipped_files)
+
+# %%
+LINK_TO_HIT = "https://zenodo.org/records/15059443/files/CEDS_v_2025_03_18_supplementary_extension.zip?download=1"
+if CEDS_VERSION_ID not in LINK_TO_HIT:
+    msg = "Please update CEDS_VERSION_ID (and CEDS_PROCESSING_ID)"
+    raise AssertionError(msg)
+
+# %%
+unzipped_files = pooch.retrieve(
+    url=LINK_TO_HIT,
+    fname="CEDS_v_2025_03_18_supplementary_extension.zip",
+    path=CEDS_RAW_PATH,
+    known_hash="c62973a8745346e5a0df3d381cdc01529aa76877013dfd02b559745571a58813",
+    processor=pooch.Unzip(extract_dir=CEDS_RAW_PATH),
+    progressbar=True,
+)
+len(unzipped_files)

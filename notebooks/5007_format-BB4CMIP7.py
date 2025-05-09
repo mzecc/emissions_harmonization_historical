@@ -169,7 +169,7 @@ pd.testing.assert_series_equal(res_aggregate[2021].round(2), exp_sums, check_lik
 res_formatted = res.openscm.update_index_levels({"sector": sector_mapping, "species": species_mapping}).pix.format(
     variable="Emissions|{species}|{sector}", drop=True
 )
-res_formatted = res_formatted.groupby(res_formatted.index.names).sum()
+res_formatted = res_formatted.groupby(res_formatted.index.names).sum(min_count=1)
 
 out_l = []
 for (variable, unit), vdf in res_formatted.groupby(["variable", "unit"]):
@@ -190,7 +190,7 @@ for (variable, unit), vdf in res_formatted.groupby(["variable", "unit"]):
 
     out_l.append(converted)
 
-out = pix.concat(out_l)
+out = pix.concat(out_l).sort_index(axis="columns")
 out
 
 # %% [markdown]
