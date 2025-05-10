@@ -370,7 +370,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/de/cfe7ef4af7badf889f95026634abd0b4c858dca61a6ecd9f7c281b55edb1/pandas_datapackage_reader-0.18.0-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/16/9f/9c9791e389212c7b1dd25c979fa752f233b7c9476213a72acb528decab28/pandas_openscm-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e5/ae/d06b28705d4bd9f25d8d74937ad7942e8822d3e32a29e347b4b6c4703035/pandas_openscm-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b8/ab3e1419c0f3472c23ec7323da4bc970c3620055c9475d6fe3aa1dcdcef7/pandera-0.22.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/55/83ce641bc61a70cc0721af6f50154ecaaccedfbdbc27366c1755a2a34972/papermill-2.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/19/5af93cae70c2e42f3ac568906f8f3909174450bdbf4d70ec420e1daef816/Pint_Pandas-0.7.1-py3-none-any.whl
@@ -773,7 +773,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/de/cfe7ef4af7badf889f95026634abd0b4c858dca61a6ecd9f7c281b55edb1/pandas_datapackage_reader-0.18.0-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/16/9f/9c9791e389212c7b1dd25c979fa752f233b7c9476213a72acb528decab28/pandas_openscm-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e5/ae/d06b28705d4bd9f25d8d74937ad7942e8822d3e32a29e347b4b6c4703035/pandas_openscm-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b8/ab3e1419c0f3472c23ec7323da4bc970c3620055c9475d6fe3aa1dcdcef7/pandera-0.22.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/55/83ce641bc61a70cc0721af6f50154ecaaccedfbdbc27366c1755a2a34972/papermill-2.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/19/5af93cae70c2e42f3ac568906f8f3909174450bdbf4d70ec420e1daef816/Pint_Pandas-0.7.1-py3-none-any.whl
@@ -1169,7 +1169,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/de/cfe7ef4af7badf889f95026634abd0b4c858dca61a6ecd9f7c281b55edb1/pandas_datapackage_reader-0.18.0-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/16/9f/9c9791e389212c7b1dd25c979fa752f233b7c9476213a72acb528decab28/pandas_openscm-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e5/ae/d06b28705d4bd9f25d8d74937ad7942e8822d3e32a29e347b4b6c4703035/pandas_openscm-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b8/ab3e1419c0f3472c23ec7323da4bc970c3620055c9475d6fe3aa1dcdcef7/pandera-0.22.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/55/83ce641bc61a70cc0721af6f50154ecaaccedfbdbc27366c1755a2a34972/papermill-2.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/19/5af93cae70c2e42f3ac568906f8f3909174450bdbf4d70ec420e1daef816/Pint_Pandas-0.7.1-py3-none-any.whl
@@ -1564,7 +1564,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/de/cfe7ef4af7badf889f95026634abd0b4c858dca61a6ecd9f7c281b55edb1/pandas_datapackage_reader-0.18.0-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/16/9f/9c9791e389212c7b1dd25c979fa752f233b7c9476213a72acb528decab28/pandas_openscm-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e5/ae/d06b28705d4bd9f25d8d74937ad7942e8822d3e32a29e347b4b6c4703035/pandas_openscm-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b8/ab3e1419c0f3472c23ec7323da4bc970c3620055c9475d6fe3aa1dcdcef7/pandera-0.22.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/55/83ce641bc61a70cc0721af6f50154ecaaccedfbdbc27366c1755a2a34972/papermill-2.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/19/5af93cae70c2e42f3ac568906f8f3909174450bdbf4d70ec420e1daef816/Pint_Pandas-0.7.1-py3-none-any.whl
@@ -1949,7 +1949,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/de/cfe7ef4af7badf889f95026634abd0b4c858dca61a6ecd9f7c281b55edb1/pandas_datapackage_reader-0.18.0-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/16/9f/9c9791e389212c7b1dd25c979fa752f233b7c9476213a72acb528decab28/pandas_openscm-0.4.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e5/ae/d06b28705d4bd9f25d8d74937ad7942e8822d3e32a29e347b4b6c4703035/pandas_openscm-0.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b8/ab3e1419c0f3472c23ec7323da4bc970c3620055c9475d6fe3aa1dcdcef7/pandera-0.22.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/55/83ce641bc61a70cc0721af6f50154ecaaccedfbdbc27366c1755a2a34972/papermill-2.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/97/19/5af93cae70c2e42f3ac568906f8f3909174450bdbf4d70ec420e1daef816/Pint_Pandas-0.7.1-py3-none-any.whl
@@ -4769,7 +4769,7 @@ packages:
 - pypi: .
   name: emissions-harmonization-historical
   version: 0.1.0
-  sha256: 53ad8500f35ec94dd6ec0a7db018ff5d6b652ad8867a4a0da549634a41392236
+  sha256: 03903758fe82db9382d414e0ec042ac1f8c1e36b88af4379cfe71cfd114b76a5
   requires_dist:
   - pre-commit==3.3.1
   - ptolemy-iamc @ git+https://github.com/gidden/ptolemy.git@015aa843c340bd57464eb7cfd5f3c8e397201266
@@ -4787,6 +4787,7 @@ packages:
   - python-dotenv>=1.1.0,<2
   - gcages>=0.6.0
   - ixmp4>=0.9.8,<0.10
+  - pandas-openscm>=0.5.0
   requires_python: ==3.11.*
   editable: true
 - pypi: https://files.pythonhosted.org/packages/35/a8/365059bbcd4572cbc41de17fd5b682be5868b218c3c5479071865cab9078/entrypoints-0.4-py3-none-any.whl
@@ -13014,15 +13015,15 @@ packages:
   - pkg:pypi/pandas-indexing?source=hash-mapping
   size: 28981
   timestamp: 1724670542217
-- pypi: https://files.pythonhosted.org/packages/16/9f/9c9791e389212c7b1dd25c979fa752f233b7c9476213a72acb528decab28/pandas_openscm-0.4.1-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/e5/ae/d06b28705d4bd9f25d8d74937ad7942e8822d3e32a29e347b4b6c4703035/pandas_openscm-0.5.0-py3-none-any.whl
   name: pandas-openscm
-  version: 0.4.1
-  sha256: 33e512f69a262d62a2edf13aa1100025600f67ba61ef18d77cd5add27b8165b0
+  version: 0.5.0
+  sha256: 6bb63e966bbe3d552e3df1f6f03f79f41500d68e08ac614e9f337589e3dafada
   requires_dist:
   - attrs>=24.3.0
   - numpy>=1.25.0
   - pandas>=2.2.0
-  - filelock>=3.0.0 ; extra == 'db'
+  - filelock>=3.12.3 ; extra == 'db'
   - netcdf4>=1.7.2 ; extra == 'db-full'
   - pandas-openscm[db] ; extra == 'db-full'
   - pyarrow>=19.0.0 ; extra == 'db-full'
@@ -13040,14 +13041,14 @@ packages:
   - six==1.17.0 ; extra == 'locked'
   - tzdata==2025.2 ; extra == 'locked'
   - filelock==3.18.0 ; extra == 'db-locked'
-  - certifi==2025.1.31 ; extra == 'db-full-locked'
+  - certifi==2025.4.26 ; extra == 'db-full-locked'
   - cftime==1.6.4.post1 ; extra == 'db-full-locked'
   - filelock==3.18.0 ; extra == 'db-full-locked'
   - netcdf4==1.7.2 ; extra == 'db-full-locked'
   - numpy==2.0.2 ; extra == 'db-full-locked'
   - packaging==24.2 ; extra == 'db-full-locked'
   - pandas==2.2.3 ; extra == 'db-full-locked'
-  - pyarrow==19.0.1 ; extra == 'db-full-locked'
+  - pyarrow==20.0.0 ; extra == 'db-full-locked'
   - python-dateutil==2.9.0.post0 ; extra == 'db-full-locked'
   - pytz==2025.2 ; extra == 'db-full-locked'
   - six==1.17.0 ; extra == 'db-full-locked'
@@ -13061,7 +13062,7 @@ packages:
   - matplotlib==3.9.4 ; extra == 'plots-locked'
   - numpy==2.0.2 ; extra == 'plots-locked'
   - packaging==24.2 ; extra == 'plots-locked'
-  - pillow==11.1.0 ; extra == 'plots-locked'
+  - pillow==11.2.1 ; extra == 'plots-locked'
   - pyparsing==3.2.3 ; extra == 'plots-locked'
   - python-dateutil==2.9.0.post0 ; extra == 'plots-locked'
   - six==1.17.0 ; extra == 'plots-locked'
@@ -13078,7 +13079,7 @@ packages:
   - matplotlib==3.9.4 ; extra == 'full-locked'
   - numpy==2.0.2 ; extra == 'full-locked'
   - packaging==24.2 ; extra == 'full-locked'
-  - pillow==11.1.0 ; extra == 'full-locked'
+  - pillow==11.2.1 ; extra == 'full-locked'
   - pyparsing==3.2.3 ; extra == 'full-locked'
   - python-dateutil==2.9.0.post0 ; extra == 'full-locked'
   - six==1.17.0 ; extra == 'full-locked'
