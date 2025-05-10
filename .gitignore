@@ -19,6 +19,8 @@ data/reporting-checking
 
 # Output plots
 *.pdf
+*.png
+*.jpeg
 
 # Processed data
 data/cmip7-scenariomip-workflow
