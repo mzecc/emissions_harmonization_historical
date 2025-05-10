@@ -151,12 +151,11 @@ scratch_selection_l = [
     # ("#2e9e68", ("COFFEE 1.6", "SSP2 - Low Emissions")),
     ("#2e9e68", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions")),
     ("#4b3d89", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Overshoot_d")),
-    # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),
-    # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions_c")),
-    ("#499edb", ("COFFEE 1.6", "SSP2 - Very Low Emissions")),
+    # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),x
+    ("#899edb", ("COFFEE 1.6", "SSP2 - Very Low Emissions")),
+    ("#899edb", ("WITCH 6.0", "SSP1 - Low Overshoot")),
     ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions_a")),
     # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions")),
-    ("#499edb", ("WITCH 6.0", "SSP2 - Low Overshoot")),
 ]
 
 # %%
@@ -261,7 +260,7 @@ for ax in fg.axes.flatten():
     if "CO2" in ax.get_title():
         ax.axhline(0.0, linestyle="--", color="gray")
         if "Energy" in ax.get_title():
-            ax.set_yticks(np.arange(-1e5, 6e5 + 1, 1e5))
+            ax.set_yticks(np.arange(-1e4, 6e4 + 1, 1e4))
         else:
             ax.set_yticks(np.arange(-3e4, 5e4 + 1, 1e4))
 
@@ -298,7 +297,7 @@ multi_index_lookup(metadata_quantile, scratch_selection).unstack(["metric", "uni
 # ### How much difference is the MAGICC update making?
 
 # %%
-iam = "AIM"
+iam = "WITCH"
 tmp = temperatures_in_line_with_assessment.loc[pix.ismatch(model=f"{iam}**"), 2000:]
 
 fig, axes = plt.subplots(ncols=2, figsize=(16, 4))
