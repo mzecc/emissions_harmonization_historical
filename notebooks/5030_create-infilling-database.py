@@ -105,7 +105,14 @@ history = history.dropna(axis="columns")
 
 # %%
 infilling_db_raw = pix.concat([scenarios_for_infilling_db, wmo_2022_scenarios]).sort_index(axis="columns")
-infilling_db_raw
+# infilling_db_raw
+
+# %% [markdown]
+# ### Temporary hack: linearly interpolate to ensure harmonisation works
+
+# %%
+infilling_db_raw = infilling_db_raw.T.interpolate(method="index").T
+# infilling_db_raw
 
 # %%
 # Could load in user overrides from elsewhere here.

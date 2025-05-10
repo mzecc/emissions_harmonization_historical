@@ -101,7 +101,7 @@ history = HISTORY_HARMONISATION_DB.load(pix.ismatch(purpose="global_workflow_emi
     "purpose", drop=True
 )
 
-history.loc[:, :2023]
+# history.loc[:, :2023]
 
 # %% [markdown]
 # ## Configure SCM
@@ -111,26 +111,30 @@ output_variables = (
     # GSAT
     "Surface Air Temperature Change",
     # # GMST
-    # "Surface Air Ocean Blended Temperature Change",
+    "Surface Air Ocean Blended Temperature Change",
     # # ERFs
     # "Effective Radiative Forcing",
     # "Effective Radiative Forcing|Anthropogenic",
-    # "Effective Radiative Forcing|Aerosols",
-    # "Effective Radiative Forcing|Aerosols|Direct Effect",
+    "Effective Radiative Forcing|Aerosols",
+    "Effective Radiative Forcing|Aerosols|Direct Effect",
     # "Effective Radiative Forcing|Aerosols|Direct Effect|BC",
     # "Effective Radiative Forcing|Aerosols|Direct Effect|OC",
     # "Effective Radiative Forcing|Aerosols|Direct Effect|SOx",
-    # "Effective Radiative Forcing|Aerosols|Indirect Effect",
-    # "Effective Radiative Forcing|Greenhouse Gases",
-    # "Effective Radiative Forcing|CO2",
+    "Effective Radiative Forcing|Aerosols|Indirect Effect",
+    "Effective Radiative Forcing|Greenhouse Gases",
+    "Effective Radiative Forcing|CO2",
     # "Effective Radiative Forcing|CH4",
     # "Effective Radiative Forcing|N2O",
     # "Effective Radiative Forcing|F-Gases",
     # "Effective Radiative Forcing|Montreal Protocol Halogen Gases",
-    # "Effective Radiative Forcing|Ozone",
+    "Effective Radiative Forcing|Ozone",
+    "Effective Radiative Forcing|Tropospheric Ozone",
+    "Effective Radiative Forcing|Stratospheric Ozone",
+    "Effective Radiative Forcing|Solar",
+    "Effective Radiative Forcing|Volcanic",
     # # Heat uptake
-    # "Heat Uptake",
-    # # "Heat Uptake|Ocean",
+    "Heat Uptake",
+    "Heat Uptake|Ocean",
     # # Atmospheric concentrations
     "Atmospheric Concentrations|CO2",
     "Atmospheric Concentrations|CH4",
@@ -193,6 +197,9 @@ else:
     raise NotImplementedError(scm)
 
 # complete_scm
+
+# %%
+climate_models_cfgs["MAGICC7"][0]["out_dynamic_vars"]
 
 # %% [markdown]
 # ### If MAGICC, check how yuck the jump will be
@@ -257,6 +264,26 @@ complete_openscm_runner = update_index_levels_func(
 )
 complete_openscm_runner
 
+
+# %%
+class db_hack:
+    """Save files in groups while we can't pass groupby through the function below"""
+
+    def __init__(self, actual_db):
+        self.actual_db = actual_db
+
+    def load_metadata(self, *args, **kwargs):
+        """Load metadata"""
+        return self.actual_db.load_metadata(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        """Save"""
+        return self.actual_db.save(*args, **kwargs, groupby=["model", "scenario", "variable"])
+
+
+# %%
+db = db_hack(SCM_OUTPUT_DB)
+
 # %%
 # if scm in ["FAIRv2.2.2"]:
 #    some custom code
@@ -267,7 +294,7 @@ run_scms(
     output_variables=output_variables,
     scenario_group_levels=["model", "scenario"],
     n_processes=multiprocessing.cpu_count(),
-    db=SCM_OUTPUT_DB,
+    db=db,
     verbose=True,
     progress=True,
     batch_size_scenarios=15,
