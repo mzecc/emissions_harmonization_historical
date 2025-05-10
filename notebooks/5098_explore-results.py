@@ -27,6 +27,7 @@ import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
 import seaborn as sns
+import tqdm.auto
 from pandas_openscm.indexing import multi_index_lookup
 
 from emissions_harmonization_historical.constants_5000 import (
@@ -64,6 +65,17 @@ temperatures_in_line_with_assessment = POST_PROCESSED_TIMESERIES_RUN_ID_DB.load(
     pix.isin(variable="Surface Temperature (GSAT)")
 )
 # temperatures_in_line_with_assessment
+
+# %%
+raw_scm_output = SCM_OUTPUT_DB.load(
+    pix.ismatch(variable=[
+        "Heat Uptake",
+        "Effective Radiative Forcing|Aerosols",
+        "Effective Radiative Forcing|CO2",
+        "Effective Radiative Forcing|Greenhouse Gases",
+        "Effective Radiative Forcing|Ozone",
+    ])
+)
 
 # %% [markdown]
 # ## Analysis
@@ -162,7 +174,7 @@ scratch_selection_l = [
 ms_separator = " || "
 palette = {ms_separator.join(v[1]): v[0] for v in scratch_selection_l}
 scratch_selection = pd.MultiIndex.from_tuples([v[1] for v in scratch_selection_l], names=["model", "scenario"])
-pdf = temperatures_in_line_with_assessment.loc[pix.isin(climate_model="MAGICCv7.6.0a3"), 2000:].openscm.mi_loc(
+pdf_temperature = temperatures_in_line_with_assessment.loc[pix.isin(climate_model="MAGICCv7.6.0a3"), 2000:].openscm.mi_loc(
     scratch_selection
 )
 
@@ -171,22 +183,22 @@ ms_level = "model || scenario"
 # Push ability to create a new level from multiple other levels into pandas-openscm
 new_name = ms_level
 new_level = (
-    pdf.index.droplevel(pdf.index.names.difference(["model", "scenario"]))
+    pdf_temperature.index.droplevel(pdf_temperature.index.names.difference(["model", "scenario"]))
     .drop_duplicates()
     .map(lambda x: ms_separator.join(x))
 )
 
-if new_level.shape[0] != pdf.shape[0]:
-    dup_level = pdf.index.get_level_values("model") + " || " + pdf.index.get_level_values("scenario")
+if new_level.shape[0] != pdf_temperature.shape[0]:
+    dup_level = pdf_temperature.index.get_level_values("model") + " || " + pdf_temperature.index.get_level_values("scenario")
     new_level = dup_level.unique()
     new_codes = new_level.get_indexer(dup_level)
 else:
     new_codes = np.arange(new_level.shape[0])
 
-pdf.index = pd.MultiIndex(
-    levels=[*pdf.index.levels, new_level],
-    codes=[*pdf.index.codes, new_codes],
-    names=[*pdf.index.names, new_name],
+pdf_temperature.index = pd.MultiIndex(
+    levels=[*pdf_temperature.index.levels, new_level],
+    codes=[*pdf_temperature.index.codes, new_codes],
+    names=[*pdf_temperature.index.names, new_name],
 )
 
 
@@ -198,7 +210,7 @@ def create_legend(ax, handles) -> None:
 
 fig, axes = plt.subplots(nrows=2, figsize=(4, 8), sharex=True)
 for i, (ax, yticks) in enumerate(zip(axes, [np.arange(0.5, 4.01, 0.5), np.arange(0.7, 2.21, 0.1)])):
-    pdf.openscm.plot_plume_after_calculating_quantiles(
+    pdf_temperature.openscm.plot_plume_after_calculating_quantiles(
         quantile_over="run_id",
         hue_var=ms_level,
         style_var="climate_model",
@@ -216,31 +228,32 @@ for i, (ax, yticks) in enumerate(zip(axes, [np.arange(0.5, 4.01, 0.5), np.arange
 # %%
 scm_emissions = SCM_OUTPUT_DB.load(pix.ismatch(variable="Emissions|**"))
 # scm_emissions
-pdf = scm_emissions.openscm.mi_loc(scratch_selection)
+pdf_emissions = scm_emissions.copy()
 
 # Push ability to create a new level from multiple other levels into pandas-openscm
 new_name = ms_level
 new_level = (
-    pdf.index.droplevel(pdf.index.names.difference(["model", "scenario"]))
+    pdf_emissions.index.droplevel(pdf_emissions.index.names.difference(["model", "scenario"]))
     .drop_duplicates()
     .map(lambda x: ms_separator.join(x))
 )
 
-if new_level.shape[0] != pdf.shape[0]:
-    dup_level = pdf.index.get_level_values("model") + " || " + pdf.index.get_level_values("scenario")
+if new_level.shape[0] != pdf_emissions.shape[0]:
+    dup_level = pdf_emissions.index.get_level_values("model") + " || " + pdf_emissions.index.get_level_values("scenario")
     new_level = dup_level.unique()
     new_codes = new_level.get_indexer(dup_level)
 else:
     new_codes = np.arange(new_level.shape[0])
 
-pdf.index = pd.MultiIndex(
-    levels=[*pdf.index.levels, new_level],
-    codes=[*pdf.index.codes, new_codes],
-    names=[*pdf.index.names, new_name],
+pdf_emissions.index = pd.MultiIndex(
+    levels=[*pdf_emissions.index.levels, new_level],
+    codes=[*pdf_emissions.index.codes, new_codes],
+    names=[*pdf_emissions.index.names, new_name],
 )
-pdf = pdf.loc[pix.ismatch(variable=["**CO2**", "**CH4", "**BC", "**Sulfur", "**OC", "**VOC"])]
+pdf_emissions = pdf_emissions.pix.format(variable="{variable} ({unit})", drop=True).openscm.mi_loc(scratch_selection)
 
-pdf = pdf.pix.format(variable="{variable} ({unit})", drop=True).openscm.to_long_data()
+pdf = pdf_emissions.loc[pix.ismatch(variable=["**CO2**", "**CH4", "**BC", "**Sulfur", "**OC", "**VOC"])]
+pdf = pdf.openscm.to_long_data()
 # pdf
 
 # %%
@@ -262,12 +275,85 @@ for ax in fg.axes.flatten():
         if "Energy" in ax.get_title():
             ax.set_yticks(np.arange(-1e4, 6e4 + 1, 1e4))
         else:
-            ax.set_yticks(np.arange(-3e4, 5e4 + 1, 1e4))
+            ax.set_yticks(np.arange(-7e3, 6e3 + 1, 1e3))
 
     else:
         ax.set_ylim(ymin=0.0)
 
     ax.grid()
+
+# %%
+sorted(pdf_emissions.pix.unique("variable"))
+
+# %%
+assert False, "Add to model-scenario function or similar"
+
+# %%
+raw_scm_output
+
+# %%
+variables_src = [
+    ("Emissions|CO2|Energy and Industrial Processes", pdf_emissions, True, False),
+    ("Emissions|CO2|AFOLU", pdf_emissions, True, True),
+    ("Emissions|CH4", pdf_emissions, True, False),
+    ("Emissions|Sulfur", pdf_emissions, True, False),
+    ("Emissions|BC", pdf_emissions, True, False),
+    ("Emissions|OC", pdf_emissions, True, False),
+    ("Emissions|CFC12", pdf_emissions, True, False),
+    ("Emissions|N2O", pdf_emissions, True, False),
+    ("Emissions|NOx", pdf_emissions, True, False),
+    ("Emissions|NH3", pdf_emissions, True, False),
+    ("Emissions|VOC", pdf_emissions, True, False),
+    ("Surface Temperature (GSAT)", pdf_temperature, False, True),
+]
+
+fig, axes = plt.subplots(nrows=6, ncols=2, figsize=(12, 6 * 5))
+axes_flat = axes.flatten()
+
+for i, (variable, src, emissions, show_legend) in tqdm.auto.tqdm(enumerate(variables_src)):
+    ax = axes_flat[i]
+
+    if emissions:
+        vdf = pdf_emissions.loc[pix.ismatch(variable=f"{variable}*")].openscm.to_long_data()
+        
+        sns.lineplot(
+            ax=ax,
+            data=vdf,
+            x="time",
+            y="value",
+            hue="model || scenario",
+            palette=palette,
+        )
+        ax.set_title(vdf["variable"].unique()[0], fontdict=dict(fontsize="medium"))
+        
+    else:
+        src.loc[pix.isin(variable=variable)].openscm.plot_plume_after_calculating_quantiles(
+            quantile_over="run_id",
+            hue_var=ms_level,
+            style_var="climate_model",
+            palette=palette,
+            quantiles_plumes=((0.5, 1.0), ((0.33, 0.67), 0.3), ((0.05, 0.95), 0.0)),
+            ax=ax,
+        )
+        ax.set_title(src.pix.unique("variable")[0], fontdict=dict(fontsize="medium"))
+        
+    if show_legend:
+        sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+    else:
+        ax.legend().remove()
+    
+    if "CO2" in variable:
+        ax.axhline(0.0, linestyle="--", color="gray")
+        if "Energy" in variable:
+            ax.set_yticks(np.arange(-1e4, 6e4 + 1, 1e4))
+        else:
+            ax.set_yticks(np.arange(-5e3, 7e3 + 1, 1e3))
+
+    else:
+        ax.set_ylim(ymin=0.0)
+
+    ax.grid()
+    # break
 
 # %%
 multi_index_lookup(categories, scratch_selection).unstack(["metric", "climate_model"]).sort_values(
