@@ -577,6 +577,8 @@ fg = sns.relplot(
 for ax in fg.axes.flatten():
     ax.set_ylim(ymin=0.0)
 
+fg.fig.savefig("global-workflow-history-over-cmip-phases.pdf", bbox_inches="tight")
+
 # %% [markdown]
 # ## Save
 

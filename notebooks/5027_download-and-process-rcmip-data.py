@@ -24,6 +24,7 @@
 # %%
 import multiprocessing
 
+import pandas_indexing as pix
 import pooch
 from pandas_openscm.io import load_timeseries_csv
 
@@ -52,14 +53,19 @@ downloaded_file = pooch.retrieve(
 # ## Processs
 
 # %%
-res = load_timeseries_csv(
-    downloaded_file,
-    lower_column_names=True,
-    index_columns=["model", "scenario", "variable", "region", "unit", "mip_era", "activity_id"],
-    out_column_type=int,
-).reset_index(["mip_era", "activity_id"], drop=True)
+res = (
+    load_timeseries_csv(
+        downloaded_file,
+        lower_column_names=True,
+        index_columns=["model", "scenario", "variable", "region", "unit", "mip_era", "activity_id"],
+        out_columns_type=int,
+    )
+    .reset_index(["mip_era", "activity_id"], drop=True)
+    .loc[pix.ismatch(scenario=["ssp*", "rcp*", "hist*"])]
+)
+# res
 
 # %%
 RCMIP_PROCESSED_DB.save(
-    res, groupby=["model", "scenario", "variable", "region"], progress=True, max_workers=multiprocessing.cpu_count()
+    res, groupby=["model", "scenario", "region"], progress=True, max_workers=multiprocessing.cpu_count()
 )
