@@ -477,3 +477,18 @@ magicc_diff = tmp["MAGICCv7.6.0a3"] - tmp["MAGICCv7.5.3"]
 magicc_diff.unstack(["metric", "unit", "quantile"])[
     [(metric, "K", percentile) for metric in ["max", "2100"] for percentile in [0.33, 0.5, 0.67, 0.95]]
 ].sort_values(by=("max", "K", 0.5)).describe().round(3)
+
+# %%
+iam = "REMIND"
+pdf = raw_scm_output.loc[pix.isin(variable="Atmospheric Concentrations|CH4") & pix.ismatch(model=f"*{iam}*"), :]
+
+ax = pdf.loc[:, 2000:].openscm.plot_plume_after_calculating_quantiles(
+    quantile_over="run_id",
+    style_var="climate_model",
+    quantiles_plumes=quantile_plumes,
+    create_legend=create_legend,
+)
+ax.axhline(pdf[1750].unique(), linestyle="--", color="gray", label="pre-industrial levels")
+ax.annotate("pre-industrial concentration", (2040, pdf[1750].unique()))
+
+ax.set_ylim(ymin=500.0)
