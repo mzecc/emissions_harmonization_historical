@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
+import pint
 import seaborn as sns
 import tqdm.auto
 from pandas_openscm.indexing import multi_index_lookup
@@ -44,6 +45,9 @@ from emissions_harmonization_historical.constants_5000 import (
 
 # %%
 pandas_openscm.register_pandas_accessor()
+
+# %%
+pix.set_openscm_registry_as_default()
 
 # %%
 pd.set_option("display.max_rows", 100)
@@ -283,9 +287,25 @@ pdf_emissions = add_model_scenario_column(
     ms_separator=ms_separator,
     ms_level=ms_level,
 )
+
+gwp = "AR6GWP100"
+with pint.get_application_registry().context(gwp):
+    ghg_eq = pdf_emissions.loc[
+        ~pix.ismatch(variable=[f"**|{v}" for v in ["BC", "OC", "Sulfur", "NOx", "NH3", "VOC", "CO"]])
+    ].pix.convert_unit("MtCO2 / yr")
+
+pdf_emissions = pix.concat(
+    [
+        pdf_emissions,
+        ghg_eq.openscm.groupby_except("variable").sum().pix.assign(variable=f"Emissions|GHG {gwp}"),
+    ]
+)
+pdf_emissions
+
+# %%
 pdf_emissions = pdf_emissions.pix.format(variable="{variable} ({unit})", drop=True).openscm.mi_loc(scratch_selection)
 
-pdf = pdf_emissions.loc[pix.ismatch(variable=["**CO2**", "**CH4", "**BC", "**Sulfur", "**OC", "**VOC"])]
+pdf = pdf_emissions.loc[pix.ismatch(variable=["**CO2**", "**CH4**", "**BC**", "**Sulfur**", "**OC**", "**VOC**"])]
 pdf = pdf.openscm.to_long_data()
 # pdf
 
@@ -306,9 +326,11 @@ for ax in fg.axes.flatten():
     if "CO2" in ax.get_title():
         ax.axhline(0.0, linestyle="--", color="gray")
         if "Energy" in ax.get_title():
-            ax.set_yticks(np.arange(-1e4, 6e4 + 1, 1e4))
+            ax.set_yticks(np.arange(-2e4, 7e4 + 1, 1e4))
+        elif "GHG" in ax.get_title():
+            ax.set_yticks(np.arange(-2e4, 7e4 + 1, 1e4))
         else:
-            ax.set_yticks(np.arange(-7e3, 6e3 + 1, 1e3))
+            ax.set_yticks(np.arange(-7e3, 10e3 + 1, 1e3))
 
     else:
         ax.set_ylim(ymin=0.0)
@@ -327,13 +349,15 @@ pdf_raw_scm_output = add_model_scenario_column(
 # %%
 variables_src = [
     ("Emissions|CO2|Energy and Industrial Processes", pdf_emissions, True, False),
+    ("Emissions|GHG", pdf_emissions, True, False),
     ("Emissions|CO2|AFOLU", pdf_emissions, True, True),
     ("Emissions|CH4", pdf_emissions, True, False),
-    ("Emissions|Sulfur", pdf_emissions, True, False),
-    ("Emissions|BC", pdf_emissions, True, False),
-    ("Emissions|OC", pdf_emissions, True, False),
     ("Emissions|CFC12", pdf_emissions, True, False),
     ("Emissions|N2O", pdf_emissions, True, False),
+    ("Emissions|Sulfur", pdf_emissions, True, False),
+    ("Emissions|CO", pdf_emissions, True, False),
+    ("Emissions|BC", pdf_emissions, True, False),
+    ("Emissions|OC", pdf_emissions, True, False),
     ("Emissions|NOx", pdf_emissions, True, False),
     ("Emissions|NH3", pdf_emissions, True, False),
     ("Emissions|VOC", pdf_emissions, True, False),
@@ -388,10 +412,12 @@ for i, (variable, src, emissions, show_legend) in tqdm.auto.tqdm(enumerate(varia
     else:
         ax.legend().remove()
 
-    if "Emissions" in variable and "CO2" in variable:
+    if "Emissions" in variable and ("CO2" in variable or "GHG" in variable):
         ax.axhline(0.0, linestyle="--", color="gray")
         if "Energy" in variable:
-            ax.set_yticks(np.arange(-1e4, 6e4 + 1, 1e4))
+            ax.set_yticks(np.arange(-2e4, 6e4 + 1, 1e4))
+        elif "GHG" in variable:
+            ax.set_yticks(np.arange(-2e4, 7e4 + 1, 1e4))
         else:
             ax.set_yticks(np.arange(-7.5e3, 10e3 + 1, 2.5e3))
 
