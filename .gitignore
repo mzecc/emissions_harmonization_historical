@@ -17,6 +17,9 @@ notebooks-papermill
 # Reporting checking outputs
 data/reporting-checking
 
+# Outputs
+*.tar.gz
+
 # Output plots
 *.pdf
 *.png
