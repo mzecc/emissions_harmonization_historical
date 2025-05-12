@@ -152,7 +152,18 @@ output_variables = (
 # %%
 if scm in ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]:
     if scm == "MAGICCv7.6.0a3":
-        magicc_exe_path = REPO_ROOT / "magicc" / "magicc-v7.6.0a3" / "bin" / "magicc-darwin-arm64"
+        if platform.system() == "Darwin":
+            if platform.processor() == "arm":
+                magicc_exe_path = REPO_ROOT / "magicc" / "magicc-v7.6.0a3" / "bin" / "magicc-darwin-arm64"
+            else:
+                raise NotImplementedError(platform.processor())
+        elif platform.system() == "Windows":
+            raise NotImplementedError(platform.system())
+        elif platform.system().startswith("linux"):
+            magicc_exe = "magicc"
+        else:
+            raise NotImplementedError(platform.system())
+
         magicc_expected_version = "v7.6.0a3"
         magicc_prob_distribution_path = (
             REPO_ROOT / "magicc" / "magicc-v7.6.0a3" / "configs" / "magicc-ar7-fast-track-drawnset-v0-3-0.json"
@@ -167,6 +178,8 @@ if scm in ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]:
                 raise NotImplementedError(platform.processor())
         elif platform.system() == "Windows":
             magicc_exe = "magicc.exe"
+        elif platform.system().startswith("linux"):
+            magicc_exe = "magicc"
         else:
             raise NotImplementedError(platform.system())
 
