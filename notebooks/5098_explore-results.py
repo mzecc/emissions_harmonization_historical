@@ -121,7 +121,7 @@ tmp = (
 
 tmp.loc[
     # :, :
-    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 1.6)
+    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 6.6)
     # (tmp[("max", "K", 0.5)] > 1.7) & (tmp[("max", "K", 0.5)] < 1.9)
     # (tmp[("max", "K", 0.67)] > 1.8) & (tmp[("max", "K", 0.67)] < 2.05)
     # (tmp[("2100", "K", 0.5)] > 1.7)
@@ -130,7 +130,7 @@ tmp.loc[
     # # (tmp[("2100", "K", 0.5)] > 2.5)
     # # & (tmp[("2100", "K", 0.5)] < 3.0)
     # (tmp[("2100", "K", 0.5)] > 3.0) & (tmp[("2100", "K", 0.5)] < 30.6)
-]
+].loc[pix.ismatch(model="MESSAGE*")]
 
 # %%
 tmp = (
@@ -172,7 +172,7 @@ scratch_selection_l = [
     # # ML
     # # ("#e1ad01", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - Medium-Low Emissions")),
     # # # Very high sulfur emissions, not ideal
-    # ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
+    ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
     # ("#e1ad01", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium-Low Emissions")),
     # # ("#586643", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Medium-Low Emissions")),
     # L
@@ -181,6 +181,7 @@ scratch_selection_l = [
     ("#2e9e68", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions")),
     # VLHO
     ("#4b3d89", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Overshoot_d")),
+    # ("#4b3d89", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Overshoot_a")),
     # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP1 - Low Overshoot")),
     # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),
     # VLLO
@@ -190,6 +191,7 @@ scratch_selection_l = [
     # probably from interpolation I would guess.
     # Hopefully they can fix
     # ("#899edb", ("WITCH 6.0", "SSP1 - Low Overshoot")),
+    ("#899edb", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP4 - Very Low Emissions")),
     # VLLOD
     ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions_a")),
     # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions")),
@@ -258,8 +260,8 @@ def create_legend(ax, handles) -> None:
 
 hue = ms_level
 palette_h = palette
-hue = "model"
-palette_h = palette_model
+# hue = "model"
+# palette_h = palette_model
 
 fig, axes = plt.subplots(nrows=2, figsize=(4, 8), sharex=True)
 for i, (ax, yticks) in enumerate(zip(axes, [np.arange(0.5, 4.01, 0.5), np.arange(0.7, 2.21, 0.1)])):
