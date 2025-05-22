@@ -9,6 +9,7 @@ import pandas_indexing as pix
 from emissions_harmonization_historical.constants_5000 import (
     POST_PROCESSED_METADATA_CATEGORIES_DB,
     POST_PROCESSED_METADATA_QUANTILE_DB,
+    POST_PROCESSED_TIMESERIES_QUANTILE_DB,
     POST_PROCESSING_DIR,
 )
 
@@ -39,6 +40,12 @@ def main():
         )
         warming_quantiles_file = out_dir / f"warming-quantiles_{iam}.csv"
         warming_quantiles.to_csv(warming_quantiles_file)
+
+        assessed_warming = POST_PROCESSED_TIMESERIES_QUANTILE_DB.load(model_locator & latest_magicc_locator).loc[
+            :, 2000:
+        ]
+        assessed_warming_file = out_dir / f"assessed-warming-timeseries-quantiles_{iam}.csv"
+        assessed_warming.to_csv(assessed_warming_file)
 
 
 if __name__ == "__main__":
