@@ -266,6 +266,8 @@ HISTORY_HARMONISATION_DB = OpenSCMDB(
 # DOWNLOAD_SCENARIOS_ID = "0005"
 # Scratch while we wait for new submissions
 DOWNLOAD_SCENARIOS_ID = "0006-zn-rc0"
+# 2025-05-23 submissions
+# DOWNLOAD_SCENARIOS_ID = "0006"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
