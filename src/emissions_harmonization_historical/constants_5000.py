@@ -262,8 +262,10 @@ HISTORY_HARMONISATION_DB = OpenSCMDB(
 # DOWNLOAD_SCENARIOS_ID = "0003"
 # # Update hashing
 # DOWNLOAD_SCENARIOS_ID = "0004"
-# Moved to portable OpenSCMDB
-DOWNLOAD_SCENARIOS_ID = "0005"
+# # Moved to portable OpenSCMDB
+# DOWNLOAD_SCENARIOS_ID = "0005"
+# Scratch while we wait for new submissions
+DOWNLOAD_SCENARIOS_ID = "0006-zn-rc0"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(

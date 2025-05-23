@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # # Create infilling database
 #
 # Here we create the infilling database.
@@ -43,8 +43,11 @@ from emissions_harmonization_historical.zenodo import upload_to_zenodo
 # %% [markdown]
 # ## Set up
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 pd.set_option("display.max_colwidth", None)
+
+# %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
+# No parameters
 
 # %% [markdown]
 # ## Load data

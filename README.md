@@ -25,7 +25,7 @@ and `iiasa/climate-assessment` (global climate emulator workflow).
 
 ## Status
 
-- prototype: the project is just starting up and the code is all prototype
+- development: the project is actively being worked on
 
 ## Installation
 
@@ -63,9 +63,22 @@ As another example, to run a notebook server, run
 pixi run jupyter lab
 ```
 
-<!--- Other documentation and instructions can then be added here as you go,
-perhaps replacing the other instructions above as they may become redundant.
--->
+## The 500x series
+
+Instructions for many of the notebooks are below.
+The notebooks that start with `500*`
+form a complete set for processing all data.
+At present, all the notebooks up until 5029 must be run by hand.
+
+From `5090*` onwards, you can use `scripts/drive-500x-series.py`.
+There are 200 lines in this script.
+To understand what is going on, you will need to read the script,
+there is not extensive documentation.
+
+There is also `scripts/pack-unpack-scenario-running-data.py`.
+This can be used to pack up pre-processed data
+and then unpack them, so you can skip all the processing
+(e.g. biomass burning which takes hours and crashes many laptops).
 
 ## Data
 

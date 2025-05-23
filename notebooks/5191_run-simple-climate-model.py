@@ -159,7 +159,7 @@ if scm in ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]:
                 raise NotImplementedError(platform.processor())
         elif platform.system() == "Windows":
             raise NotImplementedError(platform.system())
-        elif platform.system().startswith("linux"):
+        elif platform.system().lower().startswith("linux"):
             magicc_exe = "magicc"
         else:
             raise NotImplementedError(platform.system())
@@ -178,7 +178,7 @@ if scm in ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]:
                 raise NotImplementedError(platform.processor())
         elif platform.system() == "Windows":
             magicc_exe = "magicc.exe"
-        elif platform.system().startswith("linux"):
+        elif platform.system().lower().startswith("linux"):
             magicc_exe = "magicc"
         else:
             raise NotImplementedError(platform.system())

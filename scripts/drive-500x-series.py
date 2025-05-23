@@ -30,18 +30,23 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
         "5091_check-reporting.py",
         "5092_check-interal-consistency.py",
         "5093_pre-processing.py",
+        "5094_harmonisation.py",
     ]:
         res = {"model": iam}
 
     elif notebook_name in [
-        "5094_harmonisation.py",
-        "5095_infilling.py",
+        "5095_create-infilling-database.py",
+    ]:
+        res = {}
+
+    elif notebook_name in [
+        "5190_infilling.py",
     ]:
         res = {"model": iam, "output_to_pdf": True}
 
     elif notebook_name in [
-        "5096_run-simple-climate-model.py",
-        "5097_post-process.py",
+        "5191_run-simple-climate-model.py",
+        "5192_post-process.py",
     ]:
         if scm is None:
             raise TypeError(scm)
@@ -102,6 +107,7 @@ def main():
     notebooks_dir = DEFAULT_NOTEBOOKS_DIR
     all_notebooks = tuple(sorted(notebooks_dir.glob("*.py")))
 
+    ### Processing of biomass burning (surprise bonus as running this by hand is annoying)
     species = ["CH4"]
     # # All species
     species = [
@@ -117,13 +123,10 @@ def main():
         ("SO2", "SO2"),
     ]
 
-    # Single notebook
+    # Run the notebook
     notebook_prefixes = ["5006"]
     # Skip this step
     notebook_prefixes = []
-    # Everything
-    # notebook_prefixes = ["5006"]
-
     for sp, sp_esgf in species[::-1]:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
@@ -134,34 +137,34 @@ def main():
                     idn=sp,
                 )
 
-    # Individual IAMs
+    ### Individual IAM downloading and processing
     # iams = ["REMIND"]
     # iams = ["GCAM"]
     iams = ["WITCH"]
     # iams = ["AIM"]
     # Combos
-    # iams = ["COFFEE", "WITCH"]
-    # All
-    iams = [
-        "WITCH",
-        "REMIND",
-        "MESSAGE",
-        "IMAGE",
-        "GCAM",
-        "COFFEE",
-        "AIM",
-    ]
+    iams = ["COFFEE", "WITCH"]
+    # # All
+    # iams = [
+    #     "WITCH",
+    #     "REMIND",
+    #     "MESSAGE",
+    #     "IMAGE",
+    #     "GCAM",
+    #     "COFFEE",
+    #     "AIM",
+    # ]
 
     # # Single notebook
-    # notebook_prefixes = ["5095"]
+    # notebook_prefixes = ["5094"]
     # # Everything except downloads and reporting checking
-    # notebook_prefixes = ["5093", "5094", "5095"]
+    # notebook_prefixes = ["5093", "5094"]
     # # # Downloading and reporting checking
     # # notebook_prefixes = ["5090", "5091", "5092"]
     # Skip this step
     notebook_prefixes = []
-    # # Everything
-    # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5095"]
+    # Everything
+    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
 
     for iam in iams:
         for notebook in all_notebooks:
@@ -172,8 +175,29 @@ def main():
                     iam=iam,
                 )
 
+    ### Infilling database creation
+    # This just creates a database based on whatever you have run above.
+    # Hence, this can change depend on order of running, which isn't ideal.
+    # However, infilling only really matters for some models
+    # (and even then only to a limited degree because it is mostly for F-gases)
+    # so this shouldn't make such a big impact.
+    # Run the notebook
+    notebook_prefixes = ["5095"]
+    # Skip this step
+    notebook_prefixes = []
+    for sp, sp_esgf in species[::-1]:
+        for notebook in all_notebooks:
+            if any(notebook.name.startswith(np) for np in notebook_prefixes):
+                run_notebook(
+                    notebook=notebook,
+                    run_notebooks_dir=RUN_NOTEBOOKS_DIR,
+                    parameters={"species": sp, "species_esgf": sp_esgf},
+                    idn=sp,
+                )
+
+    ### Running the SCMs
     # SCM related notebooks
-    notebook_prefixes = ["5096", "5097"]
+    notebook_prefixes = ["5190", "5191", "5192"]
     # # Skip this step
     # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]

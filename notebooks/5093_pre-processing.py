@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # # Pre-processing
 #
 # Here we post-process each model's data.
@@ -41,7 +41,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "COFFEE"
 
 # %% [markdown]
 # ## Load data
@@ -214,7 +214,7 @@ for ax in fg.axes.flatten():
 # %%
 pre_processing_res.global_workflow_emissions
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 for stage, df in (
     ("gridding_emissions", pre_processing_res.gridding_workflow_emissions),
     ("global_workflow_emissions", pre_processing_res.global_workflow_emissions),

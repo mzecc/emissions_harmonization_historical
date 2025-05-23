@@ -72,7 +72,7 @@ pandas_openscm.register_pandas_accessor()
 model: str = "GCAM"
 output_to_pdf: bool = False
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 output_dir_model = INFILLED_OUT_DIR / model
 output_dir_model.mkdir(exist_ok=True, parents=True)
 output_dir_model
