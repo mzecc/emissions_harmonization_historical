@@ -139,16 +139,16 @@ def main():
     # iams = ["AIM"]
     # Combos
     iams = ["COFFEE", "WITCH"]
-    # # All
-    # iams = [
-    #     "WITCH",
-    #     "REMIND",
-    #     "MESSAGE",
-    #     "IMAGE",
-    #     "GCAM",
-    #     "COFFEE",
-    #     "AIM",
-    # ]
+    # All
+    iams = [
+        "WITCH",
+        "REMIND",
+        "MESSAGE",
+        "IMAGE",
+        "GCAM",
+        "COFFEE",
+        "AIM",
+    ]
 
     # # Single notebook
     # notebook_prefixes = ["5094"]
