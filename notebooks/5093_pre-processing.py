@@ -41,7 +41,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "COFFEE"
+model: str = "WITCH"
 
 # %% [markdown]
 # ## Load data
@@ -56,7 +56,7 @@ if model_raw.empty:
 
 # model_raw
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # Extract the model data, keeping:
 #
 # - only reported timesteps

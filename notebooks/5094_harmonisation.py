@@ -52,10 +52,10 @@ from emissions_harmonization_historical.harmonisation import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "WITCH"
 output_to_pdf: bool = False
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 output_dir_model = HARMONISED_OUT_DIR / model
 output_dir_model.mkdir(exist_ok=True, parents=True)
 output_dir_model
@@ -140,6 +140,9 @@ history_for_harmonisation
 # Could load in user overrides from elsewhere here.
 # They need to be a series with name "method".
 user_overrides = None
+
+# %% editable=true slideshow={"slide_type": ""}
+assert False, "Add WITCH overrides"
 
 # %%
 res = {}
@@ -280,7 +283,7 @@ with ctx_manager as output_pdf_file:
     else:
         plt.show()
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # ### Global vs. gridding harmonisation
 
 # %%
@@ -359,7 +362,7 @@ pdf_global_v_gridding = (
 )
 # pdf_global_v_gridding
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 fg = sns.relplot(
     data=pdf_global_v_gridding,
     x="time",
@@ -492,7 +495,7 @@ with ctx_manager as output_pdf_file:
         #     break
         # break
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # ## Create combination to use for simple climate models
 #
 # Use the aggregate of the gridding emissions where we can,

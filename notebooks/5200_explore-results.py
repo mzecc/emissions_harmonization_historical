@@ -507,7 +507,7 @@ magicc_diff.unstack(["metric", "unit", "quantile"])[
 ].sort_values(by=("max", "K", 0.5)).describe().round(3)
 
 # %% editable=true slideshow={"slide_type": ""}
-iam = "REMIND"
+iam = "WITCH"
 pdf = raw_scm_output.loc[pix.isin(variable="Atmospheric Concentrations|CH4") & pix.ismatch(model=f"*{iam}*"), :]
 
 ax = pdf.loc[:, 2000:].openscm.plot_plume_after_calculating_quantiles(

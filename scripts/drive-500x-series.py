@@ -30,11 +30,11 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
         "5091_check-reporting.py",
         "5092_check-interal-consistency.py",
         "5093_pre-processing.py",
-        "5094_harmonisation.py",
     ]:
         res = {"model": iam}
 
     elif notebook_name in [
+        "5094_harmonisation.py",
         "5190_infilling.py",
     ]:
         res = {"model": iam, "output_to_pdf": True}
