@@ -35,11 +35,6 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
         res = {"model": iam}
 
     elif notebook_name in [
-        "5095_create-infilling-database.py",
-    ]:
-        res = {}
-
-    elif notebook_name in [
         "5190_infilling.py",
     ]:
         res = {"model": iam, "output_to_pdf": True}
@@ -183,21 +178,33 @@ def main():
     # so this shouldn't make such a big impact.
     # Run the notebook
     notebook_prefixes = ["5095"]
-    # Skip this step
-    notebook_prefixes = []
-    for sp, sp_esgf in species[::-1]:
+    # # Skip this step
+    # notebook_prefixes = []
+    for notebook in all_notebooks:
+        if any(notebook.name.startswith(np) for np in notebook_prefixes):
+            run_notebook(
+                notebook=notebook,
+                run_notebooks_dir=RUN_NOTEBOOKS_DIR,
+                parameters={},
+                idn="only",
+            )
+
+    ### Infilling
+    notebook_prefixes = ["5190"]
+    # # Skip this step
+    # notebook_prefixes = []
+    for iam in iams:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
-                run_notebook(
+                run_notebook_iam(
                     notebook=notebook,
                     run_notebooks_dir=RUN_NOTEBOOKS_DIR,
-                    parameters={"species": sp, "species_esgf": sp_esgf},
-                    idn=sp,
+                    iam=iam,
                 )
 
     ### Running the SCMs
     # SCM related notebooks
-    notebook_prefixes = ["5190", "5191", "5192"]
+    notebook_prefixes = ["5191", "5192"]
     # # Skip this step
     # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]
