@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""} tags=["papermill-error-cell-tag"]
 # # Explore results
 #
 # Here we explore the results.
@@ -462,7 +462,7 @@ multi_index_lookup(metadata_quantile, scratch_selection).unstack(["metric", "uni
 # ### How much difference is the MAGICC update making?
 
 # %%
-iam = "COFFEE"
+iam = "WITCH"
 tmp = temperatures_in_line_with_assessment.loc[pix.ismatch(model=f"{iam}**"), 2000:]
 
 fig, axes = plt.subplots(ncols=2, figsize=(16, 4))
@@ -499,14 +499,14 @@ ax = magicc_diff.openscm.plot_plume_after_calculating_quantiles(
 ax.grid()
 plt.show()
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 tmp = metadata_quantile.unstack("climate_model")
 magicc_diff = tmp["MAGICCv7.6.0a3"] - tmp["MAGICCv7.5.3"]
 magicc_diff.unstack(["metric", "unit", "quantile"])[
     [(metric, "K", percentile) for metric in ["max", "2100"] for percentile in [0.33, 0.5, 0.67, 0.95]]
 ].sort_values(by=("max", "K", 0.5)).describe().round(3)
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 iam = "REMIND"
 pdf = raw_scm_output.loc[pix.isin(variable="Atmospheric Concentrations|CH4") & pix.ismatch(model=f"*{iam}*"), :]
 
