@@ -77,10 +77,7 @@ raw_scm_output = SCM_OUTPUT_DB.load(
     pix.ismatch(
         variable=[
             "Heat Uptake",
-            "Effective Radiative Forcing|Aerosols",
-            "Effective Radiative Forcing|CO2",
-            "Effective Radiative Forcing|Greenhouse Gases",
-            "Effective Radiative Forcing|Ozone",
+            "Effective Radiative Forcing**",
             "Atmospheric Concentrations|CO2",
             "Atmospheric Concentrations|CH4",
         ]
@@ -158,45 +155,56 @@ tmp
 
 # %%
 scratch_selection_l = [
-    # # H
-    # # ("#7f3e3e", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - High Emissions")),
-    # # ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP5 - High Emissions")),
-    ("#7f3e3e", ("IMAGE 3.4", "SSP3 - High Emissions")),
-    # ("#7f3e3e", ("AIM 3.0", "SSP5 - High Emissions")),
-    # # M
-    # # ("#f7a84f", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Medium Emissions")),
-    ("#f7a84f", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium Emissions")),
-    # # ("#f7a84f", ("IMAGE 3.4", "SSP2 - Medium Emissions")),
-    # # ("#f7a84f", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Medium Emissions")),
-    # ("#f7a84f", ("WITCH 6.0", "SSP2 - Medium Emissions")),
-    # # ML
-    # # ("#e1ad01", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - Medium-Low Emissions")),
-    # # # Very high sulfur emissions, not ideal
-    ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
-    # ("#e1ad01", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium-Low Emissions")),
-    # # ("#586643", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Medium-Low Emissions")),
-    # L
-    # ("#2e9e68", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Emissions")),
-    # ("#2e9e68", ("COFFEE 1.6", "SSP2 - Low Emissions")),
-    ("#2e9e68", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions")),
-    # VLHO
-    ("#4b3d89", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Overshoot_d")),
-    # ("#4b3d89", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Overshoot_a")),
-    # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP1 - Low Overshoot")),
-    # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),
-    # VLLO
-    # Not sure if any of models can produce a 1.5C stable rather than overshoot
-    # ("#899edb", ("COFFEE 1.6", "SSP2 - Very Low Emissions")),
-    # Something weird happening with 2023 emissions,
-    # probably from interpolation I would guess.
-    # Hopefully they can fix
-    # ("#899edb", ("WITCH 6.0", "SSP1 - Low Overshoot")),
-    ("#899edb", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP4 - Very Low Emissions")),
-    # VLLOD
-    ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions_a")),
-    # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions")),
-    # ("#499edb", ("GCAM 7.1 scenarioMIP", "SSP1 - Very Low Emissions")),
-    # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions_c")),
+    # # # HL
+    # ("#7f3e3e", ("WITCH 6.0", "SSP5 - High Emissions")),
+    # # # H
+    # # # ("#7f3e3e", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - High Emissions")),
+    # ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP3 - High Emissions")),
+    # # ("#7f3e3e", ("IMAGE 3.4", "SSP3 - High Emissions")),
+    # # ("#7f3e3e", ("WITCH 6.0", "SSP5 - High Emissions")),
+    # # ("#7f3e3e", ("AIM 3.0", "SSP5 - High Emissions")),
+    # # # M
+    # # # ("#f7a84f", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Medium Emissions")),
+    # # ("#f7a84f", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium Emissions")),
+    # # # ("#f7a84f", ("IMAGE 3.4", "SSP2 - Medium Emissions")),
+    # ("#f7a84f", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Medium Emissions")),
+    # # ("#f7a84f", ("WITCH 6.0", "SSP2 - Medium Emissions")),
+    # # # ML
+    # # # ("#e1ad01", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - Medium-Low Emissions")),
+    # # # # Very high sulfur emissions, not ideal
+    # ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
+    # # ("#e1ad01", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium-Low Emissions")),
+    # # # ("#586643", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Medium-Low Emissions")),
+    # # L
+    # # ("#2e9e68", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Emissions")),
+    # # ("#2e9e68", ("COFFEE 1.6", "SSP2 - Low Emissions")),
+    # # ("#2e9e68", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions")),
+    # ("#4b3d89", ("IMAGE 3.4", "SSP2 - Low")),
+    # # VLHO
+    # # ("#4b3d89", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Overshoot_d")),
+    # ("#4b3d89", ("AIM 3.0", "SSP2 - Low Overshoot")),
+    # # ("#4b3d89", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Overshoot_a")),
+    # # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP1 - Low Overshoot")),
+    # # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),
+    # # VLLO
+    # # Not sure if any of models can produce a 1.5C stable rather than overshoot
+    # # ("#899edb", ("COFFEE 1.6", "SSP2 - Very Low Emissions")),
+    # # Something weird happening with 2023 emissions,
+    # # probably from interpolation I would guess.
+    # # Hopefully they can fix
+    # # ("#899edb", ("WITCH 6.0", "SSP1 - Low Overshoot")),
+    # # ("#899edb", ("WITCH 6.0", "SSP2 - Low Overshoot")),
+    # # ("#899edb", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP4 - Very Low Emissions")),
+    # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions")),
+    # # VLLOD
+    # # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions_a")),
+    # # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions")),
+    # # ("#499edb", ("GCAM 7.1 scenarioMIP", "SSP1 - Very Low Emissions")),
+    # # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions")),
+    ## Scratch
+    ("#4b3d89", ("WITCH 6.0", "SSP1 - Low Overshoot")),
+    ("#899edb", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP1 - Very Low Emissions")),
+    ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions_c")),
 ]
 
 
@@ -302,7 +310,7 @@ pdf_emissions = pix.concat(
         ghg_eq.openscm.groupby_except("variable").sum().pix.assign(variable=f"Emissions|GHG {gwp}"),
     ]
 )
-pdf_emissions
+# pdf_emissions
 
 # %%
 pdf_emissions = pdf_emissions.pix.format(variable="{variable} ({unit})", drop=True).openscm.mi_loc(scratch_selection)
@@ -365,9 +373,11 @@ variables_src = [
     ("Emissions|VOC", pdf_emissions, True, False),
     ("Atmospheric Concentrations|CO2", pdf_raw_scm_output, False, False),
     ("Atmospheric Concentrations|CH4", pdf_raw_scm_output, False, False),
-    ("Effective Radiative Forcing|CO2", pdf_raw_scm_output, False, False),
+    ("Effective Radiative Forcing", pdf_raw_scm_output, False, False),
     ("Effective Radiative Forcing|Greenhouse Gases", pdf_raw_scm_output, False, False),
     ("Effective Radiative Forcing|Aerosols", pdf_raw_scm_output, False, False),
+    ("Effective Radiative Forcing|CO2", pdf_raw_scm_output, False, False),
+    ("Effective Radiative Forcing|CH4", pdf_raw_scm_output, False, False),
     ("Heat Uptake", pdf_raw_scm_output, False, False),
     ("Surface Temperature (GSAT)", pdf_temperature, False, True),
 ]

@@ -5,12 +5,17 @@ Extract climate assessment results into a single folder that can be put on share
 from pathlib import Path
 
 import pandas_indexing as pix
+from pandas_openscm.grouping import (
+    fix_index_name_after_groupby_quantile,
+    groupby_except,
+)
 
 from emissions_harmonization_historical.constants_5000 import (
     POST_PROCESSED_METADATA_CATEGORIES_DB,
     POST_PROCESSED_METADATA_QUANTILE_DB,
     POST_PROCESSED_TIMESERIES_QUANTILE_DB,
     POST_PROCESSING_DIR,
+    SCM_OUTPUT_DB,
 )
 
 
@@ -46,6 +51,30 @@ def main():
         ]
         assessed_warming_file = out_dir / f"assessed-warming-timeseries-quantiles_{iam}.csv"
         assessed_warming.to_csv(assessed_warming_file)
+
+        erfs = SCM_OUTPUT_DB.load(
+            model_locator & latest_magicc_locator & pix.ismatch(variable="Effective Radiative Forc**")
+        ).loc[:, 2000:]
+        quantiles_of_interest = (
+            0.05,
+            0.10,
+            1.0 / 6.0,
+            0.33,
+            0.50,
+            0.67,
+            5.0 / 6.0,
+            0.90,
+            0.95,
+        )
+        erfs_quantiles = fix_index_name_after_groupby_quantile(
+            groupby_except(
+                erfs,
+                "run_id",
+            ).quantile(quantiles_of_interest),  # type: ignore # pandas-stubs confused
+            new_name="quantile",
+        )
+        erfs_file = out_dir / f"erf-timeseries-quantiles_{iam}.csv"
+        erfs_quantiles.to_csv(erfs_file)
 
 
 if __name__ == "__main__":

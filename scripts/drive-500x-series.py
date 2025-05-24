@@ -156,10 +156,10 @@ def main():
     # notebook_prefixes = ["5093", "5094"]
     # # # Downloading and reporting checking
     # # notebook_prefixes = ["5090", "5091", "5092"]
-    # Skip this step
-    notebook_prefixes = []
     # Everything
     notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
+    # Skip this step
+    notebook_prefixes = []
 
     for iam in iams:
         for notebook in all_notebooks:
