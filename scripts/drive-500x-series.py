@@ -13,6 +13,7 @@ from typing import Any
 
 import jupytext
 import papermill as pm
+import tqdm.auto as tqdm
 
 
 def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None) -> dict[str, str]:
@@ -139,16 +140,29 @@ def main():
     # iams = ["AIM"]
     # Combos
     iams = ["COFFEE", "WITCH"]
-    # All
+    # Up to date and don't need infilling
     iams = [
         "WITCH",
         "REMIND",
-        "MESSAGE",
         "IMAGE",
-        "GCAM",
-        "COFFEE",
         "AIM",
     ]
+    # # Waiting for submission/requires infilling
+    # iams = [
+    #     "GCAM",
+    #     "MESSAGE",
+    #     "COFFEE",
+    # ]
+    # # All
+    # iams = [
+    #     "WITCH",
+    #     "REMIND",
+    #     "MESSAGE",
+    #     "IMAGE",
+    #     "GCAM",
+    #     "COFFEE",
+    #     "AIM",
+    # ]
 
     # # Single notebook
     # notebook_prefixes = ["5094"]
@@ -158,10 +172,10 @@ def main():
     # # notebook_prefixes = ["5090", "5091", "5092"]
     # Everything
     notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
-    # Skip this step
-    notebook_prefixes = []
+    # # Skip this step
+    # notebook_prefixes = []
 
-    for iam in iams:
+    for iam in tqdm.tqdm(iams, desc="IAMs pre infilling"):
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
                 run_notebook_iam(
@@ -208,7 +222,7 @@ def main():
     # # Skip this step
     # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]
-    for iam, scm in itertools.product(iams, scms):
+    for iam, scm in tqdm.tqdm(itertools.product(iams, scms), desc="IAM SCM runs"):
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
                 run_notebook_with_scm(

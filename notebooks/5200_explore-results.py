@@ -55,9 +55,6 @@ pd.set_option("display.max_rows", 100)
 # %% [markdown]
 # ## Load data
 
-# %% [markdown]
-# ### Categories
-
 # %%
 categories = POST_PROCESSED_METADATA_CATEGORIES_DB.load()["value"]
 # categories
@@ -156,10 +153,10 @@ tmp
 # %%
 scratch_selection_l = [
     # # # HL
-    # ("#7f3e3e", ("WITCH 6.0", "SSP5 - High Emissions")),
+    ("#7f3e3e", ("WITCH 6.0", "SSP5 - High Emissions")),
     # # # H
     # # # ("#7f3e3e", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - High Emissions")),
-    # ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP3 - High Emissions")),
+    ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP3 - High Emissions")),
     # # ("#7f3e3e", ("IMAGE 3.4", "SSP3 - High Emissions")),
     # # ("#7f3e3e", ("WITCH 6.0", "SSP5 - High Emissions")),
     # # ("#7f3e3e", ("AIM 3.0", "SSP5 - High Emissions")),
@@ -167,22 +164,22 @@ scratch_selection_l = [
     # # # ("#f7a84f", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Medium Emissions")),
     # # ("#f7a84f", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium Emissions")),
     # # # ("#f7a84f", ("IMAGE 3.4", "SSP2 - Medium Emissions")),
-    # ("#f7a84f", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Medium Emissions")),
+    ("#f7a84f", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Medium Emissions")),
     # # ("#f7a84f", ("WITCH 6.0", "SSP2 - Medium Emissions")),
     # # # ML
     # # # ("#e1ad01", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - Medium-Low Emissions")),
     # # # # Very high sulfur emissions, not ideal
-    # ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
+    ("#e1ad01", ("COFFEE 1.6", "SSP2 - Medium-Low Emissions")),
     # # ("#e1ad01", ("GCAM 7.1 scenarioMIP", "SSP2 - Medium-Low Emissions")),
     # # # ("#586643", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Medium-Low Emissions")),
     # # L
     # # ("#2e9e68", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Emissions")),
     # # ("#2e9e68", ("COFFEE 1.6", "SSP2 - Low Emissions")),
     # # ("#2e9e68", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions")),
-    # ("#4b3d89", ("IMAGE 3.4", "SSP2 - Low")),
+    ("#2e9e68", ("IMAGE 3.4", "SSP2 - Low Emissions")),
     # # VLHO
     # # ("#4b3d89", ("REMIND-MAgPIE 3.5-4.10", "SSP2 - Low Overshoot_d")),
-    # ("#4b3d89", ("AIM 3.0", "SSP2 - Low Overshoot")),
+    ("#4b3d89", ("AIM 3.0", "SSP2 - Low Overshoot")),
     # # ("#4b3d89", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Overshoot_a")),
     # # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP1 - Low Overshoot")),
     # # ("#4b3d89", ("GCAM 7.1 scenarioMIP", "SSP2 - Low Overshoot")),
@@ -195,16 +192,16 @@ scratch_selection_l = [
     # # ("#899edb", ("WITCH 6.0", "SSP1 - Low Overshoot")),
     # # ("#899edb", ("WITCH 6.0", "SSP2 - Low Overshoot")),
     # # ("#899edb", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP4 - Very Low Emissions")),
-    # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions")),
+    ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions")),
     # # VLLOD
     # # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions_a")),
     # # ("#499edb", ("AIM 3.0", "SSP1 - Very Low Emissions")),
     # # ("#499edb", ("GCAM 7.1 scenarioMIP", "SSP1 - Very Low Emissions")),
     # # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions")),
-    ## Scratch
-    ("#4b3d89", ("WITCH 6.0", "SSP1 - Low Overshoot")),
-    ("#899edb", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP1 - Very Low Emissions")),
-    ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions_c")),
+    # ## Scratch
+    # ("#4b3d89", ("WITCH 6.0", "SSP1 - Low Overshoot")),
+    # ("#899edb", ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP1 - Very Low Emissions")),
+    # ("#499edb", ("REMIND-MAgPIE 3.5-4.10", "SSP1 - Very Low Emissions_c")),
 ]
 
 
@@ -383,7 +380,7 @@ variables_src = [
 ]
 
 nrows = len(variables_src) // 2 + len(variables_src) % 2
-fig, axes = plt.subplots(nrows=nrows, ncols=2, figsize=(12, nrows * 5))
+fig, axes = plt.subplots(nrows=nrows, ncols=2, figsize=(14, nrows * 5))
 axes_flat = axes.flatten()
 hue = ms_level
 palette_h = palette
@@ -429,7 +426,7 @@ for i, (variable, src, emissions, show_legend) in tqdm.auto.tqdm(enumerate(varia
         if "Energy" in variable:
             ax.set_yticks(np.arange(-2e4, 6e4 + 1, 1e4))
         elif "GHG" in variable:
-            ax.set_yticks(np.arange(-2e4, 7e4 + 1, 1e4))
+            ax.set_yticks(np.arange(-2e4, 9e4 + 1, 1e4))
         else:
             ax.set_yticks(np.arange(-7.5e3, 10e3 + 1, 2.5e3))
 

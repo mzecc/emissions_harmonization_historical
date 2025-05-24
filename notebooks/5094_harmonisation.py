@@ -54,8 +54,8 @@ from emissions_harmonization_historical.harmonisation import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "MESSAGE"
-output_to_pdf: bool = False
+model: str = "WITCH"
+output_to_pdf: bool = True
 
 # %% editable=true slideshow={"slide_type": ""}
 output_dir_model = HARMONISED_OUT_DIR / model
