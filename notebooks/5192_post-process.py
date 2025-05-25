@@ -55,6 +55,7 @@ from emissions_harmonization_historical.constants_5000 import (
     POST_PROCESSED_TIMESERIES_EXCEEDANCE_PROBABILITIES_DB,
     POST_PROCESSED_TIMESERIES_QUANTILE_DB,
     POST_PROCESSED_TIMESERIES_RUN_ID_DB,
+    PRE_PROCESSED_SCENARIO_DB,
     SCM_OUTPUT_DB,
 )
 
@@ -105,6 +106,12 @@ in_df = SCM_OUTPUT_DB.load(pix.ismatch(variable=raw_gsat_variable_in, model=f"*{
 
 # %% [markdown]
 # ## Emissions
+
+# %%
+pre_processed_emms_scms_gcages = PRE_PROCESSED_SCENARIO_DB.load(
+    pix.ismatch(variable="Emissions**") & pix.isin(stage="global_workflow_emissions") & pix.ismatch(model=f"*{model}*")
+)
+# pre_processed_emms_scms_gcages
 
 # %%
 harmonised_emms = HARMONISED_SCENARIO_DB.load(
@@ -423,6 +430,54 @@ from_gcages = partial(
 )
 
 # %% [markdown]
+# ### Pre-processed emissions
+
+# %%
+pre_processed_emms_scms_gcages_annual = interpolate_to_annual(pre_processed_emms_scms_gcages)
+pre_processed_emms_scms_gcages_annual_incl_co2_total = pix.concat(
+    [
+        pre_processed_emms_scms_gcages_annual,
+        calculate_co2_total(pre_processed_emms_scms_gcages_annual),
+    ]
+)
+
+pre_processed_emms_scms_annual_incl_co2_total = update_index_levels_func(
+    pre_processed_emms_scms_gcages_annual_incl_co2_total, {"variable": from_gcages}
+)
+
+pre_processed_emms_scms_out = pix.concat(
+    [
+        pre_processed_emms_scms_annual_incl_co2_total,
+        calculate_cumulative_co2s(pre_processed_emms_scms_annual_incl_co2_total),
+        calculate_kyoto_ghgs(pre_processed_emms_scms_annual_incl_co2_total),
+        calculate_ghgs(pre_processed_emms_scms_annual_incl_co2_total),
+    ]
+)
+# pre_processed_emms_scms_out
+
+# %%
+ax = sns.lineplot(
+    data=pre_processed_emms_scms_out.loc[
+        pix.ismatch(variable="Cumulative**", scenario="SSP2*Low*")
+    ].openscm.to_long_data(),
+    x="time",
+    y="value",
+    hue="scenario",
+    style="variable",
+)
+sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+
+# %%
+ax = sns.lineplot(
+    data=pre_processed_emms_scms_out.loc[pix.ismatch(variable="**GHG**", scenario="SSP2*Low*")].openscm.to_long_data(),
+    x="time",
+    y="value",
+    hue="scenario",
+    style="variable",
+)
+sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+
+# %% [markdown]
 # ### Harmonised emissions
 
 # %%
@@ -517,6 +572,29 @@ ax = sns.lineplot(
 sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
 ax.axhline(0.0, linestyle="--", color="gray")
 
+# %%
+pdf = (
+    pix.concat(
+        [
+            pre_processed_emms_scms_out.pix.assign(stage="pre-processed"),
+            harmonised_emms_scms_out.pix.assign(stage="harmonised"),
+            complete_emissions_out.pix.assign(stage="complete"),
+        ]
+    )
+    .loc[pix.ismatch(variable="Emissions|Kyoto GHG AR6GWP100", scenario="SSP2*Low*")]
+    .openscm.to_long_data()
+)
+
+ax = sns.lineplot(
+    data=pdf,
+    x="time",
+    y="value",
+    hue="scenario",
+    style="stage",
+)
+sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+ax.axhline(0.0, linestyle="--", color="gray")
+
 # %% [markdown]
 # ## Save
 
@@ -542,7 +620,9 @@ for df, db in (
     (res.timeseries_exceedance_probabilities, POST_PROCESSED_TIMESERIES_EXCEEDANCE_PROBABILITIES_DB),
     (res.timeseries_quantile, POST_PROCESSED_TIMESERIES_QUANTILE_DB),
     (res.timeseries_run_id, POST_PROCESSED_TIMESERIES_RUN_ID_DB),
-    (harmonised_emms_scms_out.pix.assign(stage="harmonised"), POST_PROCESSED_TIMESERIES_DB),
+    (pre_processed_emms_scms_out.pix.assign(stage="pre-processed-scms"), POST_PROCESSED_TIMESERIES_DB),
+    (harmonised_emms_gridding.pix.assign(stage="harmonised-gridding"), POST_PROCESSED_TIMESERIES_DB),
+    (harmonised_emms_scms_out.pix.assign(stage="harmonised-scms"), POST_PROCESSED_TIMESERIES_DB),
     (complete_emissions_out.pix.assign(stage="complete"), POST_PROCESSED_TIMESERIES_DB),
 ):
     db.save(df, allow_overwrite=True)

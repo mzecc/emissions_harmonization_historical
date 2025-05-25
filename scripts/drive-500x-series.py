@@ -140,22 +140,18 @@ def main():
     # iams = ["AIM"]
     # Combos
     iams = ["COFFEE", "WITCH"]
-    # Up to date and don't need infilling
     iams = [
         "WITCH",
         "REMIND",
         "IMAGE",
         "AIM",
-    ]
-    # Second day
-    iams = [
         "MESSAGE",
         "COFFEE",
     ]
-    # Waiting for submission
-    iams = [
-        "GCAM",
-    ]
+    # # Waiting for submission
+    # iams = [
+    #     "GCAM",
+    # ]
     # # All
     # iams = [
     #     "WITCH",
@@ -175,8 +171,8 @@ def main():
     # # notebook_prefixes = ["5090", "5091", "5092"]
     # Everything
     notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
-    # # Skip this step
-    # notebook_prefixes = []
+    # Skip this step
+    notebook_prefixes = []
 
     for iam in tqdm.tqdm(iams, desc="IAMs pre infilling"):
         for notebook in all_notebooks:
@@ -195,8 +191,8 @@ def main():
     # so this shouldn't make such a big impact.
     # Run the notebook
     notebook_prefixes = ["5095"]
-    # # Skip this step
-    # notebook_prefixes = []
+    # Skip this step
+    notebook_prefixes = []
     for notebook in all_notebooks:
         if any(notebook.name.startswith(np) for np in notebook_prefixes):
             run_notebook(
@@ -208,8 +204,8 @@ def main():
 
     ### Infilling
     notebook_prefixes = ["5190"]
-    # # Skip this step
-    # notebook_prefixes = []
+    # Skip this step
+    notebook_prefixes = []
     for iam in iams:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
@@ -222,8 +218,8 @@ def main():
     ### Running the SCMs
     # SCM related notebooks
     notebook_prefixes = ["5191", "5192"]
-    # # Single notebook
-    # notebook_prefixes = ["5192"]
+    # Single notebook
+    notebook_prefixes = ["5192"]
     # # Skip this step
     # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]
