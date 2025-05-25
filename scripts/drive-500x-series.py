@@ -147,12 +147,12 @@ def main():
         "IMAGE",
         "AIM",
     ]
-    # # Waiting for submission/requires infilling
-    # iams = [
-    #     "GCAM",
-    #     "MESSAGE",
-    #     "COFFEE",
-    # ]
+    # Waiting for submission/requires infilling
+    iams = [
+        "GCAM",
+        "MESSAGE",
+        "COFFEE",
+    ]
     # # All
     # iams = [
     #     "WITCH",

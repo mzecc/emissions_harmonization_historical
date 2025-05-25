@@ -113,10 +113,14 @@ tmp = (
     .round(3)
 )
 
+vllo_peak = 1.66
+l_min_diff = 0.1
+l_max_diff = 0.4
 tmp.loc[
     # :, :
-    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 6.6)
-    # (tmp[("max", "K", 0.5)] > 1.7) & (tmp[("max", "K", 0.5)] < 1.9)
+    # (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 6.6)
+    ((tmp[("max", "K", 0.5)] > vllo_peak - 0.01) & (tmp[("max", "K", 0.5)] < vllo_peak + 0.01))
+    | ((tmp[("max", "K", 0.5)] > vllo_peak + l_min_diff) & (tmp[("max", "K", 0.5)] < vllo_peak + l_max_diff))
     # (tmp[("max", "K", 0.67)] > 1.8) & (tmp[("max", "K", 0.67)] < 2.05)
     # (tmp[("2100", "K", 0.5)] > 1.7)
     # & (tmp[("2100", "K", 0.5)] < 2.0)
@@ -124,7 +128,7 @@ tmp.loc[
     # # (tmp[("2100", "K", 0.5)] > 2.5)
     # # & (tmp[("2100", "K", 0.5)] < 3.0)
     # (tmp[("2100", "K", 0.5)] > 3.0) & (tmp[("2100", "K", 0.5)] < 30.6)
-].loc[pix.ismatch(model="MESSAGE*")]
+].loc[pix.ismatch(model=["REMIND*", "AIM*", "IMAGE*"], climate_model="MAGICCv7.6*")]
 
 # %%
 tmp = (
@@ -288,12 +292,12 @@ for i, (ax, yticks) in enumerate(zip(axes, [np.arange(0.5, 4.01, 0.5), np.arange
 
 # %%
 pdf_emissions = add_model_scenario_column(
-    SCM_OUTPUT_DB.load(pix.ismatch(variable="Emissions|**", climate_model="MAGICCv7.6.0a3")).reset_index(
+    SCM_OUTPUT_DB.load(pix.ismatch(variable="Emissions|**", climate_model="MAGICCv7.6.0a3"), progress=True).reset_index(
         "climate_model", drop=True
     ),
     ms_separator=ms_separator,
     ms_level=ms_level,
-)
+).sort_index(axis="columns")
 
 gwp = "AR6GWP100"
 with pint.get_application_registry().context(gwp):
@@ -305,9 +309,16 @@ pdf_emissions = pix.concat(
     [
         pdf_emissions,
         ghg_eq.openscm.groupby_except("variable").sum().pix.assign(variable=f"Emissions|GHG {gwp}"),
+        (
+            pdf_emissions.loc[pix.ismatch(variable="**CO2|*")]
+            .groupby(pdf_emissions.index.names.difference(["variable"]))
+            .sum(min_count=2)
+            .cumsum(axis=1)
+            / 1e3
+        ).pix.assign(variable="Cumulative Emissions|CO2", unit="GtCO2"),
     ]
 )
-# pdf_emissions
+pdf_emissions
 
 # %%
 pdf_emissions = pdf_emissions.pix.format(variable="{variable} ({unit})", drop=True).openscm.mi_loc(scratch_selection)
@@ -336,6 +347,8 @@ for ax in fg.axes.flatten():
             ax.set_yticks(np.arange(-2e4, 7e4 + 1, 1e4))
         elif "GHG" in ax.get_title():
             ax.set_yticks(np.arange(-2e4, 7e4 + 1, 1e4))
+        elif "Cumulative" in ax.get_title():
+            ax.set_yticks(np.arange(0, 4e3 + 1, 1e3))
         else:
             ax.set_yticks(np.arange(-7e3, 10e3 + 1, 1e3))
 
@@ -354,10 +367,14 @@ pdf_raw_scm_output = add_model_scenario_column(
 # pdf_raw_scm_output
 
 # %%
+pdf_emissions.loc[pix.ismatch(variable="Cumulative**")].max(axis=1)
+
+# %%
 variables_src = [
     ("Emissions|CO2|Energy and Industrial Processes", pdf_emissions, True, False),
     ("Emissions|GHG", pdf_emissions, True, False),
     ("Emissions|CO2|AFOLU", pdf_emissions, True, True),
+    ("Cumulative Emissions|CO2", pdf_emissions, True, True),
     ("Emissions|CH4", pdf_emissions, True, False),
     ("Emissions|CFC12", pdf_emissions, True, False),
     ("Emissions|N2O", pdf_emissions, True, False),
@@ -427,6 +444,8 @@ for i, (variable, src, emissions, show_legend) in tqdm.auto.tqdm(enumerate(varia
             ax.set_yticks(np.arange(-2e4, 6e4 + 1, 1e4))
         elif "GHG" in variable:
             ax.set_yticks(np.arange(-2e4, 9e4 + 1, 1e4))
+        elif "Cumulative" in variable:
+            ax.set_yticks(np.arange(-1e3, 5e3 + 1, 5e2))
         else:
             ax.set_yticks(np.arange(-7.5e3, 10e3 + 1, 2.5e3))
 
