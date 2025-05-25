@@ -436,6 +436,12 @@ POST_PROCESSED_METADATA_RUN_ID_DB = OpenSCMDB(
     backend_index=FeatherIndexBackend(),
 )
 
+POST_PROCESSED_TIMESERIES_DB = OpenSCMDB(
+    db_dir=POST_PROCESSING_DIR / "db-timeseries",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
 POST_PROCESSED_TIMESERIES_EXCEEDANCE_PROBABILITIES_DB = OpenSCMDB(
     db_dir=POST_PROCESSING_DIR / "db-timeseries-exceedance-probabilities",
     backend_data=FeatherDataBackend(),

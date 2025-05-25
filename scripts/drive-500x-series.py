@@ -147,11 +147,14 @@ def main():
         "IMAGE",
         "AIM",
     ]
-    # Waiting for submission/requires infilling
+    # Second day
     iams = [
-        "GCAM",
         "MESSAGE",
         "COFFEE",
+    ]
+    # Waiting for submission
+    iams = [
+        "GCAM",
     ]
     # # All
     # iams = [
@@ -219,6 +222,8 @@ def main():
     ### Running the SCMs
     # SCM related notebooks
     notebook_prefixes = ["5191", "5192"]
+    # # Single notebook
+    # notebook_prefixes = ["5192"]
     # # Skip this step
     # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]

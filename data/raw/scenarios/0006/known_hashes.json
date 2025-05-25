@@ -15,6 +15,13 @@
     "SSP3 - High Emissions": "6039646886fc856109aa29c1b5d9746ad8a969147bfe9f28d067c1d29b4dcd21",
     "SSP5 - High Emissions": "dc061e5d6d5e092ac8e96e89bf0481f0eeb81aba7c47038384867704d21da189"
   },
+  "COFFEE 1.6": {
+    "SSP2 - Low Emissions": "a2e041de7211239d602be520eadd9a790b358ec76ee013b3a1921c8ceb920bc3",
+    "SSP2 - Low Overshoot": "c60999a971b5368b524dc09fa144c647066ece2662d60eda8adf1ce1e196f383",
+    "SSP2 - Medium Emissions": "7dbd3c2c28800b44e289b9e23a4fc43e907a5dc202c53b9449eb976631aaa588",
+    "SSP2 - Medium-Low Emissions": "f31145534939b55e1e3d7c5b3163b431bd903141b6128c87c9ee052c7005c6f3",
+    "SSP2 - Very Low Emissions": "d9b1be5cf5eb662615c07e6f0bf4aae672500eee141196ce01b5fd15cfff6912"
+  },
   "IMAGE 3.4": {
     "SSP1 - Low Emissions": "2284ca72b908613d3210ab8697d3c401a3a7ab79c9e1629ea9450c49ca9dcb0e",
     "SSP1 - Low Overshoot": "50411caec96635fe280cb4f66710f85a1f05934a47f70c3feddd101431fc9e50",
