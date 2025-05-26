@@ -93,8 +93,8 @@ pixi run ixmp4 login <your-username>
 1. In `scripts/drive-500x-series.py`,
    check that you have specified the notebooks and IAMs you want to run.
 1. Run the notebooks with `pixi run python scripts/drive-500x-series.py`
-1. Add the downloaded hash information with
-   `git add -f data/raw/scenarios/<DOWNLOAD_SCENARIOS_ID>/known_hashes.json`
+1. Add the downloaded version information with
+   `git add -f data/raw/scenarios/<DOWNLOAD_SCENARIOS_ID>/versions.json`
 
 Once things have run, you will probably want to upload results
 
