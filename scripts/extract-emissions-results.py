@@ -22,6 +22,7 @@ def main():
     for iam in tqdm.auto.tqdm(iams, desc="IAMs"):
         out_dir = OUT_PATH / iam
         out_dir.mkdir(exist_ok=True, parents=True)
+        print(f"Extracting to {out_dir}")
 
         iam_emissions = POST_PROCESSED_TIMESERIES_DB.load(pix.isin(model=iam))
         for stage, out_file in [

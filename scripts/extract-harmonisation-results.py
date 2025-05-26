@@ -31,6 +31,7 @@ def main():
 
         out_dir = OUT_PATH / model
         out_dir.mkdir(exist_ok=True, parents=True)
+        print(f"Extracting to {out_dir}")
         shutil.copyfile(file, out_dir / file.name)
 
 

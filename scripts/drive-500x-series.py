@@ -191,8 +191,8 @@ def main():
     # so this shouldn't make such a big impact.
     # Run the notebook
     notebook_prefixes = ["5095"]
-    # Skip this step
-    notebook_prefixes = []
+    # # Skip this step
+    # notebook_prefixes = []
     for notebook in all_notebooks:
         if any(notebook.name.startswith(np) for np in notebook_prefixes):
             run_notebook(
@@ -204,8 +204,8 @@ def main():
 
     ### Infilling
     notebook_prefixes = ["5190"]
-    # Skip this step
-    notebook_prefixes = []
+    # # Skip this step
+    # notebook_prefixes = []
     for iam in iams:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
@@ -218,8 +218,8 @@ def main():
     ### Running the SCMs
     # SCM related notebooks
     notebook_prefixes = ["5191", "5192"]
-    # Single notebook
-    notebook_prefixes = ["5192"]
+    # # Single notebook
+    # notebook_prefixes = ["5192"]
     # # Skip this step
     # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]

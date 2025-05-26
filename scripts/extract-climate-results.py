@@ -31,6 +31,7 @@ def main():
     for iam in iams:
         out_dir = OUT_PATH / iam
         out_dir.mkdir(exist_ok=True, parents=True)
+        print(f"Extracting to {out_dir}")
 
         model_locator = pix.isin(model=iam)
         latest_magicc_locator = pix.isin(climate_model="MAGICCv7.6.0a3")
