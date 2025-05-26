@@ -82,6 +82,12 @@ and then unpack them, so you can skip all the processing
 
 ### Running a new set of scenarios
 
+If you haven't already, login to the scenario explorer with
+
+```sh
+pixi run ixmp4 login <your-username>
+```
+
 1. In `src/emissions_harmonization_historical/constants_5000.py`,
    increment `DOWNLOAD_SCENARIOS_ID` to a new value.
 1. In `scripts/drive-500x-series.py`,

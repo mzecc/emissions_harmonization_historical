@@ -31,7 +31,7 @@ def main():
             ("harmonised-scms", f"harmonised-scms_{iam}.csv"),
             ("complete", f"infilled_{iam}.csv"),
         ]:
-            to_save = iam_emissions.loc[pix.isin(stage="pre-processed-scms")]
+            to_save = iam_emissions.loc[pix.isin(stage=stage)]
             to_save.reset_index("stage", drop=True).to_csv(out_dir / out_file)
 
 

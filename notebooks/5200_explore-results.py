@@ -70,6 +70,27 @@ temperatures_in_line_with_assessment = POST_PROCESSED_TIMESERIES_RUN_ID_DB.load(
 # temperatures_in_line_with_assessment
 
 # %%
+# slr = SCM_OUTPUT_DB.load(
+#     pix.ismatch(
+#         variable=[
+#             "Sea Level Rise",
+#         ],
+#         climate_model="MAGICCv7.6*"
+#     ),
+#     progress=True,
+#     max_workers=multiprocessing.cpu_count(),
+# )
+# pdf = slr.openscm.groupby_except("run_id").median().loc[:, 2000:]
+# ax = sns.lineplot(
+#     data=pdf.openscm.to_long_data(),
+#     x="time",
+#     y="value",
+#     hue="scenario",
+#     style="model"
+# )
+# sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5), ncols=3)
+
+# %%
 raw_scm_output = SCM_OUTPUT_DB.load(
     pix.ismatch(
         variable=[
@@ -77,6 +98,7 @@ raw_scm_output = SCM_OUTPUT_DB.load(
             "Effective Radiative Forcing**",
             "Atmospheric Concentrations|CO2",
             "Atmospheric Concentrations|CH4",
+            "Sea Level Rise",
         ]
     ),
     progress=True,
