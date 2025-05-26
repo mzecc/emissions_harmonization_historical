@@ -87,6 +87,8 @@ and then unpack them, so you can skip all the processing
 1. In `scripts/drive-500x-series.py`,
    check that you have specified the notebooks and IAMs you want to run.
 1. Run the notebooks with `pixi run python scripts/drive-500x-series.py`
+1. Add the downloaded hash information with
+   `git add -f data/raw/scenarios/<DOWNLOAD_SCENARIOS_ID>/known_hashes.json`
 
 Once things have run, you will probably want to upload results
 
