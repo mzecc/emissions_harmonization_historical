@@ -270,6 +270,7 @@ HISTORY_HARMONISATION_DB = OpenSCMDB(
 # (still problems with how we harmonise novel CDR,
 # but good interim step)
 DOWNLOAD_SCENARIOS_ID = "0006"
+DOWNLOAD_SCENARIOS_ID = "0006-MZ"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
