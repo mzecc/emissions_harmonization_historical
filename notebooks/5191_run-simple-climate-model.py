@@ -55,8 +55,8 @@ UR = openscm_units.unit_registry
 Q = UR.Quantity
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "MESSAGE"
-scm: str = "MAGICCv7.6.0a3"
+model: str = "WITCH"
+scm: str = "MAGICCv7.5.3"
 
 # %%
 output_dir_model = SCM_OUT_DIR / model
@@ -160,7 +160,7 @@ if scm in ["MAGICCv7.5.3", "MAGICCv7.6.0a3"]:
         elif platform.system() == "Windows":
             raise NotImplementedError(platform.system())
         elif platform.system().lower().startswith("linux"):
-            magicc_exe = "magicc"
+            magicc_exe_path = REPO_ROOT / "magicc" / "magicc-v7.6.0a3" / "bin" / "magicc"
         else:
             raise NotImplementedError(platform.system())
 

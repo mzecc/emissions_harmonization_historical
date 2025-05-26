@@ -92,7 +92,7 @@ def run_notebook_with_scm(notebook: Path, run_notebooks_dir: Path, iam: str, scm
     run_notebook(notebook=notebook, run_notebooks_dir=run_notebooks_dir, parameters=parameters, idn=f"{iam}_{scm}")
 
 
-def main():
+def main():  # noqa: PLR0912
     """
     Run the 500x series of notebooks
     """
@@ -139,15 +139,15 @@ def main():
     iams = ["WITCH"]
     # iams = ["AIM"]
     # Combos
-    iams = ["COFFEE", "WITCH"]
-    iams = [
-        "WITCH",
-        "REMIND",
-        "IMAGE",
-        "AIM",
-        "MESSAGE",
-        "COFFEE",
-    ]
+    # iams = ["COFFEE", "WITCH"]
+    # iams = [
+    #     "WITCH",
+    #     "REMIND",
+    #     "IMAGE",
+    #     "AIM",
+    #     "MESSAGE",
+    #     "COFFEE",
+    # ]
     # # Waiting for submission
     # iams = [
     #     "GCAM",
@@ -170,7 +170,7 @@ def main():
     # # # Downloading and reporting checking
     # # notebook_prefixes = ["5090", "5091", "5092"]
     # Everything
-    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
+    # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
     # Skip this step
     notebook_prefixes = []
 
@@ -190,9 +190,9 @@ def main():
     # (and even then only to a limited degree because it is mostly for F-gases)
     # so this shouldn't make such a big impact.
     # Run the notebook
-    notebook_prefixes = ["5095"]
+    # notebook_prefixes = ["5095"]
     # # Skip this step
-    # notebook_prefixes = []
+    notebook_prefixes = []
     for notebook in all_notebooks:
         if any(notebook.name.startswith(np) for np in notebook_prefixes):
             run_notebook(
