@@ -118,7 +118,12 @@ for _, row in tqdm.auto.tqdm(to_download.iterrows(), total=to_download.shape[0])
 
     if model in known_versions and scenario in known_versions[model]:
         if version != known_versions[model][scenario]:
-            msg = "Scenario data has changed. Please update the value of `DOWNLOAD_SCENARIOS_ID`."
+            msg = (
+                f"Scenario data has changed for {model} {scenario}. "
+                f"Current version: {version}. "
+                f"Known version: {known_versions[model][scenario]}. "
+                "Please update the value of `DOWNLOAD_SCENARIOS_ID`."
+            )
             raise AssertionError(msg)
         # else:
         # Already know about this scenario and data matches the expected hash
