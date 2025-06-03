@@ -47,6 +47,7 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
         if scm is None:
             raise TypeError(scm)
 
+        # res = {"model": iam, "scm": scm, "n_processes" n_processes}
         res = {"model": iam, "scm": scm}
 
     else:
@@ -153,18 +154,18 @@ def main():  # noqa: PLR0912
     #     "GCAM",
     # ]
     # All
-    iams = [
-        "WITCH",
-        "REMIND",
-        "MESSAGE",
-        "IMAGE",
-        "GCAM",
-        "COFFEE",
-        "AIM",
-    ]
+    #    iams = [
+    #        "WITCH",
+    #        "REMIND",
+    #        "MESSAGE",
+    #        "IMAGE",
+    #        "GCAM",
+    #        "COFFEE",
+    #        "AIM",
+    #    ]
 
     # Single notebook
-    notebook_prefixes = ["5090"]
+    # notebook_prefixes = ["5090"]
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093", "5094"]
     # # # Downloading and reporting checking
@@ -172,7 +173,7 @@ def main():  # noqa: PLR0912
     # Everything
     # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
     # # Skip this step
-    # notebook_prefixes = []
+    notebook_prefixes = []
 
     for iam in tqdm.tqdm(iams, desc="IAMs pre infilling"):
         for notebook in all_notebooks:
@@ -203,7 +204,7 @@ def main():  # noqa: PLR0912
             )
 
     ### Infilling
-    notebook_prefixes = ["5190"]
+    # notebook_prefixes = ["5190"]
     # Skip this step
     notebook_prefixes = []
     for iam in iams:
@@ -221,7 +222,7 @@ def main():  # noqa: PLR0912
     # # Single notebook
     # notebook_prefixes = ["5192"]
     # Skip this step
-    notebook_prefixes = []
+    # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]
     for iam, scm in tqdm.tqdm(itertools.product(iams, scms), desc="IAM SCM runs"):
         for notebook in all_notebooks:
