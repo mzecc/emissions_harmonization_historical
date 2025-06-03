@@ -137,7 +137,7 @@ def main():  # noqa: PLR0912
     ### Individual IAM downloading and processing
     # iams = ["REMIND"]
     # iams = ["GCAM"]
-    iams = ["WITCH"]
+    # iams = ["WITCH"]
     # iams = ["AIM"]
     # Combos
     # iams = ["COFFEE", "WITCH"]
@@ -164,16 +164,17 @@ def main():  # noqa: PLR0912
     #        "AIM",
     #    ]
 
+    iams = ["IMAGE"]
     # Single notebook
-    # notebook_prefixes = ["5090"]
+    notebook_prefixes = ["5090"]
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093", "5094"]
     # # # Downloading and reporting checking
     # # notebook_prefixes = ["5090", "5091", "5092"]
     # Everything
-    # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
+    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
     # # Skip this step
-    notebook_prefixes = []
+    # notebook_prefixes = []
 
     for iam in tqdm.tqdm(iams, desc="IAMs pre infilling"):
         for notebook in all_notebooks:
@@ -191,9 +192,9 @@ def main():  # noqa: PLR0912
     # (and even then only to a limited degree because it is mostly for F-gases)
     # so this shouldn't make such a big impact.
     # Run the notebook
-    # notebook_prefixes = ["5095"]
+    notebook_prefixes = ["5095"]
     # # Skip this step
-    notebook_prefixes = []
+    # notebook_prefixes = []
     for notebook in all_notebooks:
         if any(notebook.name.startswith(np) for np in notebook_prefixes):
             run_notebook(
@@ -204,9 +205,9 @@ def main():  # noqa: PLR0912
             )
 
     ### Infilling
-    # notebook_prefixes = ["5190"]
+    notebook_prefixes = ["5190"]
     # Skip this step
-    notebook_prefixes = []
+    # notebook_prefixes = []
     for iam in iams:
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):

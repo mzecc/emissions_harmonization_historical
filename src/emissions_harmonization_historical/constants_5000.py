@@ -274,7 +274,7 @@ DOWNLOAD_SCENARIOS_ID = "0006"
 # 2025-05-26 run
 # (still problems with how we harmonise novel CDR,
 # but good interim step)
-DOWNLOAD_SCENARIOS_ID = "0007Z"
+DOWNLOAD_SCENARIOS_ID = "0008"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
