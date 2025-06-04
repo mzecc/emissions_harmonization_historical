@@ -13,6 +13,7 @@ from typing import Any
 
 import jupytext
 import papermill as pm
+import tqdm.auto as tqdm
 
 
 def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None) -> dict[str, str]:
@@ -30,11 +31,11 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
         "5091_check-reporting.py",
         "5092_check-interal-consistency.py",
         "5093_pre-processing.py",
-        "5094_harmonisation.py",
     ]:
         res = {"model": iam}
 
     elif notebook_name in [
+        "5094_harmonisation.py",
         "5190_infilling.py",
     ]:
         res = {"model": iam, "output_to_pdf": True}
@@ -46,6 +47,7 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
         if scm is None:
             raise TypeError(scm)
 
+        # res = {"model": iam, "scm": scm, "n_processes" n_processes}
         res = {"model": iam, "scm": scm}
 
     else:
@@ -91,7 +93,7 @@ def run_notebook_with_scm(notebook: Path, run_notebooks_dir: Path, iam: str, scm
     run_notebook(notebook=notebook, run_notebooks_dir=run_notebooks_dir, parameters=parameters, idn=f"{iam}_{scm}")
 
 
-def main():
+def main():  # noqa: PLR0912
     """
     Run the 500x series of notebooks
     """
@@ -135,33 +137,46 @@ def main():
     ### Individual IAM downloading and processing
     # iams = ["REMIND"]
     # iams = ["GCAM"]
-    iams = ["WITCH"]
+    # iams = ["WITCH"]
     # iams = ["AIM"]
     # Combos
-    iams = ["COFFEE", "WITCH"]
-    # # All
+    # iams = ["COFFEE", "WITCH"]
     # iams = [
     #     "WITCH",
     #     "REMIND",
-    #     "MESSAGE",
     #     "IMAGE",
-    #     "GCAM",
-    #     "COFFEE",
     #     "AIM",
+    #     "MESSAGE",
+    #     "COFFEE",
     # ]
+    # # Waiting for submission
+    # iams = [
+    #     "GCAM",
+    # ]
+    # All
+    #    iams = [
+    #        "WITCH",
+    #        "REMIND",
+    #        "MESSAGE",
+    #        "IMAGE",
+    #        "GCAM",
+    #        "COFFEE",
+    #        "AIM",
+    #    ]
 
-    # # Single notebook
-    # notebook_prefixes = ["5094"]
+    iams = ["IMAGE"]
+    # Single notebook
+    notebook_prefixes = ["5090"]
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093", "5094"]
     # # # Downloading and reporting checking
     # # notebook_prefixes = ["5090", "5091", "5092"]
-    # Skip this step
-    notebook_prefixes = []
     # Everything
     notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
+    # # Skip this step
+    # notebook_prefixes = []
 
-    for iam in iams:
+    for iam in tqdm.tqdm(iams, desc="IAMs pre infilling"):
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
                 run_notebook_iam(
@@ -191,7 +206,7 @@ def main():
 
     ### Infilling
     notebook_prefixes = ["5190"]
-    # # Skip this step
+    # Skip this step
     # notebook_prefixes = []
     for iam in iams:
         for notebook in all_notebooks:
@@ -205,10 +220,12 @@ def main():
     ### Running the SCMs
     # SCM related notebooks
     notebook_prefixes = ["5191", "5192"]
-    # # Skip this step
+    # # Single notebook
+    # notebook_prefixes = ["5192"]
+    # Skip this step
     # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]
-    for iam, scm in itertools.product(iams, scms):
+    for iam, scm in tqdm.tqdm(itertools.product(iams, scms), desc="IAM SCM runs"):
         for notebook in all_notebooks:
             if any(notebook.name.startswith(np) for np in notebook_prefixes):
                 run_notebook_with_scm(
