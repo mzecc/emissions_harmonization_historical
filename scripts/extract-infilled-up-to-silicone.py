@@ -49,7 +49,7 @@ def main():
         ]
     ).sort_index(axis="columns")
 
-    out_path = OUT_PATH / f"{INFILLING_DB_DIR.name}_harmonised-emissions-up-to-sillicone.py"
+    out_path = OUT_PATH / f"{INFILLING_DB_DIR.name}_harmonised-emissions-up-to-sillicone.csv"
     out_path.parent.mkdir(exist_ok=True, parents=True)
     res.to_csv(out_path)
     print(f"Wrote {out_path}")
