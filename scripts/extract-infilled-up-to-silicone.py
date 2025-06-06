@@ -39,13 +39,12 @@ def main():
         raise AssertionError(len(relevant_emissions))
 
     history = HISTORY_HARMONISATION_DB.load(pix.isin(purpose="global_workflow_emissions"))
-    history_relevant = history.openscm.mi_loc(relevant_emissions)
 
     res = pix.concat(
         [
             harmonised.reset_index("workflow", drop=True),
             infilled_silicone.reset_index("stage", drop=True),
-            history_relevant.reset_index("purpose", drop=True),
+            history.reset_index("purpose", drop=True),
         ]
     ).sort_index(axis="columns")
 
