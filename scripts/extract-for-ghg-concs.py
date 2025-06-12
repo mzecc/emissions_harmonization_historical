@@ -23,7 +23,7 @@ def main():
     pandas_openscm.register_pandas_accessor()
     HERE = Path(__file__).parent
     REPO_ROOT = HERE.parent
-    OUT_PATH = REPO_ROOT / "for-ghg-concs"
+    OUT_PATH = REPO_ROOT / "for-ghg-concs" / INFILLING_DB_DIR.name
 
     harmonised = HARMONISED_SCENARIO_DB.load(pix.ismatch(variable="Emissions**", workflow="for_scms"))
 
