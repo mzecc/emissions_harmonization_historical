@@ -48,6 +48,7 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
     elif notebook_name in [
         "5191_run-simple-climate-model.py",
         "5192_post-process.py",
+        "5193_post-process-only-emissions-no-magicc.py",
     ]:
         if scm is None:
             raise TypeError(scm)
