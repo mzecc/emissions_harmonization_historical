@@ -45,6 +45,7 @@ from emissions_harmonization_historical.constants_5000 import (
 from emissions_harmonization_historical.harmonisation import (
     HARMONISATION_YEAR,
     harmonise,
+    HarmonisationResult
 )
 
 # %% [markdown]
@@ -139,6 +140,9 @@ history_for_harmonisation
 # %% [markdown]
 # ## Harmonise
 
+# %% [markdown]
+# ### Overrides
+
 # %%
 # Could load in user overrides from elsewhere here.
 # They need to be a series with name "method".
@@ -178,6 +182,9 @@ if model.startswith("WITCH"):
 
 user_overrides_gridding
 
+# %% [markdown]
+# ### Harmonization
+
 # %%
 res = {}
 for key, idf, user_overrides in (
@@ -195,11 +202,86 @@ for key, idf, user_overrides in (
         # Check overrides were passsed through correctly
         pd.testing.assert_series_equal(user_overrides, multi_index_lookup(res[key].overrides, user_overrides.index))
 
+# %% [markdown]
+# ### Post-harmonization fixes
+
+# %%
+# NOTE: do not do this for CDR variables!
+
+# set hist_zero to zero
+data = res["gridding"].timeseries
+methods = res["gridding"].overrides
+methods = methods.reindex(data.index) # add 'unit' to the methods index to enable matching with data
+
+# find all places that have 'hist_zero' harmonization method
+hist_zero_mask = methods[methods == 'hist_zero'].index
+hist_zero_mask
+
+# replace in all data
+all_years = [col for col in data.columns if isinstance(col, int)]
+data.loc[hist_zero_mask, all_years] = 0.0
+
+res["gridding"] = HarmonisationResult(
+    timeseries=data, 
+    overrides=methods
+)
+
+
+# %% [markdown]
+# ### Exploring bugs
+
+# %%
+# res["gridding"].overrides[res["gridding"].overrides == 'hist_zero']
+# res["global"].overrides[res["global"].overrides == 'hist_zero']
+
 # %%
 # tmp = res["gridding"].overrides.loc[pix.ismatch(variable="**Peat**")]
 # # These cause issues as the history is zero but the model is not
 # # so the result isn't actually harmonised
 # tmp[tmp == "hist_zero"].loc[pix.ismatch(variable="**CO2**") & pix.isin(scenario=tmp.pix.unique("scenario")[0])]
+
+# %% [markdown]
+# ## Ensure that harmonisation worked as expected
+
+# %%
+def keep_df_where_harmonisation_gridding_failed(df):
+     
+    # 1. Define tolerance-based uniqueness
+    def _tolerant_nunique(values, tol=1e-6):
+        seen = []
+        for val in sorted(values):
+            if not any(np.isclose(val, x, atol=tol) for x in seen):
+                seen.append(val)
+        return len(seen)
+    
+    # 2. Compute approx. unique value count per group
+    approx_unique = (
+        df.groupby(['model', 'region', 'variable'])[HARMONISATION_YEAR]
+        .agg(lambda x: _tolerant_nunique(x, tol=1e-6))
+        .reset_index(name='approx_unique_harmonisationyear')
+    )
+
+    # 3. Filter groups with more than 1 approx. unique value
+    nonunique_groups = approx_unique.query("approx_unique_harmonisationyear > 1")[['model', 'region', 'variable']] # should be only one value in harmonization year
+
+    # 4. Join back to full dataframe to get all relevant rows
+    filtered_df = df.merge(nonunique_groups, on=['model', 'region', 'variable'])
+
+    return filtered_df
+
+def assert_harmonisation_gridding_success(df, harmonisation_year=HARMONISATION_YEAR):
+   
+    failed_df = keep_df_where_harmonisation_gridding_failed(df)
+
+    if not failed_df.empty:
+        print("❌ Gridding/harmonization failed for the following rows:")
+        print(failed_df)
+    else:
+        print("✅ All harmonization values passed consistency check.")
+        assert failed_df.empty
+
+
+assert_harmonisation_gridding_success(res["gridding"].timeseries.reset_index())
 
 # %% [markdown]
 # ## Examine results
