@@ -179,6 +179,30 @@ if model.startswith("WITCH"):
         )
     ] = "constant_ratio"
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+if model.startswith("REMIND"):
+
+    # template
+    user_overrides_gridding = pd.Series(
+        np.nan,
+        index=model_pre_processed_for_gridding.index.droplevel(
+            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+        ),
+        name="method",
+    ).astype(str)
+
+
+    # index selector: combinations_model_zero_in_harmyear
+    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
+    combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
+    # combinations_model_zero_in_harmyear
+    combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
+        [level for level in combinations_model_zero_in_harmyear.names if level not in user_overrides_gridding.index.names]
+    ) # only keep indices that are in the template 
+    
+    
+    # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
+    user_overrides_gridding.loc[~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)] = "reduce_ratio_2050"
+    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 user_overrides_gridding
 
