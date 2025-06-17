@@ -204,7 +204,29 @@ if model.startswith("REMIND"):
     user_overrides_gridding.loc[~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)] = "reduce_ratio_2050"
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
-user_overrides_gridding
+    ## global (not implemented yet)
+    # template
+    user_overrides_global = pd.Series(
+        np.nan,
+        index=model_pre_processed_for_global_workflow.index.droplevel(
+            model_pre_processed_for_global_workflow.index.names.difference(["model", "scenario", "region", "variable"])
+        ),
+        name="method",
+    ).astype(str)
+
+
+    # index selector: combinations_model_zero_in_harmyear
+    model_zero_in_harmyear_global = model_pre_processed_for_global_workflow[model_pre_processed_for_global_workflow[2023] == 0]
+    combinations_model_zero_in_harmyear_global = model_zero_in_harmyear_global.index.unique()
+    combinations_model_zero_in_harmyear_global_filter = combinations_model_zero_in_harmyear_global.droplevel(
+        [level for level in combinations_model_zero_in_harmyear_global.names if level not in user_overrides_global.index.names]
+    ) # only keep indices that are in the template 
+    
+    
+    # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
+    user_overrides_global.loc[~user_overrides_global.index.isin(combinations_model_zero_in_harmyear_global_filter)] = "reduce_ratio_2050"
+    user_overrides_global = user_overrides_global[user_overrides_global != "nan"]
+
 
 # %% [markdown]
 # ### Harmonization
