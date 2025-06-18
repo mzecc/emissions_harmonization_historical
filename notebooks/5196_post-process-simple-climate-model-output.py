@@ -25,8 +25,6 @@ import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
-import pint
-import seaborn as sns
 from gcages.ar6.post_processing import (
     categorise_scenarios,
     get_exceedance_probabilities,
@@ -35,7 +33,6 @@ from gcages.ar6.post_processing import (
 )
 from gcages.index_manipulation import set_new_single_value_levels
 from gcages.post_processing import PostProcessingResult
-from gcages.renaming import SupportedNamingConventions, convert_variable_name
 from pandas_openscm.grouping import (
     fix_index_name_after_groupby_quantile,
     groupby_except,
@@ -46,7 +43,7 @@ from emissions_harmonization_historical.constants_5000 import (
     POST_PROCESSED_METADATA_CATEGORIES_DB,
     POST_PROCESSED_METADATA_EXCEEDANCE_PROBABILITIES_DB,
     POST_PROCESSED_METADATA_QUANTILE_DB,
-    POST_PROCESSED_METADATA_RUN_ID_DB,-
+    POST_PROCESSED_METADATA_RUN_ID_DB,
     POST_PROCESSED_TIMESERIES_EXCEEDANCE_PROBABILITIES_DB,
     POST_PROCESSED_TIMESERIES_QUANTILE_DB,
     POST_PROCESSED_TIMESERIES_RUN_ID_DB,
