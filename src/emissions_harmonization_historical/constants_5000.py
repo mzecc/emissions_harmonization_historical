@@ -235,6 +235,9 @@ REGION_MAPPING_FILE = (
     / f"region-mapping_{COMMON_DEFINITIONS_COMMIT}.csv"
 )
 
+REGION_MAPPING_PATH = DATA_ROOT / "processed" / "region-mapping" / COMMON_DEFINITIONS_COMMIT
+
+
 # ID for the created history for harmonisation
 HISTORY_FOR_HARMONISATION_ID = "_".join(
     [
