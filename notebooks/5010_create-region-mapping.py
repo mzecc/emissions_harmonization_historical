@@ -81,4 +81,4 @@ for model in models:
     data["iso3"] = data["iso3"].apply(ast.literal_eval)
     output = data.explode("iso3").reset_index(drop=True)
 
-    output.to_csv(REGION_MAPPING_PATH / f"{model}_regionmapping.csv", index=False)
+    output.to_csv(REGION_MAPPING_PATH / f"region_definitions_{model}.csv", index=False)
