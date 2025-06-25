@@ -223,7 +223,8 @@ RCMIP_PROCESSED_DB = OpenSCMDB(
 
 # Commit from https://github.com/IAMconsortium/common-definitions
 # to use
-COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
+# previous: COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
+COMMON_DEFINITIONS_COMMIT = "f2536b68fd52a81fda792c7d3547b9a60c868041"
 COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
 
 REGION_MAPPING_FILE = (
@@ -233,6 +234,9 @@ REGION_MAPPING_FILE = (
     / COMMON_DEFINITIONS_COMMIT
     / f"region-mapping_{COMMON_DEFINITIONS_COMMIT}.csv"
 )
+
+REGION_MAPPING_PATH = DATA_ROOT / "processed" / "region-mapping" / COMMON_DEFINITIONS_COMMIT
+
 
 # ID for the created history for harmonisation
 HISTORY_FOR_HARMONISATION_ID = "_".join(
