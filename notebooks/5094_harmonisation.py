@@ -181,6 +181,8 @@ if model.startswith("WITCH"):
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 if model.startswith("REMIND"):
 
+    # advised on 5 June 2025 by Elmar
+    
     # template
     user_overrides_gridding = pd.Series(
         np.nan,
@@ -226,6 +228,36 @@ if model.startswith("REMIND"):
     # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
     user_overrides_global.loc[~user_overrides_global.index.isin(combinations_model_zero_in_harmyear_global_filter)] = "reduce_ratio_2050"
     user_overrides_global = user_overrides_global[user_overrides_global != "nan"]
+
+    # additional method tweaks advised by Leon on 25 June 2025 
+    user_overrides_gridding.loc[
+        pix.isin(
+            variable=[
+                "Emissions|BC|Energy Sector",
+                "Emissions|BC|Industrial Sector",
+
+                "Emissions|CO|Energy Sector",
+                "Emissions|CO|Industrial Sector",
+                "Emissions|CO|Transportation Sector",
+
+                "Emissions|CO2|Waste",
+                "Emissions|N2O|Waste",
+                
+                "Emissions|NH3|Energy Sector",
+                "Emissions|NH3|Industrial Sector",
+                
+                "Emissions|Sulfur|Energy Sector",
+                "Emissions|Sulfur|Industrial Sector",
+                "Emissions|Sulfur|Transportation Sector"
+            ]
+        )
+    ] = "constant_ratio"
+
+user_overrides_gridding
+
+
+# %%
+# user_overrides_gridding.reset_index().variable.unique()
 
 
 # %% [markdown]
