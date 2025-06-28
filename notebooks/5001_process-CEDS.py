@@ -217,20 +217,22 @@ ceds_reformatted_iamc = (
 assert_units_match_wishes(ceds_reformatted_iamc)
 
 # %% [markdown]
-# ### map national aviation emissions to global
+# ### Map national aviation emissions to global
+#
+# Since release 2025_03_18, CEDS splits up aviation between its 'global' region (for international aircraft) and other territories. Before it was all allocated to the 'global' region, which is what we were expecting, and what we want to continue to use here.
 #
 # 1. take all national aircraft emissions and aggregate and rename to global
 # 2. aggregate global emissions + national without aircraft + national aircraft aggregated to global
 
 # %%
-ceds_reformatted_iamc.loc[pix.ismatch(region="global", variable="Emissions|CO2|Aircraft")]
+ceds_reformatted_iamc.loc[pix.ismatch(variable="Emissions|*|Aircraft")].loc[pix.isin(region=["global","usa"])] # show that there is both international and domestic aviation emissions in this data
 
 # %%
-out_no_aircraft = ceds_reformatted_iamc.loc[~pix.isin(variable="Emissions|CO2|Aircraft")]
+out_no_aircraft = ceds_reformatted_iamc.loc[~pix.ismatch(variable="**|Aircraft")]
 
 # %%
 out_aircraft = (
-    ceds_reformatted_iamc.loc[pix.isin(variable="Emissions|CO2|Aircraft")]
+    ceds_reformatted_iamc.loc[pix.ismatch(variable="**|Aircraft")]
     .groupby(["model", "scenario", "variable", "unit"])
     .sum(numeric_only=True)
     .pix.assign(region="global")
