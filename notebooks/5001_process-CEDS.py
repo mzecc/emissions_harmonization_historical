@@ -38,6 +38,9 @@ from emissions_harmonization_historical.constants_5000 import (
 )
 from emissions_harmonization_historical.units import assert_units_match_wishes
 
+# %%
+RUN_OPTIONAL_BYFUEL_PROCESSING_FOR_AVIATION_AND_SHIPPING = False
+
 # %% [markdown]
 # ## Set up
 
