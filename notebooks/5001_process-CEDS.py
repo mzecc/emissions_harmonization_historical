@@ -281,7 +281,9 @@ CEDS_PROCESSED_DB.save(ceds_reformatted_iamc.pix.assign(stage="iso3c_ish"), allo
 # ----------
 #
 #
-# # Optional: run also global, by fuel (aircraft and international shipping) - just as additional information for modellers 
+# # Optional: run also global, by fuel (aircraft and international shipping)
+# Has been used as additional information for IAM modellers.
+# Available from CEDS Zenodo as well, to download from here (if you haven't already done that): https://zenodo.org/records/15059443
 
 # %%
 CEDS_RAW_PATH
@@ -318,10 +320,6 @@ if RUN_OPTIONAL_BYFUEL_PROCESSING_FOR_AVIATION_AND_SHIPPING:
     # aggregate
     ceds_by_fuel_aviation_shipping = ceds_by_fuel_aviation_shipping.groupby(["em", "region", "fuel", "units", "sector"]).sum().pix.fixna()  # group and fix NAs
     ceds_by_fuel_aviation_shipping
-
-# %%
-if RUN_OPTIONAL_BYFUEL_PROCESSING_FOR_AVIATION_AND_SHIPPING:
-    ceds_by_fuel_aviation_shipping.pix.dropna(subset=["units"]).pix.format(unit="{units}/yr", drop=True)
 
 # %% [markdown]
 # ### update units and names
