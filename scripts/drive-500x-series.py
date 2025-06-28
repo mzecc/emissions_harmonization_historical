@@ -42,12 +42,13 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
 
     elif notebook_name in [
         "5190_infilling.py",
+        "5191_post-process-emissions.py",
     ]:
         res = {"model": iam}
 
     elif notebook_name in [
-        "5191_run-simple-climate-model.py",
-        "5192_post-process.py",
+        "5195_run-simple-climate-model.py",
+        "5196_post-process-simple-climate-model-output.py",
     ]:
         if scm is None:
             raise TypeError(scm)
@@ -159,17 +160,19 @@ def main():  # noqa: PLR0912
     # ]
     # All
     iams = [
-        "WITCH",
+        # "WITCH",
         "REMIND",
-        "MESSAGE",
-        "IMAGE",
-        "GCAM",
-        "COFFEE",
-        "AIM",
+        # "MESSAGE",
+        # "IMAGE",
+        # "GCAM",
+        # "COFFEE",
+        # "AIM",
     ]
     # iams = ["COFFEE"]
+
+    #### downloading and processing
     # Single notebook
-    notebook_prefixes = ["5090"]
+    # notebook_prefixes = ["5090"]
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093", "5094"]
     # # # Downloading and reporting checking
@@ -207,8 +210,13 @@ def main():  # noqa: PLR0912
                 idn="only",
             )
 
-    ### Infilling
-    notebook_prefixes = ["5190"]
+    ### Infilling & Post-processing of emissions
+    # only infilling
+    # notebook_prefixes = ["5190"]
+    # only infilling
+    # notebook_prefixes = ["5191"]
+    # infilling & post-processing emissions
+    notebook_prefixes = ["5190", "5191"]
     # Skip this step
     # notebook_prefixes = []
     for iam in iams:
@@ -220,13 +228,15 @@ def main():  # noqa: PLR0912
                     iam=iam,
                 )
 
-    ### Running the SCMs
+    ### Running the SCMs and post-processing climate outputs
     # SCM related notebooks
-    notebook_prefixes = ["5191", "5192"]
-    # # Single notebook
-    # notebook_prefixes = ["5192"]
+    notebook_prefixes = ["5195", "5196"]
+    # Single notebook: run SCM
+    # notebook_prefixes = ["5195"]
+    # Single notebook: run post-processing of climate outputs
+    # notebook_prefixes = ["5196"]
     # Skip this step
-    notebook_prefixes = []
+    # notebook_prefixes = []
     scms = ["MAGICCv7.6.0a3", "MAGICCv7.5.3"]
     for iam, scm in tqdm.tqdm(itertools.product(iams, scms), desc="IAM SCM runs"):
         for notebook in all_notebooks:
