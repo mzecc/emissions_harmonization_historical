@@ -283,6 +283,10 @@ DOWNLOAD_SCENARIOS_ID = "0006"
 DOWNLOAD_SCENARIOS_ID = "0008"
 # Development helper
 DOWNLOAD_SCENARIOS_ID = "0009-zn"
+# Temporary to investigate code
+DOWNLOAD_SCENARIOS_ID = "0010-jk"
+# Run intermediary submission REMIND 20250617
+DOWNLOAD_SCENARIOS_ID = "0011-REMIND-jk"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
