@@ -294,7 +294,7 @@ pd.testing.assert_frame_equal(
 # ## Save formatted CEDS data
 
 # %%
-CEDS_PROCESSED_DB.save(ceds_reformatted_iamc.pix.assign(stage="iso3c_ish"), allow_overwrite=True) # `out` instead of `ceds_reformatted`?
+CEDS_PROCESSED_DB.save(out.pix.assign(stage="iso3c_ish"), allow_overwrite=True)
 
 # %% [markdown]
 # ----------
@@ -328,13 +328,15 @@ if RUN_OPTIONAL_BYFUEL_PROCESSING_FOR_AVIATION_AND_SHIPPING:
         )
         .pix.semijoin(ceds_map, how="outer")
     )
-    ceds_by_fuel = pix.assignlevel(ceds_by_fuel, region="World")
-    
+
     # only aircraft and shipping
     ceds_by_fuel_aviation_shipping = ceds_by_fuel.loc[pix.isin(sector=[
         "Aircraft",
         "International Shipping"
     ])]
+    
+    # assign all emissions to the global level
+    ceds_by_fuel_aviation_shipping = pix.assignlevel(ceds_by_fuel_aviation_shipping, region="World")
     
     # aggregate
     ceds_by_fuel_aviation_shipping = ceds_by_fuel_aviation_shipping.groupby(["em", "region", "fuel", "units", "sector"]).sum().pix.fixna()  # group and fix NAs
