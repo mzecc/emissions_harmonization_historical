@@ -276,6 +276,50 @@ if model.startswith("REMIND"):
         )
     ] = "constant_ratio"
 
+if model.startswith("MESSAGE"):
+
+    # advised on 10 July 2025 by Volker. This is expected to be updated later through an excel file provided by Luca.
+    # Guidance: 'reduce_ratio_2080' for "NOx, BC, OC, CO, Sulfur for all energy sectors (energy, industry, transportation, residential & commercial) and waste"
+    user_overrides_gridding = pd.Series(
+        np.nan,
+        index=model_pre_processed_for_gridding.index.droplevel(
+            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+        ),
+        name="method",
+    ).astype(str)
+    user_overrides_gridding.loc[
+        pix.ismatch(
+            variable=[
+                # for "NOx, BC, OC, CO, Sulfur
+                "Emissions|BC|**",
+                "Emissions|NOx|**",
+                "Emissions|OC|**",
+                "Emissions|CO|**",
+                "Emissions|Sulfur|**",
+            ]
+        )
+    ].loc[
+        pix.ismatch(
+            variable=[
+                # for all energy sectors (energy, industry, transportation, residential & commercial) and waste
+                "**Energy**",
+                "**Industr**",
+                "**Transport**",
+                "**Residential**",
+                "**Waste**",
+            ]
+        )
+    ].loc[
+        ~pix.ismatch(
+            variable=[
+                # make sure Waste didn't include 'Agricultural Waste Burning'
+                "**Agricultural Waste Burning**",
+            ]
+        )
+    ] = "reduce_ratio_2080"
+    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+
+
 
 # Speficy method for (all) Carbon Removal sectors:
 if user_overrides_gridding is None:
