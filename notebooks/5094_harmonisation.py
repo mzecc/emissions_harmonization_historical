@@ -115,21 +115,30 @@ if HARMONISATION_YEAR not in model_pre_processed_for_global_workflow:
 
 # %%
 history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(pix.ismatch(purpose="gridding_emissions"))
-# history_for_gridding_harmonisation
+history_for_gridding_harmonisation
 
 # %%
 # Add history (zero) history for the new CDR sectors
 
+# create a template (all regions, same 'historical' scenario, same unit as other CO2, for the same number of years
 history_for_gridding_harmonisation_template = history_for_gridding_harmonisation.loc[pix.ismatch(variable=["Emissions|CO2|Energy Sector"])]
+history_for_gridding_harmonisation_template = history_for_gridding_harmonisation_template.pix.assign(model="Synthetic") # it is not CEDS, we just add it ourselves
+template_years = [col for col in history_for_gridding_harmonisation_template.columns if isinstance(col, int)]
+history_for_gridding_harmonisation_template.loc[:, template_years] = 0.0 # data is zero
 
-# (PSEUDO-CODE) below (for Marco to improve upon):
-history_for_gridding_harmonisation_template.values = 0.0 # does not work; find the correct way to assign this in the multiindex
+# create the two extra sectors
+history_for_gridding_harmonisation_BECCS = history_for_gridding_harmonisation_template.pix.assign(variable="Carbon Removal|CO2|BECCS")
+history_for_gridding_harmonisation_nonLandCDR = history_for_gridding_harmonisation_template.pix.assign(variable="Carbon Removal|CO2|Other non-Land CDR")
 
-history_for_gridding_harmonisation_BECCS = history_for_gridding_harmonisation_template
-history_for_gridding_harmonisation_BECCS.variable = "Carbon Removal|CO2|BECCS"
+# concatenate with the historical gridding data
 
-history_for_gridding_harmonisation_nonLandCDR = history_for_gridding_harmonisation_template
-history_for_gridding_harmonisation_nonLandCDR.variable = "Carbon Removal|CO2|Other non-Land CDR"
+history_for_gridding_harmonisation = pd.concat([
+    history_for_gridding_harmonisation,
+    history_for_gridding_harmonisation_BECCS,
+    history_for_gridding_harmonisation_nonLandCDR
+])
+
+history_for_gridding_harmonisation
 
 # %%
 history_for_global_workflow_harmonisation = HISTORY_HARMONISATION_DB.load(
