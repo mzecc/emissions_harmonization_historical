@@ -118,6 +118,20 @@ history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(pix.ismatch(p
 # history_for_gridding_harmonisation
 
 # %%
+# Add history (zero) history for the new CDR sectors
+
+history_for_gridding_harmonisation_template = history_for_gridding_harmonisation.loc[pix.ismatch(variable=["Emissions|CO2|Energy Sector"])]
+
+# (PSEUDO-CODE) below (for Marco to improve upon):
+history_for_gridding_harmonisation_template.values = 0.0 # does not work; find the correct way to assign this in the multiindex
+
+history_for_gridding_harmonisation_BECCS = history_for_gridding_harmonisation_template
+history_for_gridding_harmonisation_BECCS.variable = "Carbon Removal|CO2|BECCS"
+
+history_for_gridding_harmonisation_nonLandCDR = history_for_gridding_harmonisation_template
+history_for_gridding_harmonisation_nonLandCDR.variable = "Carbon Removal|CO2|Other non-Land CDR"
+
+# %%
 history_for_global_workflow_harmonisation = HISTORY_HARMONISATION_DB.load(
     pix.ismatch(purpose="global_workflow_emissions")
 )
