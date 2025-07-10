@@ -29,6 +29,8 @@ import seaborn as sns
 from gcages.cmip7_scenariomip import CMIP7ScenarioMIPPreProcessor
 from gcages.completeness import get_missing_levels
 
+import re
+
 from emissions_harmonization_historical.constants_5000 import (
     PRE_PROCESSED_SCENARIO_DB,
     RAW_SCENARIO_DB,
@@ -71,6 +73,27 @@ if model_df.empty:
 model_df.columns.name = "year"
 # model_df
 
+# %%
+# AIM currently (2025.07.10) accidentally reports zeroes between model years for Carbon Removal, so let's fix that by delete those and interpolating
+if model.startswith("AIM"):
+    model_df = pd.concat(
+        [model_df.loc[pix.ismatch(variable=["Emissions**"])].loc[:, 2015:2100:1].dropna(how="all", axis="columns"),
+        model_df.loc[pix.ismatch(variable=["Carbon Removal**"])].loc[:, 2015:2100:5].dropna(how="all", axis="columns")]
+    )
+
+# %%
+# Rename carbon removal to include the species (CO2) in the variable name
+model_df = model_df.rename(
+    lambda x: re.sub(r"^Carbon Removal", r"Carbon Removal|CO2", x)
+    if isinstance(x, str)
+    else x,
+    level="variable",
+)
+
+# %%
+# interpolate (needs to be done to ensure that the CDR-Emissions correction is not messing up when they are reported at different time resolutions)
+model_df = model_df.T.interpolate(method="index").T
+
 # %% [markdown]
 # ## Pre-process
 
@@ -94,10 +117,11 @@ from gcages.cmip7_scenariomip.pre_processing.reaggregation.basic import get_requ
 from gcages.index_manipulation import create_levels_based_on_existing, set_new_single_value_levels  # noqa: E402
 
 reaggregator = ReaggregatorBasic(model_regions=model_regions)
-pre_processor = CMIP7ScenarioMIPPreProcessor(
-    reaggregator=reaggregator,
-    n_processes=None,  # run serially
-)
+# comment this out as it seems duplicate (below defined again) and not used until there
+# pre_processor = CMIP7ScenarioMIPPreProcessor(
+#     reaggregator=reaggregator,
+#     n_processes=None,  # run serially
+# )
 
 required_index = get_required_timeseries_index(
     model_regions=model_regions,
@@ -212,7 +236,20 @@ for ax in fg.axes.flatten():
 # sorted(pre_processing_res.assumed_zero_emissions.pix.unique("variable"))
 
 # %%
-pre_processing_res.global_workflow_emissions
+pre_processing_res.global_workflow_emissions.loc[pix.ismatch(variable=["**CO2**"])]
+
+# %%
+# for global workflow: ensure we only have 'Fossil' and 'Biosphere' to get to total CO2; sum CDR and Fossil
+# pre_processing_res.global_workflow_emissions = ...
+
+variables_sum = {
+    "Emissions|CO2|Fossil": ["Emissions|CO2|Fossil", "Carbon Removal|CO2"]
+}
+pre_processing_res.global_workflow_emissions = pre_processing_res.global_workflow_emissions.pix.aggregate(variable=variables_sum)
+
+pre_processing_res.global_workflow_emissions.loc[pix.ismatch(variable=["**CO2**"])]
+
+
 
 # %% editable=true slideshow={"slide_type": ""}
 for stage, df in (
