@@ -267,6 +267,25 @@ if model.startswith("REMIND"):
         )
     ] = "constant_ratio"
 
+
+# (PSEUDO / DRAFT CODE) below (for Marco to improve upon):
+if variable.startswith("Carbon Removal"):
+    user_overrides_gridding = pd.Series(
+        np.nan,
+        index=model_pre_processed_for_gridding.index.droplevel(
+            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+        ),
+        name="method",
+    ).astype(str)
+    user_overrides_gridding.loc[
+        pix.ismatch(
+            variable=[
+                "Carbon Removal**",
+            ]
+        )
+    ] = "reduce_ratio_2040" # This CANNOT be hist_zero for now. reduce_ratio_2040 may be a good choice for now.
+    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+
 user_overrides_gridding
 
 
