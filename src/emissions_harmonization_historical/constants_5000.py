@@ -96,6 +96,9 @@ BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4C
 # BB4CMIP7_FORMATTING_ID = "0001"
 # Moved to portable OpenSCMDB
 BB4CMIP7_FORMATTING_ID = "0002"
+# Update after investigation of Annika in https://github.com/iiasa/emissions_harmonization_historical/pull/110/files
+# ... not because of content changes, but because the current version was produced on that branch 
+BB4CMIP7_FORMATTING_ID = "0003"
 
 # Database into which the processed BB4CMIP7 data is saved
 BB4CMIP7_PROCESSED_DIR = DATA_ROOT / "processed" / "bb4cmip7" / BB4CMIP7_FORMATTING_ID
