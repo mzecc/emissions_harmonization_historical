@@ -278,6 +278,16 @@ if model.startswith("REMIND"):
 
 
 # Speficy method for (all) Carbon Removal sectors:
+if user_overrides_gridding is None:
+    # template
+    user_overrides_gridding = pd.Series(
+        np.nan,
+        index=model_pre_processed_for_gridding.index.droplevel(
+            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+        ),
+        name="method",
+    ).astype(str)
+    
 user_overrides_gridding.loc[
     pix.ismatch(
         variable=[
@@ -285,6 +295,7 @@ user_overrides_gridding.loc[
         ]
     )
 ] = "reduce_ratio_2040" # This CANNOT be hist_zero for now [see below]. reduce_ratio_2040 may be a good choice for now.
+user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"] # only keep the specified overrides
 
 user_overrides_gridding
 
