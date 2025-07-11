@@ -153,6 +153,29 @@ history_for_global_workflow_harmonisation = HISTORY_HARMONISATION_DB.load(
 # history_for_global_workflow_harmonisation
 
 # %%
+# Zero values for CDR also at global level
+history_for_global_workflow_harmonisation_template = history_for_global_workflow_harmonisation.loc[
+    pix.ismatch(variable=["Emissions|CO2|Energy and Industrial Processes"])
+]
+history_for_global_workflow_harmonisation_template = history_for_global_workflow_harmonisation_template.pix.assign(
+    model="Synthetic"
+)
+template_years = [col for col in history_for_global_workflow_harmonisation_template.columns if isinstance(col, int)]
+history_for_global_workflow_harmonisation_template.loc[:, template_years] = 0.0  # data is zero
+
+history_for_global_workflow_harmonisation_cdr = history_for_global_workflow_harmonisation_template.pix.assign(
+    variable="Carbon Removal|CO2"
+)
+
+# Combine the new CDR variable into the original history
+history_for_global_workflow_harmonisation = pd.concat(
+    [history_for_global_workflow_harmonisation, history_for_global_workflow_harmonisation_cdr]
+)
+
+# %% [markdown]
+# #### Combine: gridding+global workflow
+
+# %%
 history_for_harmonisation = pix.concat(
     [history_for_gridding_harmonisation, history_for_global_workflow_harmonisation]
 ).reset_index("purpose", drop=True)
