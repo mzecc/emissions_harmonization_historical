@@ -403,7 +403,7 @@ model_pre_processed_for_gridding
 # %%
 res = {}
 for key, idf, user_overrides in (
-    ("gridding", model_pre_processed_for_gridding, user_overrides_gridding),
+    ("gridding", model_pre_processed_for_gridding.loc[~pix.ismatch(variable=[**AFOLU**])], user_overrides_gridding),
     ("global", model_pre_processed_for_global_workflow, user_overrides_global),
 ):
     harmonised_key = harmonise(
