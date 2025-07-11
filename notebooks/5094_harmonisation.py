@@ -113,6 +113,9 @@ if HARMONISATION_YEAR not in model_pre_processed_for_global_workflow:
 # %% [markdown]
 # ### History to use for harmonisation
 
+# %% [markdown]
+# #### Gridding
+
 # %%
 history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(pix.ismatch(purpose="gridding_emissions"))
 history_for_gridding_harmonisation
@@ -139,6 +142,9 @@ history_for_gridding_harmonisation = pd.concat([
 ])
 
 history_for_gridding_harmonisation
+
+# %% [markdown]
+# #### Global workflow
 
 # %%
 history_for_global_workflow_harmonisation = HISTORY_HARMONISATION_DB.load(
@@ -288,6 +294,15 @@ if model.startswith("MESSAGE"):
         name="method",
     ).astype(str)
     user_overrides_gridding.loc[
+    (
+        (
+            ~pix.ismatch(
+            variable=[
+                # make sure Waste didn't include 'Agricultural Waste Burning'
+                "**Agricultural Waste Burning**",
+            ]
+            )
+        ) & (
         pix.ismatch(
             variable=[
                 # for "NOx, BC, OC, CO, Sulfur
@@ -297,52 +312,63 @@ if model.startswith("MESSAGE"):
                 "Emissions|CO|**",
                 "Emissions|Sulfur|**",
             ]
-        )
-    ].loc[
+        ) 
+    ) & (
         pix.ismatch(
-            variable=[
-                # for all energy sectors (energy, industry, transportation, residential & commercial) and waste
-                "**Energy**",
-                "**Industr**",
-                "**Transport**",
-                "**Residential**",
-                "**Waste**",
-            ]
+                variable=[
+                    # for all energy sectors (energy, industry, transportation, residential & commercial) and waste
+                    "**Energy**",
+                    "**Industr**",
+                    "**Transport**",
+                    "**Residential**",
+                    "**Waste**",
+                ]
+            )
         )
-    ].loc[
-        ~pix.ismatch(
-            variable=[
-                # make sure Waste didn't include 'Agricultural Waste Burning'
-                "**Agricultural Waste Burning**",
-            ]
-        )
+    )
     ] = "reduce_ratio_2080"
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 
 
 # Speficy method for (all) Carbon Removal sectors:
-if user_overrides_gridding is None:
-    # template
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
+# template
+user_overrides_gridding_cdr = pd.Series(
+    np.nan,
+    index=model_pre_processed_for_gridding.index.droplevel(
+        model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+    ),
+    name="method",
+).astype(str)
     
-user_overrides_gridding.loc[
+user_overrides_gridding_cdr.loc[
     pix.ismatch(
         variable=[
             "Carbon Removal**",
         ]
     )
 ] = "reduce_ratio_2040" # This CANNOT be hist_zero for now [see below]. reduce_ratio_2040 may be a good choice for now.
-user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"] # only keep the specified overrides
+user_overrides_gridding_cdr = user_overrides_gridding_cdr[user_overrides_gridding_cdr != "nan"] # only keep the specified overrides
+
+
+
+if user_overrides_gridding is None:
+    user_overrides_gridding = user_overrides_gridding_cdr
+else: 
+    user_overrides_gridding = pd.concat([
+        user_overrides_gridding,
+        user_overrides_gridding_cdr
+    ])
+
 
 user_overrides_gridding
 
+
+# %%
+user_overrides_gridding.loc[pix.ismatch(variable=["Carbon*"])]
+
+# %%
+model_pre_processed_for_gridding
 
 # %%
 # user_overrides_gridding.reset_index().variable.unique()
