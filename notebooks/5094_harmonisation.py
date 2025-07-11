@@ -42,11 +42,7 @@ from emissions_harmonization_historical.constants_5000 import (
     HISTORY_HARMONISATION_DB,
     PRE_PROCESSED_SCENARIO_DB,
 )
-from emissions_harmonization_historical.harmonisation import (
-    HARMONISATION_YEAR,
-    harmonise,
-    HarmonisationResult
-)
+from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR, HarmonisationResult, harmonise
 
 # %% [markdown]
 # ## Set up
@@ -55,7 +51,7 @@ from emissions_harmonization_historical.harmonisation import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "WITCH"
+model: str = "MESSAGE"
 make_region_sector_plots: bool = True
 output_to_pdf: bool = False
 
@@ -81,6 +77,23 @@ if model_pre_processed_for_gridding.empty:
     raise AssertionError
 
 # model_pre_processed_for_gridding
+
+# %%
+# Remove Emissions|*|CO2 AFOLU
+vars = model_pre_processed_for_gridding.index.get_level_values("variable")
+
+# Build mask to drop unwanted variables
+mask_keep = vars == "Emissions|CO2|CO2 AFOLU"
+mask_drop = vars.str.endswith("CO2 AFOLU") & ~mask_keep
+
+# Drop all other "*|CO2 AFOLU"
+idf_filtered = model_pre_processed_for_gridding[~mask_drop]
+
+# Rename the one you want to keep
+model_pre_processed_for_gridding = idf_filtered.rename(
+    index={"Emissions|CO2|CO2 AFOLU": "Emissions|CO2|AFOLU"}, level="variable"
+)
+
 
 # %%
 model_pre_processed_for_global_workflow = PRE_PROCESSED_SCENARIO_DB.load(
@@ -115,36 +128,67 @@ if HARMONISATION_YEAR not in model_pre_processed_for_global_workflow:
 
 # %%
 history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(pix.ismatch(purpose="gridding_emissions"))
-history_for_gridding_harmonisation
+# history_for_gridding_harmonisation
 
 # %%
 # Add history (zero) history for the new CDR sectors
 
 # create a template (all regions, same 'historical' scenario, same unit as other CO2, for the same number of years
-history_for_gridding_harmonisation_template = history_for_gridding_harmonisation.loc[pix.ismatch(variable=["Emissions|CO2|Energy Sector"])]
-history_for_gridding_harmonisation_template = history_for_gridding_harmonisation_template.pix.assign(model="Synthetic") # it is not CEDS, we just add it ourselves
+history_for_gridding_harmonisation_template = history_for_gridding_harmonisation.loc[
+    pix.ismatch(variable=["Emissions|CO2|Energy Sector"])
+]
+history_for_gridding_harmonisation_template = history_for_gridding_harmonisation_template.pix.assign(
+    model="Synthetic"
+)  # it is not CEDS, we just add it ourselves
 template_years = [col for col in history_for_gridding_harmonisation_template.columns if isinstance(col, int)]
-history_for_gridding_harmonisation_template.loc[:, template_years] = 0.0 # data is zero
+history_for_gridding_harmonisation_template.loc[:, template_years] = 0.0  # data is zero
 
 # create the two extra sectors
-history_for_gridding_harmonisation_BECCS = history_for_gridding_harmonisation_template.pix.assign(variable="Carbon Removal|CO2|BECCS")
-history_for_gridding_harmonisation_nonLandCDR = history_for_gridding_harmonisation_template.pix.assign(variable="Carbon Removal|CO2|Other non-Land CDR")
+history_for_gridding_harmonisation_BECCS = history_for_gridding_harmonisation_template.pix.assign(
+    variable="Carbon Removal|CO2|BECCS"
+)
+history_for_gridding_harmonisation_nonLandCDR = history_for_gridding_harmonisation_template.pix.assign(
+    variable="Carbon Removal|CO2|Other non-Land CDR"
+)
 
 # concatenate with the historical gridding data
 
-history_for_gridding_harmonisation = pd.concat([
-    history_for_gridding_harmonisation,
-    history_for_gridding_harmonisation_BECCS,
-    history_for_gridding_harmonisation_nonLandCDR
-])
+history_for_gridding_harmonisation = pd.concat(
+    [
+        history_for_gridding_harmonisation,
+        history_for_gridding_harmonisation_BECCS,
+        history_for_gridding_harmonisation_nonLandCDR,
+    ]
+)
 
-history_for_gridding_harmonisation
+# history_for_gridding_harmonisation
 
 # %%
 history_for_global_workflow_harmonisation = HISTORY_HARMONISATION_DB.load(
     pix.ismatch(purpose="global_workflow_emissions")
 )
 # history_for_global_workflow_harmonisation
+
+# %%
+# Handling CDR at global level IS IT NEEDED???
+history_for_global_workflow_harmonisation_template = history_for_global_workflow_harmonisation.loc[
+    pix.ismatch(variable=["Emissions|CO2|Energy and Industrial Processes"])
+]
+history_for_global_workflow_harmonisation_template = history_for_global_workflow_harmonisation_template.pix.assign(
+    model="Synthetic"
+)
+template_years = [col for col in history_for_global_workflow_harmonisation_template.columns if isinstance(col, int)]
+history_for_global_workflow_harmonisation_template.loc[:, template_years] = 0.0  # data is zero
+
+history_for_global_workflow_harmonisation_cdr = history_for_global_workflow_harmonisation_template.pix.assign(
+    variable="Carbon Removal|CO2"
+)
+
+# Combine the new CDR variable into the original history
+history_for_global_workflow_harmonisation = pd.concat(
+    [history_for_global_workflow_harmonisation, history_for_global_workflow_harmonisation_cdr]
+)
+# history_for_global_workflow_harmonisation.reset_index().variable.unique()
 
 # %%
 history_for_harmonisation = pix.concat(
@@ -157,8 +201,8 @@ history_for_harmonisation = history_for_harmonisation.dropna(axis="columns")
 # make sure the harmonisation year is all there
 if HARMONISATION_YEAR not in history_for_harmonisation:
     raise AssertionError
+# history_for_global_workflow_harmonisation
 
-history_for_harmonisation
 
 # %% [markdown]
 # ## Harmonise
@@ -203,9 +247,8 @@ if model.startswith("WITCH"):
     ] = "constant_ratio"
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 if model.startswith("REMIND"):
-
     # advised on 5 June 2025 by Elmar
-    
+
     # template
     user_overrides_gridding = pd.Series(
         np.nan,
@@ -215,18 +258,22 @@ if model.startswith("REMIND"):
         name="method",
     ).astype(str)
 
-
     # index selector: combinations_model_zero_in_harmyear
     model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
     combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
     # combinations_model_zero_in_harmyear
     combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
-        [level for level in combinations_model_zero_in_harmyear.names if level not in user_overrides_gridding.index.names]
-    ) # only keep indices that are in the template 
-    
-    
+        [
+            level
+            for level in combinations_model_zero_in_harmyear.names
+            if level not in user_overrides_gridding.index.names
+        ]
+    )  # only keep indices that are in the template
+
     # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
-    user_overrides_gridding.loc[~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)] = "reduce_ratio_2050"
+    user_overrides_gridding.loc[~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)] = (
+        "reduce_ratio_2050"
+    )
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
     ## global (not implemented yet)
@@ -239,47 +286,49 @@ if model.startswith("REMIND"):
         name="method",
     ).astype(str)
 
-
     # index selector: combinations_model_zero_in_harmyear
-    model_zero_in_harmyear_global = model_pre_processed_for_global_workflow[model_pre_processed_for_global_workflow[2023] == 0]
+    model_zero_in_harmyear_global = model_pre_processed_for_global_workflow[
+        model_pre_processed_for_global_workflow[2023] == 0
+    ]
     combinations_model_zero_in_harmyear_global = model_zero_in_harmyear_global.index.unique()
     combinations_model_zero_in_harmyear_global_filter = combinations_model_zero_in_harmyear_global.droplevel(
-        [level for level in combinations_model_zero_in_harmyear_global.names if level not in user_overrides_global.index.names]
-    ) # only keep indices that are in the template 
-    
-    
+        [
+            level
+            for level in combinations_model_zero_in_harmyear_global.names
+            if level not in user_overrides_global.index.names
+        ]
+    )  # only keep indices that are in the template
+
     # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
-    user_overrides_global.loc[~user_overrides_global.index.isin(combinations_model_zero_in_harmyear_global_filter)] = "reduce_ratio_2050"
+    user_overrides_global.loc[~user_overrides_global.index.isin(combinations_model_zero_in_harmyear_global_filter)] = (
+        "reduce_ratio_2050"
+    )
     user_overrides_global = user_overrides_global[user_overrides_global != "nan"]
 
-    # additional method tweaks advised by Leon on 25 June 2025 
+    # additional method tweaks advised by Leon on 25 June 2025
     user_overrides_gridding.loc[
         pix.isin(
             variable=[
                 "Emissions|BC|Energy Sector",
                 "Emissions|BC|Industrial Sector",
-
                 "Emissions|CO|Energy Sector",
                 "Emissions|CO|Industrial Sector",
                 "Emissions|CO|Transportation Sector",
-
                 "Emissions|CO2|Waste",
                 "Emissions|N2O|Waste",
-                
                 "Emissions|NH3|Energy Sector",
                 "Emissions|NH3|Industrial Sector",
-                
                 "Emissions|Sulfur|Energy Sector",
                 "Emissions|Sulfur|Industrial Sector",
-                "Emissions|Sulfur|Transportation Sector"
+                "Emissions|Sulfur|Transportation Sector",
             ]
         )
     ] = "constant_ratio"
 
 if model.startswith("MESSAGE"):
-
     # advised on 10 July 2025 by Volker. This is expected to be updated later through an excel file provided by Luca.
-    # Guidance: 'reduce_ratio_2080' for "NOx, BC, OC, CO, Sulfur for all energy sectors (energy, industry, transportation, residential & commercial) and waste"
+    # Guidance: 'reduce_ratio_2080' for "NOx, BC, OC, CO, Sulfur for
+    # all energy sectors (energy, industry, transportation, residential & commercial) and waste"
     user_overrides_gridding = pd.Series(
         np.nan,
         index=model_pre_processed_for_gridding.index.droplevel(
@@ -320,7 +369,6 @@ if model.startswith("MESSAGE"):
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 
-
 # Speficy method for (all) Carbon Removal sectors:
 if user_overrides_gridding is None:
     # template
@@ -331,25 +379,70 @@ if user_overrides_gridding is None:
         ),
         name="method",
     ).astype(str)
-    
+
 user_overrides_gridding.loc[
     pix.ismatch(
         variable=[
             "Carbon Removal**",
         ]
     )
-] = "reduce_ratio_2040" # This CANNOT be hist_zero for now [see below]. reduce_ratio_2040 may be a good choice for now.
-user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"] # only keep the specified overrides
+] = "reduce_ratio_2040"  # This CANNOT be hist_zero for now [see below]. reduce_ratio_2040 may be a good choice for now.
+user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]  # only keep the specified overrides
 
-user_overrides_gridding
+# user_overrides_gridding
 
 
 # %%
 # user_overrides_gridding.reset_index().variable.unique()
 
 
+# %%
+# all_vars = model_pre_processed_for_gridding.index.get_level_values("variable").unique()
+# for v in sorted(all_vars):
+#     print(v)
+
+# %%
+history_for_harmonisation.reset_index().model.unique()
+
+# %%
+# co_mask = history_for_harmonisation.index.get_level_values('variable') == ' Emissions|CO2|AFOLU'
+# history_for_harmonisation[co_mask]
+# history_for_harmonisation.xs('Emissions|CO2|AFOLU', level='variable').index.get_level_values('unit').unique()
+# model_pre_processed_for_gridding.xs('Emissions|CO2|AFOLU', level='variable').index.get_level_values('region').unique()
+
+
+# %%
+# co_mask =history_for_harmonisation.index.get_level_values('variable').str.startswith('Emissions|CO2|AFOLU')
+# history_for_harmonisation[co_mask]
+
+
+# %%
+map_var = [
+    "Emissions|CO2|Agriculture",
+    "Emissions|CO2|Agricultural Waste Burning",
+    "Emissions|CO2|Grassland Burning",
+    "Emissions|CO2|Forest Burning",
+    "Emissions|CO2|Peat Burning",
+]
+mask = history_for_harmonisation.index.get_level_values("variable").isin(map_var)
+subset = history_for_harmonisation[mask]
+
+# Aggregate sum of the components under the aggregate variable name
+variables_sum = {"Emissions|CO2|AFOLU": map_var}
+afolu_sum = subset.pix.aggregate(variable=variables_sum)
+
+# Concat masked history + aggregated sum
+history_for_harmonisation = pix.concat([history_for_harmonisation, afolu_sum])
+
+
 # %% [markdown]
 # ### Harmonization
+
+# %%
+# history_for_harmonisation.loc[
+#     history_for_harmonisation.index.get_level_values("variable") == "Emissions|CO2|Grassland Burning"
+# ].index.get_level_values("unit").unique()
+
 
 # %%
 res = {}
@@ -377,20 +470,17 @@ for key, idf, user_overrides in (
 # set hist_zero to zero
 data = res["gridding"].timeseries
 methods = res["gridding"].overrides
-methods = methods.reindex(data.index) # add 'unit' to the methods index to enable matching with data
+methods = methods.reindex(data.index)  # add 'unit' to the methods index to enable matching with data
 
 # find all places that have 'hist_zero' harmonization method
-hist_zero_mask = methods[methods == 'hist_zero'].index
+hist_zero_mask = methods[methods == "hist_zero"].index
 hist_zero_mask
 
 # replace in all data
 all_years = [col for col in data.columns if isinstance(col, int)]
 data.loc[hist_zero_mask, all_years] = 0.0
 
-res["gridding"] = HarmonisationResult(
-    timeseries=data, 
-    overrides=methods
-)
+res["gridding"] = HarmonisationResult(timeseries=data, overrides=methods)
 
 
 # %% [markdown]
@@ -409,34 +499,38 @@ res["gridding"] = HarmonisationResult(
 # %% [markdown]
 # ## Ensure that harmonisation worked as expected
 
+
 # %%
-def keep_df_where_harmonisation_gridding_failed(df):
-     
+def keep_df_where_harmonisation_gridding_failed(df):  # noqa: D103
     # 1. Define tolerance-based uniqueness
+    # %%
     def _tolerant_nunique(values, tol=1e-6):
         seen = []
         for val in sorted(values):
             if not any(np.isclose(val, x, atol=tol) for x in seen):
                 seen.append(val)
         return len(seen)
-    
+
     # 2. Compute approx. unique value count per group
     approx_unique = (
-        df.groupby(['model', 'region', 'variable'])[HARMONISATION_YEAR]
+        df.groupby(["model", "region", "variable"])[HARMONISATION_YEAR]
         .agg(lambda x: _tolerant_nunique(x, tol=1e-6))
-        .reset_index(name='approx_unique_harmonisationyear')
+        .reset_index(name="approx_unique_harmonisationyear")
     )
 
     # 3. Filter groups with more than 1 approx. unique value
-    nonunique_groups = approx_unique.query("approx_unique_harmonisationyear > 1")[['model', 'region', 'variable']] # should be only one value in harmonization year
+    nonunique_groups = approx_unique.query("approx_unique_harmonisationyear > 1")[
+        ["model", "region", "variable"]
+    ]  # should be only one value in harmonization year
 
     # 4. Join back to full dataframe to get all relevant rows
-    filtered_df = df.merge(nonunique_groups, on=['model', 'region', 'variable'])
+    filtered_df = df.merge(nonunique_groups, on=["model", "region", "variable"])
 
     return filtered_df
 
-def assert_harmonisation_gridding_success(df, harmonisation_year=HARMONISATION_YEAR):
-   
+
+# %%
+def assert_harmonisation_gridding_success(df, harmonisation_year=HARMONISATION_YEAR):  # noqa: D103
     failed_df = keep_df_where_harmonisation_gridding_failed(df)
 
     if not failed_df.empty:

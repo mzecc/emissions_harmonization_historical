@@ -97,7 +97,7 @@ BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4C
 # Moved to portable OpenSCMDB
 BB4CMIP7_FORMATTING_ID = "0002"
 # Update after investigation of Annika in https://github.com/iiasa/emissions_harmonization_historical/pull/110/files
-# ... not because of content changes, but because the current version was produced on that branch 
+# ... not because of content changes, but because the current version was produced on that branch
 BB4CMIP7_FORMATTING_ID = "0003"
 
 # Database into which the processed BB4CMIP7 data is saved
@@ -279,7 +279,6 @@ HISTORY_HARMONISATION_DB = OpenSCMDB(
 # (still problems with how we harmonise novel CDR,
 # but good interim step)
 DOWNLOAD_SCENARIOS_ID = "0006"
-# DOWNLOAD_SCENARIOS_ID = "0006-MZ"
 # 2025-05-26 run
 # (still problems with how we harmonise novel CDR,
 # but good interim step)
@@ -291,7 +290,7 @@ DOWNLOAD_SCENARIOS_ID = "0010-jk"
 # Run intermediary submission REMIND 20250617
 DOWNLOAD_SCENARIOS_ID = "0011-REMIND-jk"
 # Run 20250710 by Marco (prepared with/by Jarmo)
-DOWNLOAD_SCENARIOS_ID = "0020"
+DOWNLOAD_SCENARIOS_ID = "0020-jkmz"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
