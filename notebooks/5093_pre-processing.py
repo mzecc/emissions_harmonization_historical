@@ -242,12 +242,12 @@ pre_processing_res.global_workflow_emissions.loc[pix.ismatch(variable=["**CO2**"
 # for global workflow: ensure we only have 'Fossil' and 'Biosphere' to get to total CO2; sum CDR and Fossil
 # pre_processing_res.global_workflow_emissions = ...
 
-variables_sum = {
-    "Emissions|CO2|Fossil": ["Emissions|CO2|Fossil", "Carbon Removal|CO2"]
-}
-pre_processing_res.global_workflow_emissions = pre_processing_res.global_workflow_emissions.pix.aggregate(variable=variables_sum)
+# variables_sum = {
+#     "Emissions|CO2|Fossil": ["Emissions|CO2|Fossil", "Carbon Removal|CO2"]
+# }
+# pre_processing_res.global_workflow_emissions = pre_processing_res.global_workflow_emissions.pix.aggregate(variable=variables_sum)
 
-pre_processing_res.global_workflow_emissions.loc[pix.ismatch(variable=["**CO2**"])]
+# pre_processing_res.global_workflow_emissions.loc[pix.ismatch(variable=["**CO2**"])]
 
 
 
@@ -260,3 +260,5 @@ for stage, df in (
 ):
     PRE_PROCESSED_SCENARIO_DB.save(df.pix.assign(stage=stage), allow_overwrite=True)
     print(f"Saved {stage}")
+
+# %%
