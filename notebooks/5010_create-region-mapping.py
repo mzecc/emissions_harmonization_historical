@@ -36,6 +36,9 @@ from emissions_harmonization_historical.region_mapping import create_region_mapp
 # ## Set common definitions to right commit
 
 # %%
+COMMON_DEFINITIONS_PATH
+
+# %%
 if COMMON_DEFINITIONS_PATH.exists():
     repo = Repo(COMMON_DEFINITIONS_PATH)
 
@@ -43,6 +46,7 @@ else:
     print("Cloning common-definitions")
     repo = Repo.clone_from("https://github.com/IAMconsortium/common-definitions", COMMON_DEFINITIONS_PATH)
 
+repo.remotes["origin"].fetch()
 repo.git.checkout(COMMON_DEFINITIONS_COMMIT)
 
 # %% [markdown]
