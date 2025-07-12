@@ -36,9 +36,6 @@ from emissions_harmonization_historical.region_mapping import create_region_mapp
 # ## Set common definitions to right commit
 
 # %%
-COMMON_DEFINITIONS_PATH
-
-# %%
 if COMMON_DEFINITIONS_PATH.exists():
     repo = Repo(COMMON_DEFINITIONS_PATH)
 
