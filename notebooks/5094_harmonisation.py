@@ -51,7 +51,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "IMAGE"
+model: str = "GCAM"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -609,8 +609,11 @@ with ctx_manager as output_pdf_file:
         kind="line",
     )
     for ax in fg.axes.flatten():
-        if "CO2" in ax.get_title():
+        if "Emissions|CO2" in ax.get_title():
             ax.axhline(0.0, linestyle="--", color="tab:gray")
+
+        elif "Carbon Removal" in ax.get_title():
+            ax.set_ylim(ymax=0.0)
 
         else:
             ax.set_ylim(ymin=0.0)
@@ -727,8 +730,11 @@ fg = sns.relplot(
     kind="line",
 )
 for ax in fg.axes.flatten():
-    if "CO2" in ax.get_title():
+    if "Emissions|CO2" in ax.get_title():
         ax.axhline(0.0, linestyle="--", color="tab:gray")
+
+    elif "Carbon Removal" in ax.get_title():
+        ax.set_ylim(ymax=0.0)
 
     else:
         ax.set_ylim(ymin=0.0)
@@ -769,7 +775,7 @@ pdf_sectors = split_sectors(pdf_gridding)
 
 # %%
 regions = ["World", *sorted([r for r in pdf_sectors.index.get_level_values("region").unique() if r != "World"])]
-regions
+# regions
 
 # %%
 species_l = sorted(pdf_sectors.pix.unique("species"))

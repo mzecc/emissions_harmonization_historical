@@ -30,9 +30,6 @@ import pandas_openscm
 import pint
 import seaborn as sns
 from gcages.renaming import SupportedNamingConventions, convert_variable_name
-from pandas_openscm.grouping import (
-    groupby_except,
-)
 from pandas_openscm.index_manipulation import update_index_levels_func
 
 from emissions_harmonization_historical.constants_5000 import (
@@ -52,7 +49,7 @@ pandas_openscm.register_pandas_accessor()
 pix.set_openscm_registry_as_default()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "GCAM"
 output_to_pdf: bool = False
 
 # %% [markdown]
@@ -135,7 +132,7 @@ ALL_GHGS = [
 ]
 
 
-def calculate_co2_total(indf: pd.DataFrame) -> pd.DataFrame:
+def calculate_co2_total(indf: pd.DataFrame) -> pd.DataFrame:  # noqa: D103
     res = (
         indf.loc[
             pix.isin(
@@ -153,7 +150,7 @@ def calculate_co2_total(indf: pd.DataFrame) -> pd.DataFrame:
     return res
 
 
-def interpolate_to_annual(indf: pd.DataFrame, copy: bool = True) -> pd.DataFrame:
+def interpolate_to_annual(indf: pd.DataFrame, copy: bool = True) -> pd.DataFrame:  # noqa: D103
     if copy:
         indf = indf.copy()
 
@@ -168,7 +165,7 @@ def interpolate_to_annual(indf: pd.DataFrame, copy: bool = True) -> pd.DataFrame
     return indf
 
 
-def calculate_cumulative_co2s(indf: pd.DataFrame) -> pd.DataFrame:
+def calculate_cumulative_co2s(indf: pd.DataFrame) -> pd.DataFrame:  # noqa: D103
     exp_cols = np.arange(indf.columns.min(), indf.columns.max() + 1)
     np.testing.assert_equal(indf.columns, exp_cols)
 
@@ -188,7 +185,7 @@ def calculate_cumulative_co2s(indf: pd.DataFrame) -> pd.DataFrame:
     return res
 
 
-def calculate_kyoto_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):
+def calculate_kyoto_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):  # noqa: D103
     if "Emissions|CO2" not in indf.pix.unique("variable"):
         raise AssertionError(indf.pix.unique("variable"))
 
@@ -204,7 +201,7 @@ def calculate_kyoto_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):
     return res
 
 
-def calculate_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):
+def calculate_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):  # noqa: D103
     if "Emissions|CO2" not in indf.pix.unique("variable"):
         raise AssertionError(indf.pix.unique("variable"))
 
@@ -260,9 +257,7 @@ pre_processed_emms_scms_out = pix.concat(
 
 # %%
 ax = sns.lineplot(
-    data=pre_processed_emms_scms_out.loc[
-        pix.ismatch(variable="Cumulative**", scenario="SSP2*Low*")
-    ].openscm.to_long_data(),
+    data=pre_processed_emms_scms_out.loc[pix.ismatch(variable="Cumulative**", scenario="SSP2*")].openscm.to_long_data(),
     x="time",
     y="value",
     hue="scenario",
@@ -272,7 +267,7 @@ sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
 
 # %%
 ax = sns.lineplot(
-    data=pre_processed_emms_scms_out.loc[pix.ismatch(variable="**GHG**", scenario="SSP2*Low*")].openscm.to_long_data(),
+    data=pre_processed_emms_scms_out.loc[pix.ismatch(variable="**GHG**", scenario="SSP2*")].openscm.to_long_data(),
     x="time",
     y="value",
     hue="scenario",
@@ -315,9 +310,7 @@ harmonised_emms_scms_out = pix.concat(
 
 # %%
 ax = sns.lineplot(
-    data=harmonised_emms_scms_out.loc[
-        pix.ismatch(variable="Cumulative**", scenario="SSP2*Low*")
-    ].openscm.to_long_data(),
+    data=harmonised_emms_scms_out.loc[pix.ismatch(variable="Cumulative**", scenario="SSP2*")].openscm.to_long_data(),
     x="time",
     y="value",
     hue="scenario",
@@ -327,7 +320,7 @@ sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
 
 # %%
 ax = sns.lineplot(
-    data=harmonised_emms_scms_out.loc[pix.ismatch(variable="**GHG**", scenario="SSP2*Low*")].openscm.to_long_data(),
+    data=harmonised_emms_scms_out.loc[pix.ismatch(variable="**GHG**", scenario="SSP2*")].openscm.to_long_data(),
     x="time",
     y="value",
     hue="scenario",
@@ -366,7 +359,7 @@ complete_emissions_out = pix.concat(
 
 # %%
 ax = sns.lineplot(
-    data=complete_emissions_out.loc[pix.ismatch(variable="**GHG**", scenario="SSP2*Low*")].openscm.to_long_data(),
+    data=complete_emissions_out.loc[pix.ismatch(variable="**GHG**", scenario="SSP2*")].openscm.to_long_data(),
     x="time",
     y="value",
     hue="scenario",
@@ -384,7 +377,7 @@ pdf = (
             complete_emissions_out.pix.assign(stage="complete"),
         ]
     )
-    .loc[pix.ismatch(variable="Emissions|Kyoto GHG AR6GWP100", scenario="SSP2*Low*")]
+    .loc[pix.ismatch(variable="Emissions|Kyoto GHG AR6GWP100", scenario="SSP2*")]
     .openscm.to_long_data()
 )
 
@@ -409,5 +402,3 @@ for df, db in (
     (complete_emissions_out.pix.assign(stage="complete"), POST_PROCESSED_TIMESERIES_DB),
 ):
     db.save(df, allow_overwrite=True)
-
-# %%

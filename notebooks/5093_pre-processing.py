@@ -43,7 +43,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "IMAGE"
+model: str = "GCAM"
 
 # %% [markdown]
 # ## Load data
@@ -57,6 +57,9 @@ if model_raw.empty:
     raise AssertionError
 
 # sorted(model_raw.pix.unique("variable"))
+
+# %%
+model_raw.loc[pix.ismatch(variable="**CO2|AFOLU", region="World")]
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
 # Extract the model data, keeping:
@@ -85,6 +88,14 @@ if model.startswith("AIM"):
             .dropna(how="all", axis="columns"),
         ]
     )
+
+# %%
+# GCAM currently (2025.07.10) reports
+# Australia and New Zealand for some scenarios
+# and Australia_and New Zealand for others.
+# Fix this.
+if model.startswith("GCAM"):
+    model_df = model_df.openscm.update_index_levels({"region": lambda x: x.replace("Australia_and", "Australia and")})
 
 # %%
 # Rename carbon removal to include the species (CO2) in the variable name
@@ -242,6 +253,11 @@ for ax in fg.axes.flatten():
 
 # %%
 # sorted(pre_processing_res.assumed_zero_emissions.pix.unique("variable"))
+
+# %%
+# pre_processing_res.global_workflow_emissions.loc[
+# pix.ismatch(variable="**CO2**")
+# ]
 
 # %% editable=true slideshow={"slide_type": ""}
 for stage, df in (

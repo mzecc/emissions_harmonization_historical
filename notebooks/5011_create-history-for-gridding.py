@@ -66,6 +66,9 @@ region_mapping["iso_list"] = region_mapping["iso_list"].apply(
 )  # transform from Series/string to list-like object which is iterable
 region_mapping
 
+# %%
+# region_mapping[region_mapping["model"].str.startswith("GCAM")]
+
 # %% [markdown]
 # ### History data
 
