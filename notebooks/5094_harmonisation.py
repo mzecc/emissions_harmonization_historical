@@ -51,7 +51,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "IMAGE"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -380,11 +380,12 @@ for key, idf, user_overrides in (
     ("gridding", model_pre_processed_for_gridding, user_overrides_gridding),
     ("global", model_pre_processed_for_global_workflow, user_overrides_global),
 ):
-    dup_overrides = user_overrides.index.duplicated(keep=False)
-    if dup_overrides.any():
-        print(user_overrides.loc[dup_overrides].sort_index())
-        msg = "There are duplicates in the overrides"
-        raise AssertionError(msg)
+    if user_overrides is not None:
+        dup_overrides = user_overrides.index.duplicated(keep=False)
+        if dup_overrides.any():
+            print(user_overrides.loc[dup_overrides].sort_index())
+            msg = "There are duplicates in the overrides"
+            raise AssertionError(msg)
 
     harmonised_key = harmonise(
         scenarios=idf.reset_index("stage", drop=True),
@@ -863,11 +864,11 @@ from_gridding
 
 # %%
 # # TODO: check aggregation more carefully to make sure we're not missing something
-# model_pre_processed_for_global_workflow.loc[
+# display(model_pre_processed_for_global_workflow.loc[
 #     pix.ismatch(variable=["**Industrial**", "Carbon**"]),
 #     2090:
-# ].openscm.groupby_except("variable").sum()
-# from_gridding.loc[pix.ismatch(variable="**Fossil"), 2090:]
+# ].openscm.groupby_except("variable").sum())
+# from_gridding.loc[pix.ismatch(variable="**Industrial**"), 2090:]
 
 # %%
 from_global = res["global"].timeseries.loc[
