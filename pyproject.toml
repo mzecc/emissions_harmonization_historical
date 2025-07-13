@@ -24,7 +24,11 @@ dependencies = [
     # # To use a local version, comment this out and use the pypi-dependencies section below
     # # To use a specific commit, use the line below
     # "gcages>=0.8.0",
-    "gcages @ git+https://github.com/openscm/gcages.git@3a459b15589221b8beefd1797b35c7e3861e9398",
+    # Pin to updated gcages behaviour.
+    # If we decide we're happy with this,
+    # we should do a new release of gcages instead
+    # of using this pin.
+    "gcages @ git+https://github.com/openscm/gcages.git@0ffda1ce29fe9ff775ea6e3870fe157f62dd98f7",
     "ixmp4>=0.9.8,<0.10",
     "pandas-openscm>=0.5.0",
 ]
