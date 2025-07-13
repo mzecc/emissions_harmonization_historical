@@ -21,7 +21,6 @@
 # ## Imports
 
 # %%
-import re
 
 import gcages.cmip7_scenariomip.pre_processing.reaggregation.basic
 import pandas as pd
@@ -43,7 +42,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "REMIND"
 
 # %% [markdown]
 # ## Load data
@@ -77,6 +76,9 @@ model_df.columns.name = "year"
 # model_df
 
 # %%
+# sorted(model_df.pix.unique("variable"))
+
+# %%
 # AIM currently (2025.07.10) accidentally reports zeroes between model years for Carbon Removal,
 # so let's fix that by delete those and interpolating
 if model.startswith("AIM"):
@@ -98,17 +100,11 @@ if model.startswith("GCAM"):
     model_df = model_df.openscm.update_index_levels({"region": lambda x: x.replace("Australia_and", "Australia and")})
 
 # %%
-# Rename carbon removal to include the species (CO2) in the variable name
-model_df = model_df.rename(
-    lambda x: re.sub(r"^Carbon Removal", r"Carbon Removal|CO2", x) if isinstance(x, str) else x,
-    level="variable",
-)
-
-# %%
 # Interpolate
 # (needs to be done to ensure that the CDR-Emissions correction
 # works even if Carbon Removal data is reported at different time resolutions)
 model_df = model_df.T.interpolate(method="index").T
+# model_df
 
 # %% [markdown]
 # ## Pre-process

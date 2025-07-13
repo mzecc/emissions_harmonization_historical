@@ -508,33 +508,12 @@ global_workflow_harmonisation_emissions_reporting_names = (
 global_workflow_harmonisation_emissions_reporting_names
 
 # %% [markdown]
-# ### Add synthetic history for CDR
-#
-# We assume that all CDR had a value of zero in the historical period.
-
-# %%
-cdr_sectors_template = global_workflow_harmonisation_emissions_reporting_names.loc[
-    pix.ismatch(variable=["Emissions|CO2|AFOLU"])
-].pix.assign(model="Synthetic", variable="CDR template")
-# Assume zero for this history
-cdr_sectors_template.loc[:, :] = 0.0
-
-global_workflow_harmonisation_emissions_reporting_names_incl_cdr = pix.concat(
-    [
-        global_workflow_harmonisation_emissions_reporting_names,
-        cdr_sectors_template.pix.assign(variable="Carbon Removal|CO2"),
-    ]
-)
-
-global_workflow_harmonisation_emissions_reporting_names_incl_cdr
-
-# %% [markdown]
 # ## Last checks
 
 # %%
-if global_workflow_harmonisation_emissions_reporting_names_incl_cdr[HARMONISATION_YEAR].isnull().any():
-    missing = global_workflow_harmonisation_emissions_reporting_names_incl_cdr.loc[
-        global_workflow_harmonisation_emissions_reporting_names_incl_cdr[HARMONISATION_YEAR].isnull()
+if global_workflow_harmonisation_emissions_reporting_names[HARMONISATION_YEAR].isnull().any():
+    missing = global_workflow_harmonisation_emissions_reporting_names.loc[
+        global_workflow_harmonisation_emissions_reporting_names[HARMONISATION_YEAR].isnull()
     ]
 
     display(missing)  # noqa: F821
@@ -562,7 +541,7 @@ for scenario, endyear in [("ssp245", 2015), ("rcp45", 2005)]:
             pix.isin(
                 region="World",
                 scenario=scenario,
-                variable=global_workflow_harmonisation_emissions_reporting_names_incl_cdr.pix.unique("variable").map(
+                variable=global_workflow_harmonisation_emissions_reporting_names.pix.unique("variable").map(
                     reporting_to_rcmip
                 ),
             ),
@@ -577,7 +556,7 @@ rcmip_hist = rcmip_hist.openscm.update_index_levels({"variable": rcmip_to_report
 
 # %%
 pdf = (
-    pix.concat([rcmip_hist, global_workflow_harmonisation_emissions_reporting_names_incl_cdr])
+    pix.concat([rcmip_hist, global_workflow_harmonisation_emissions_reporting_names])
     .loc[:, :HARMONISATION_YEAR]
     .openscm.to_long_data()
     .dropna()
@@ -604,7 +583,7 @@ fg.fig.savefig("global-workflow-history-over-cmip-phases.pdf", bbox_inches="tigh
 
 # %%
 HISTORY_HARMONISATION_DB.save(
-    global_workflow_harmonisation_emissions_reporting_names_incl_cdr.pix.assign(purpose="global_workflow_emissions"),
+    global_workflow_harmonisation_emissions_reporting_names.pix.assign(purpose="global_workflow_emissions"),
     allow_overwrite=True,
 )
 

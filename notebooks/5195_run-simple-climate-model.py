@@ -55,8 +55,8 @@ UR = openscm_units.unit_registry
 Q = UR.Quantity
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
-scm: str = "MAGICCv7.5.3"
+model: str = "REMIND"
+scm: str = "MAGICCv7.6.0a3"
 
 # %%
 output_dir_model = SCM_OUT_DIR / model

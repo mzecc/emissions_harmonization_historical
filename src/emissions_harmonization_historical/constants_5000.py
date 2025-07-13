@@ -305,6 +305,8 @@ RAW_SCENARIO_DB = OpenSCMDB(
 PRE_PROCESSING_ID = "0002"
 # Various hacks to deal with issues in the 20250710 run
 PRE_PROCESSING_ID = "0003"
+# Upgrade to gcages which puts CDR in the Emissions tree
+PRE_PROCESSING_ID = "0004"
 
 # Database into which pre-processed scenarios are saved
 PRE_PROCESSED_SCENARIO_DB = OpenSCMDB(

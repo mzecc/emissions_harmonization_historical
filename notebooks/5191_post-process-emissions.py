@@ -49,7 +49,7 @@ pandas_openscm.register_pandas_accessor()
 pix.set_openscm_registry_as_default()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "REMIND"
 output_to_pdf: bool = False
 
 # %% [markdown]
@@ -264,6 +264,7 @@ ax = sns.lineplot(
     style="variable",
 )
 sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+ax.axhline(0.0, linestyle="--", color="tab:gray")
 
 # %%
 ax = sns.lineplot(
@@ -274,6 +275,7 @@ ax = sns.lineplot(
     style="variable",
 )
 sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+ax.axhline(0.0, linestyle="--", color="tab:gray")
 
 # %% [markdown]
 # ### Harmonised emissions
@@ -317,6 +319,7 @@ ax = sns.lineplot(
     style="variable",
 )
 sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+ax.axhline(0.0, linestyle="--", color="tab:gray")
 
 # %%
 ax = sns.lineplot(
@@ -327,6 +330,7 @@ ax = sns.lineplot(
     style="variable",
 )
 sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+ax.axhline(0.0, linestyle="--", color="tab:gray")
 
 # %% [markdown]
 # ### Complete
