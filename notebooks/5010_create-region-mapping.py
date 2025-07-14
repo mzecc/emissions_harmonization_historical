@@ -38,7 +38,8 @@ from emissions_harmonization_historical.region_mapping import create_region_mapp
 # %%
 if COMMON_DEFINITIONS_PATH.exists():
     repo = Repo(COMMON_DEFINITIONS_PATH)
-
+    print("Fetching latest updates")
+    repo.remotes.origin.fetch()
 else:
     print("Cloning common-definitions")
     repo = Repo.clone_from("https://github.com/IAMconsortium/common-definitions", COMMON_DEFINITIONS_PATH)
