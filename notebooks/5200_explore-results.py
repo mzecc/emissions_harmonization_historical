@@ -57,11 +57,11 @@ pd.set_option("display.max_rows", 100)
 
 # %%
 categories = POST_PROCESSED_METADATA_CATEGORIES_DB.load()["value"]
-# categories
+categories
 
 # %%
 metadata_quantile = POST_PROCESSED_METADATA_QUANTILE_DB.load()["value"]
-# metadata_quantile
+metadata_quantile.unstack(["metric", "quantile", "unit"])[("max", 0.5)]
 
 # %%
 temperatures_in_line_with_assessment = POST_PROCESSED_TIMESERIES_RUN_ID_DB.load(
@@ -140,9 +140,9 @@ l_min_diff = 0.1
 l_max_diff = 0.4
 tmp.loc[
     # :, :
-    # (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 6.6)
-    ((tmp[("max", "K", 0.5)] > vllo_peak - 0.01) & (tmp[("max", "K", 0.5)] < vllo_peak + 0.01))
-    | ((tmp[("max", "K", 0.5)] > vllo_peak + l_min_diff) & (tmp[("max", "K", 0.5)] < vllo_peak + l_max_diff))
+    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 6.6)
+    # ((tmp[("max", "K", 0.5)] > vllo_peak - 0.01) & (tmp[("max", "K", 0.5)] < vllo_peak + 0.01))
+    # | ((tmp[("max", "K", 0.5)] > vllo_peak + l_min_diff) & (tmp[("max", "K", 0.5)] < vllo_peak + l_max_diff))
     # (tmp[("max", "K", 0.67)] > 1.8) & (tmp[("max", "K", 0.67)] < 2.05)
     # (tmp[("2100", "K", 0.5)] > 1.7)
     # & (tmp[("2100", "K", 0.5)] < 2.0)
@@ -510,7 +510,7 @@ multi_index_lookup(metadata_quantile, scratch_selection).unstack(["metric", "uni
 # ### How much difference is the MAGICC update making?
 
 # %%
-iam = "WITCH"
+iam = "REMIND"
 tmp = temperatures_in_line_with_assessment.loc[pix.ismatch(model=f"{iam}**"), 2000:]
 
 fig, axes = plt.subplots(ncols=2, figsize=(16, 4))

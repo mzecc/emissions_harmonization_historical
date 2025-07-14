@@ -1,4 +1,7 @@
 {
+  "AIM 3.0": {
+    "SSP2 - Low Overshoot": 33
+  },
   "GCAM 7.1 scenarioMIP": {
     "SSP2 - High Emissions": 6,
     "SSP3 - High Emissions": 21,

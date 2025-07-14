@@ -49,7 +49,7 @@ pandas_openscm.register_pandas_accessor()
 pix.set_openscm_registry_as_default()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "GCAM"
 output_to_pdf: bool = False
 
 # %% [markdown]
@@ -189,6 +189,25 @@ def calculate_kyoto_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):  # noqa: D
     if "Emissions|CO2" not in indf.pix.unique("variable"):
         raise AssertionError(indf.pix.unique("variable"))
 
+    not_handled = set(indf.pix.unique("variable")) - set(KYOTO_GHGS)
+    not_handled_problematic = (
+        not_handled
+        - {
+            "Emissions|OC",
+            "Emissions|SOx",
+            "Emissions|CO2|Biosphere",
+            "Emissions|CO",
+            "Emissions|NMVOC",
+            "Emissions|BC",
+            "Emissions|CO2|Fossil",
+            "Emissions|NOx",
+            "Emissions|NH3",
+        }
+        - set(ALL_GHGS)
+    )
+    if not_handled_problematic:
+        raise AssertionError(not_handled_problematic)
+
     with pint.get_application_registry().context(gwp):
         res = (
             indf.loc[pix.isin(variable=KYOTO_GHGS)]
@@ -204,6 +223,21 @@ def calculate_kyoto_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):  # noqa: D
 def calculate_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):  # noqa: D103
     if "Emissions|CO2" not in indf.pix.unique("variable"):
         raise AssertionError(indf.pix.unique("variable"))
+
+    not_handled = set(indf.pix.unique("variable")) - set(ALL_GHGS)
+    not_handled_problematic = not_handled - {
+        "Emissions|OC",
+        "Emissions|SOx",
+        "Emissions|CO2|Biosphere",
+        "Emissions|CO",
+        "Emissions|NMVOC",
+        "Emissions|BC",
+        "Emissions|CO2|Fossil",
+        "Emissions|NOx",
+        "Emissions|NH3",
+    }
+    if not_handled_problematic:
+        raise AssertionError(not_handled_problematic)
 
     with pint.get_application_registry().context(gwp):
         res = (
@@ -249,11 +283,24 @@ pre_processed_emms_scms_out = pix.concat(
     [
         pre_processed_emms_scms_annual_incl_co2_total,
         calculate_cumulative_co2s(pre_processed_emms_scms_annual_incl_co2_total),
-        calculate_kyoto_ghgs(pre_processed_emms_scms_annual_incl_co2_total),
-        calculate_ghgs(pre_processed_emms_scms_annual_incl_co2_total),
+        calculate_kyoto_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
+        calculate_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
     ]
 )
 # pre_processed_emms_scms_out
+
+# %%
+ax = sns.lineplot(
+    data=pre_processed_emms_scms_out.loc[
+        pix.ismatch(variable="Emissions|CO2**", scenario="SSP2*")
+    ].openscm.to_long_data(),
+    x="time",
+    y="value",
+    hue="scenario",
+    style="variable",
+)
+sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+ax.axhline(0.0, linestyle="--", color="tab:gray")
 
 # %%
 ax = sns.lineplot(
@@ -355,8 +402,10 @@ complete_emissions_out = pix.concat(
     [
         complete_emissions_annual_incl_co2_total,
         calculate_cumulative_co2s(complete_emissions_annual_incl_co2_total),
-        calculate_kyoto_ghgs(complete_emissions_annual_incl_co2_total),
-        calculate_ghgs(complete_emissions_annual_incl_co2_total),
+        # calculate_kyoto_ghgs(complete_emissions_annual_incl_co2_total),
+        # calculate_ghgs(complete_emissions_annual_incl_co2_total),
+        calculate_kyoto_ghgs(complete_emissions_annual_gcages_incl_co2_total),
+        calculate_ghgs(complete_emissions_annual_gcages_incl_co2_total),
     ]
 )
 # complete_emissions_out
@@ -381,19 +430,34 @@ pdf = (
             complete_emissions_out.pix.assign(stage="complete"),
         ]
     )
-    .loc[pix.ismatch(variable="Emissions|Kyoto GHG AR6GWP100", scenario="SSP2*")]
+    .loc[
+        pix.ismatch(
+            variable=[
+                "Emissions|GHG AR6GWP100",
+                "Emissions|Kyoto GHG AR6GWP100",
+                "Emissions|CO2|Energy and Industrial Processes",
+                "Emissions|CO2|AFOLU",
+            ],
+            scenario="SSP2*",
+        )
+    ]
     .openscm.to_long_data()
 )
 
-ax = sns.lineplot(
+fg = sns.relplot(
     data=pdf,
     x="time",
     y="value",
     hue="scenario",
     style="stage",
+    col="variable",
+    col_wrap=min(2, len(pdf["variable"].unique())),
+    kind="line",
+    # facet_kws=dict(sharey=False),
 )
-sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
-ax.axhline(0.0, linestyle="--", color="gray")
+for ax in fg.axes.flatten():
+    # sns.move_legend(ax, loc="center left", bbox_to_anchor=(1.05, 0.5))
+    ax.axhline(0.0, linestyle="--", color="gray")
 
 # %% [markdown]
 # ## Save
