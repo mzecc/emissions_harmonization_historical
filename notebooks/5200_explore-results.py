@@ -140,7 +140,7 @@ l_min_diff = 0.1
 l_max_diff = 0.4
 tmp.loc[
     # :, :
-    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 6.6)
+    (tmp[("max", "K", 0.33)] > 0.0) & (tmp[("max", "K", 0.33)] < 6.6)  # noqa: PLR2004
     # ((tmp[("max", "K", 0.5)] > vllo_peak - 0.01) & (tmp[("max", "K", 0.5)] < vllo_peak + 0.01))
     # | ((tmp[("max", "K", 0.5)] > vllo_peak + l_min_diff) & (tmp[("max", "K", 0.5)] < vllo_peak + l_max_diff))
     # (tmp[("max", "K", 0.67)] > 1.8) & (tmp[("max", "K", 0.67)] < 2.05)
@@ -179,7 +179,7 @@ tmp
 # %%
 scratch_selection_l = [
     # # # HL
-    ("#7f3e3e", ("WITCH 6.0", "SSP5 - High Emissions")),
+    ("#7f3e3e", ("WITCH 6.0", "SSP5 - Medium-Low Emissions_a")),
     # # # H
     # # # ("#7f3e3e", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - High Emissions")),
     ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP3 - High Emissions")),
@@ -555,7 +555,7 @@ magicc_diff.unstack(["metric", "unit", "quantile"])[
 ].sort_values(by=("max", "K", 0.5)).describe().round(3)
 
 # %% editable=true slideshow={"slide_type": ""}
-iam = "WITCH"
+iam = "REMIND"
 pdf = raw_scm_output.loc[pix.isin(variable="Atmospheric Concentrations|CH4") & pix.ismatch(model=f"*{iam}*"), :]
 
 ax = pdf.loc[:, 2000:].openscm.plot_plume_after_calculating_quantiles(
@@ -568,3 +568,5 @@ ax.axhline(pdf[1750].unique(), linestyle="--", color="gray", label="pre-industri
 ax.annotate("pre-industrial concentration", (2040, pdf[1750].unique()))
 
 ax.set_ylim(ymin=500.0)
+
+# %%

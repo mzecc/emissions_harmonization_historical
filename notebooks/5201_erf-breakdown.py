@@ -55,8 +55,8 @@ pd.set_option("display.max_rows", 100)
 # ### Categories
 
 # %%
-model = "MESSAGE**"
-scenario = "SSP1**Very Low**"
+model = "AIM**"
+scenario = "SSP2**Low Overshoot"
 
 # %%
 raw_scm_output = SCM_OUTPUT_DB.load(
@@ -149,3 +149,5 @@ ax.axhline(0.0, linestyle="--", color="gray")
 ax.set_xticks(np.arange(2000, 2101, 10))
 ax.set_yticks(np.arange(-1.5, 4.01, 0.5))
 ax.grid()
+
+# %%

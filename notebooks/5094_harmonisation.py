@@ -51,7 +51,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "AIM"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -171,21 +171,62 @@ if model.startswith("WITCH"):
     user_overrides_gridding.loc[
         pix.isin(
             variable=[
+                # "Emissions|BC|Agricultural Waste Burning",
+                # "Emissions|BC|Forest Burning",
+                # "Emissions|CO|Agricultural Waste Burning",
+                # "Emissions|CO|Forest Burning",
+                # "Emissions|N2O|Agricultural Waste Burning",
+                # "Emissions|NH3|Agricultural Waste Burning",
+                # "Emissions|NH3|Forest Burning",
+                # "Emissions|NOx|Agricultural Waste Burning",
+                # "Emissions|NOx|Forest Burning",
+                # "Emissions|OC|Agricultural Waste Burning",
+                # "Emissions|OC|Forest Burning",
+                # "Emissions|Sulfur|Agricultural Waste Burning",
+                # "Emissions|Sulfur|Forest Burning",
+                # "Emissions|Sulfur|Grassland Burning",
+                # "Emissions|VOC|Agricultural Waste Burning",
+                ###
                 "Emissions|BC|Agricultural Waste Burning",
                 "Emissions|BC|Forest Burning",
+                "Emissions|BC|Grassland Burning",
+                # 'Emissions|BC|Peat Burning',
+                "Emissions|CH4|Agricultural Waste Burning",
+                # 'Emissions|CH4|Forest Burning',
+                "Emissions|CH4|Grassland Burning",
+                # 'Emissions|CH4|Peat Burning',
+                # 'Emissions|CO2|Agricultural Waste Burning',  # model zero
+                # 'Emissions|CO2|Forest Burning',
+                # 'Emissions|CO2|Grassland Burning',  # model zero
+                # 'Emissions|CO2|Peat Burning',
                 "Emissions|CO|Agricultural Waste Burning",
                 "Emissions|CO|Forest Burning",
+                "Emissions|CO|Grassland Burning",
+                # 'Emissions|CO|Peat Burning',
                 "Emissions|N2O|Agricultural Waste Burning",
+                # 'Emissions|N2O|Forest Burning',
+                # 'Emissions|N2O|Grassland Burning',  # model zero
+                # 'Emissions|N2O|Peat Burning',
                 "Emissions|NH3|Agricultural Waste Burning",
                 "Emissions|NH3|Forest Burning",
+                "Emissions|NH3|Grassland Burning",
+                # 'Emissions|NH3|Peat Burning',
                 "Emissions|NOx|Agricultural Waste Burning",
                 "Emissions|NOx|Forest Burning",
+                "Emissions|NOx|Grassland Burning",
+                # 'Emissions|NOx|Peat Burning',
                 "Emissions|OC|Agricultural Waste Burning",
                 "Emissions|OC|Forest Burning",
+                "Emissions|OC|Grassland Burning",
+                # 'Emissions|OC|Peat Burning',
                 "Emissions|Sulfur|Agricultural Waste Burning",
                 "Emissions|Sulfur|Forest Burning",
                 "Emissions|Sulfur|Grassland Burning",
+                # 'Emissions|Sulfur|Peat Burning',
                 "Emissions|VOC|Agricultural Waste Burning",
+                # 'Emissions|VOC|Forest Burning',
+                "Emissions|VOC|Grassland Burning",
+                # 'Emissions|VOC|Peat Burning'
             ]
         )
     ] = "constant_ratio"
@@ -501,6 +542,7 @@ combo_gridding.columns = combo_gridding.columns.astype(int)
 
 # %%
 single_variable = "Emissions|CO2|BECCS"
+single_variable = "Emissions|CH4|Grassland Burning"
 # single_variable = "Emissions|CO2|Other non-Land CDR"
 pdf = (
     combo_gridding.loc[

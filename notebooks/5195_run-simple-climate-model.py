@@ -55,8 +55,8 @@ UR = openscm_units.unit_registry
 Q = UR.Quantity
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
-scm: str = "MAGICCv7.5.3"
+model: str = "WITCH"
+scm: str = "MAGICCv7.6.0a3"
 
 # %%
 output_dir_model = SCM_OUT_DIR / model
@@ -81,7 +81,7 @@ output_dir_model
 complete_scenarios = INFILLED_SCENARIOS_DB.load(
     pix.isin(stage="complete") & pix.ismatch(model=f"*{model}*")
 ).reset_index("stage", drop=True)
-complete_scenarios
+complete_scenarios.sort_index(axis="columns")
 
 # %% [markdown]
 # ### History

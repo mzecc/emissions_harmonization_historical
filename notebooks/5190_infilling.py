@@ -68,7 +68,7 @@ Q = UR.Quantity
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "WITCH"
 
 # %% editable=true slideshow={"slide_type": ""}
 output_dir_model = INFILLED_OUT_DIR / model
@@ -168,6 +168,7 @@ infilled_silicone = infill(
     infillers_silicone,
 )
 complete_silicone = get_complete(harmonised, infilled_silicone)
+# complete_silicone
 
 # %%
 if infilled_silicone is None:
@@ -216,6 +217,7 @@ else:
 
 # %%
 wmo_2022_smoothed_full = WMO_2022_PROCESSED_DB.load(pix.isin(model=infilling_db_wmo.pix.unique("model")))
+# wmo_2022_smoothed_full
 
 # %%
 pdf = pix.concat(
@@ -253,7 +255,8 @@ for wmo_var in infilling_db_wmo.pix.unique("variable"):
 
 # %%
 infilled_wmo = infill(complete_silicone, infillers_wmo)
-complete_wmo = get_complete(complete_silicone, infilled_wmo)
+complete_wmo = get_complete(complete_silicone, infilled_wmo).sort_index(axis="columns")
+complete_wmo
 
 
 # %%
