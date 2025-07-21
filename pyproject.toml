@@ -23,12 +23,9 @@ dependencies = [
     "python-dotenv>=1.1.0,<2",
     # # To use a local version, comment this out and use the pypi-dependencies section below
     # # To use a specific commit, use the line below
-    # "gcages>=0.8.0",
-    # Pin to updated gcages behaviour.
-    # If we decide we're happy with this,
-    # we should do a new release of gcages instead
-    # of using this pin.
-    "gcages @ git+https://github.com/openscm/gcages.git@0ffda1ce29fe9ff775ea6e3870fe157f62dd98f7",
+    # "gcages>=0.10.0",
+    # Pin to specific gcages commit.
+    # "gcages @ git+https://github.com/openscm/gcages.git@0ffda1ce29fe9ff775ea6e3870fe157f62dd98f7",
     "ixmp4>=0.9.8,<0.10",
     "pandas-openscm>=0.5.0",
 ]
@@ -83,8 +80,8 @@ ipykernel = ">=6.29.5,<7"
 
 [tool.pixi.pypi-dependencies]
 emissions_harmonization_historical = { path = ".", editable = true }
-# # use this to pin to local version
-# gcages = { path = "../gcages", editable = true }
+# use this to pin to local version
+gcages = { path = "../gcages", editable = true }
 
 [tool.jupytext]
 formats = "ipynb,py:percent"

@@ -21,7 +21,6 @@
 # ## Imports
 
 # %%
-
 import gcages.cmip7_scenariomip.pre_processing.reaggregation.basic
 import pandas as pd
 import pandas_indexing as pix
@@ -42,7 +41,7 @@ from emissions_harmonization_historical.constants_5000 import (
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "WITCH"
+model: str = "GCAM"
 
 # %% [markdown]
 # ## Load data
@@ -58,7 +57,7 @@ if model_raw.empty:
 # sorted(model_raw.pix.unique("variable"))
 
 # %%
-model_raw.loc[pix.ismatch(variable="**CO2|AFOLU", region="World")]
+model_raw.loc[pix.ismatch(variable="**CO2|AFOLU", region="World")].sort_index(axis="columns")
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
 # Extract the model data, keeping:
@@ -208,9 +207,37 @@ pre_processor.run_checks = False
 # %%
 # Urgh, GCAM has some unexpected reporting for stuff we've never heard of
 model_df = model_df.loc[~pix.ismatch(variable="Emissions|C2F6|**")]
+# Urgh, GCAM reports zeros for a sub-sector of AFOLU, which breaks things
+model_df = model_df.loc[~pix.ismatch(variable="**CO2|AFOLU|**")]
+
+# %%
+model_df.loc[pix.ismatch(variable="Emissions|CO2|AFOLU**")]
+
+# %%
+model_df.loc[pix.ismatch(variable="**CO2|AFOLU**")]  # .sort_index(axis="columns")#.pix.project("scenario").T.plot()
 
 # %%
 pre_processing_res = pre_processor(model_df)
+
+# %%
+# Hard override the global workflow emissions for CO2 AFOLU
+# to use globally reported numbers,
+# even if they're not consistent with region-sector reporting.
+pre_processing_res.global_workflow_emissions = pix.concat(
+    [
+        pre_processing_res.global_workflow_emissions.loc[~pix.isin(variable="Emissions|CO2|Biosphere")],
+        model_df.loc[pix.isin(variable="Emissions|CO2|AFOLU", region="World")].pix.assign(
+            variable="Emissions|CO2|Biosphere"
+        ),
+    ]
+)
+
+pre_processing_res.global_workflow_emissions_raw_names = pix.concat(
+    [
+        pre_processing_res.global_workflow_emissions_raw_names.loc[~pix.isin(variable="Emissions|CO2|AFOLU")],
+        model_df.loc[pix.isin(variable="Emissions|CO2|AFOLU", region="World")],
+    ]
+)
 
 # %%
 pdf = pre_processing_res.global_workflow_emissions.loc[
