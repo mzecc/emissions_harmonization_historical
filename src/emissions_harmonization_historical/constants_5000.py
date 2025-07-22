@@ -23,6 +23,8 @@ from pandas_openscm.db import (
     OpenSCMDB,
 )
 
+from emissions_harmonization_historical.region_mapping import get_latest_commit_hash
+
 # Chosen to match the CMIP experiment ID
 HISTORY_SCENARIO_NAME = "historical"
 
@@ -117,6 +119,8 @@ CREATE_HISTORY_FOR_GRIDDING_ID = "_".join(
         BB4CMIP7_FORMATTING_ID,
     ]
 )
+
+COUNTRY_LEVEL_HISTORY = DATA_ROOT / "processed" / "cmip7_history_countrylevel_250721.csv"
 
 GCB_VERSION = "2024v1.0"
 
@@ -225,11 +229,15 @@ RCMIP_PROCESSED_DB = OpenSCMDB(
 
 # Commit from https://github.com/IAMconsortium/common-definitions
 # to use
+
 # previous: COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
 # previous: COMMON_DEFINITIONS_COMMIT = "f2536b68fd52a81fda792c7d3547b9a60c868041"
-# version 14/07/25:
-COMMON_DEFINITIONS_COMMIT = "877c3c38274a8800e57f6a7b10556c3e04bc46ce"
+# previous: COMMON_DEFINITIONS_COMMIT = "f2536b68fd52a81fda792c7d3547b9a60c868041"
+# updated to always grab most recent commit hash from repo
+COMMON_DEFINITIONS_COMMIT = get_latest_commit_hash("IAMconsortium", "common-definitions")
+
 COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
+
 
 REGION_MAPPING_FILE = (
     DATA_ROOT

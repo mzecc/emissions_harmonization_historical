@@ -46,6 +46,16 @@ else:
 
 repo.git.checkout(COMMON_DEFINITIONS_COMMIT)
 
+# %%
+origin = repo.remotes.origin
+origin.fetch()
+
+# Resolve origin/HEAD to a commit hash
+latest_commit = repo.commit("origin/HEAD").hexsha
+COMMON_DEFINITIONS_COMMIT = latest_commit
+
+print(f"Checking out latest commit: {COMMON_DEFINITIONS_COMMIT}")
+
 # %% [markdown]
 # ## Create the region mapping
 
