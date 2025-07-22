@@ -66,6 +66,9 @@ region_mapping["iso_list"] = region_mapping["iso_list"].apply(
 )  # transform from Series/string to list-like object which is iterable
 region_mapping
 
+# %%
+# region_mapping[region_mapping["model"].str.startswith("GCAM")]
+
 # %% [markdown]
 # ### History data
 
@@ -144,20 +147,42 @@ split_sectors(history_for_gridding.loc[pix.ismatch(variable="**|CH4|**", region=
 ).sum(min_count=1)
 
 # %% [markdown]
+# ### Add synthetic history for CDR sectors
+#
+# We assume that all CDR sectors had a value of zero in the historical period.
+
+# %%
+cdr_sectors_template = history_for_gridding.loc[pix.ismatch(variable=["Emissions|CO2|Energy Sector"])].pix.assign(
+    model="Synthetic", variable="CDR template"
+)
+# Assume zero for this history
+cdr_sectors_template.loc[:, :] = 0.0
+
+history_for_gridding_incl_cdr = pix.concat(
+    [
+        history_for_gridding,
+        cdr_sectors_template.pix.assign(variable="Carbon Removal|CO2|BECCS"),
+        cdr_sectors_template.pix.assign(variable="Carbon Removal|CO2|Other non-Land CDR"),
+    ]
+)
+
+history_for_gridding_incl_cdr
+
+# %% [markdown]
 # ## Last checks
 
 # %%
-model_regions = [r for r in history_for_gridding.pix.unique("region") if r != "World"]
+model_regions = [r for r in history_for_gridding_incl_cdr.pix.unique("region") if r != "World"]
 complete_gridding_index = get_complete_gridding_index(model_regions=model_regions)
 # complete_gridding_index
 assert_all_groups_are_complete(
-    history_for_gridding.pix.assign(model="history"),
+    history_for_gridding_incl_cdr.pix.assign(model="history"),
     complete_gridding_index,
 )
 
 # %%
-if history_for_gridding[HARMONISATION_YEAR].isnull().any():
-    missing = history_for_gridding.loc[history_for_gridding[HARMONISATION_YEAR].isnull()]
+if history_for_gridding_incl_cdr[HARMONISATION_YEAR].isnull().any():
+    missing = history_for_gridding_incl_cdr.loc[history_for_gridding_incl_cdr[HARMONISATION_YEAR].isnull()]
 
     display(missing)  # noqa: F821
     raise AssertionError
@@ -166,7 +191,9 @@ if history_for_gridding[HARMONISATION_YEAR].isnull().any():
 # ## Save
 
 # %%
-HISTORY_HARMONISATION_DB.save(history_for_gridding.pix.assign(purpose="gridding_emissions"), allow_overwrite=True)
+HISTORY_HARMONISATION_DB.save(
+    history_for_gridding_incl_cdr.pix.assign(purpose="gridding_emissions"), allow_overwrite=True
+)
 
 # %% [markdown]
 # ## Upload to Zenodo

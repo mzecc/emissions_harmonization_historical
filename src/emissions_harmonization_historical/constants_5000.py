@@ -97,7 +97,7 @@ BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4C
 # Moved to portable OpenSCMDB
 BB4CMIP7_FORMATTING_ID = "0002"
 # Update after investigation of Annika in https://github.com/iiasa/emissions_harmonization_historical/pull/110/files
-# ... not because of content changes, but because the current version was produced on that branch 
+# ... not because of content changes, but because the current version was produced on that branch
 BB4CMIP7_FORMATTING_ID = "0003"
 
 # Database into which the processed BB4CMIP7 data is saved
@@ -228,8 +228,7 @@ RCMIP_PROCESSED_DB = OpenSCMDB(
 
 # Commit from https://github.com/IAMconsortium/common-definitions
 # to use
-# previous: COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
-COMMON_DEFINITIONS_COMMIT = "f2536b68fd52a81fda792c7d3547b9a60c868041"
+COMMON_DEFINITIONS_COMMIT = "eb36011f4b0beba5225c507c5f9534215e4107d3"
 COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
 
 REGION_MAPPING_FILE = (
@@ -304,6 +303,8 @@ RAW_SCENARIO_DB = OpenSCMDB(
 # PRE_PROCESSING_ID = "0001"
 # Moved to portable OpenSCMDB
 PRE_PROCESSING_ID = "0002"
+# Various hacks to deal with issues in the 20250710 run
+PRE_PROCESSING_ID = "0003"
 
 # Database into which pre-processed scenarios are saved
 PRE_PROCESSED_SCENARIO_DB = OpenSCMDB(

@@ -51,7 +51,7 @@ from emissions_harmonization_historical.constants_5000 import (
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model_search: str = "WITCH"
+model_search: str = "GCAM"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model_search
@@ -95,6 +95,7 @@ props = conn_ssp.properties().reset_index()
 
 # %%
 to_download = props[props["model"].str.contains(model_search)]
+# to_download = to_download[to_download["scenario"].str.endswith("- High Emissions")]
 to_download.shape[0]
 
 # %%

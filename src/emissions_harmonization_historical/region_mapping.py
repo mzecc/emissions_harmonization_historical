@@ -76,16 +76,23 @@ def create_region_mapping(out_file: Path, common_definitions_path: Path) -> Path
     rp = RegionProcessor.from_directory(common_definitions_path / "mappings", dsd)
     rows = []
     for ram in rp.mappings.values():
-        rows.extend(
-            [
-                (
-                    ram.model,
-                    common_region.name,
-                    [ram.rename_mapping[nr] for nr in common_region.constituent_regions],
-                )
-                for common_region in ram.common_regions
+        rows_model = [
+            (
+                ram.model,
+                common_region.name,
+                [ram.rename_mapping[nr] for nr in common_region.constituent_regions],
+            )
+            for common_region in ram.common_regions
+        ]
+
+        if ram.model[0].startswith("GCAM"):
+            # TODO: remove this when we update to new common-definitions
+            rows_model = [
+                (r[0], r[1], [rr.replace("Australia_NZ", "Australia and New Zealand") for rr in r[2]])
+                for r in rows_model
             ]
-        )
+
+        rows.extend(rows_model)
 
     region_df.to_csv(out_file)
 

@@ -352,7 +352,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/03/8e228b3df0bc9564e847c53f6d45f68aafce3eeea36d185463cb633b071d/f90nml-1.4.5.tar.gz
       - pypi: https://files.pythonhosted.org/packages/8f/7d/2d6ce181d7a5f51dedb8c06206cbf0ec026a99bf145edd309f9e17c3282f/fastapi-0.115.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/ec/00d68c4ddfedfe64159999e5f8a98fb8442729a63e2077eb9dcd89623d27/filelock-3.17.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/d7/a8f6d64d7c8ca2a6c1a7b02a81f31e7f39246692886f9c32142294442f6f/gcages-0.7.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/5a/f6/95e16e2d1005b75dccdfaaadb8748ea5169e5a06a739cbae2b85d7b77e21/gcages-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1d/9a/4114a9057db2f1462d5c8f8390ab7383925fe1ac012eaa42402ad65c2963/GitPython-3.1.44-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/99/f8ad15b4414489be553f323109fd279ba98f48bc9b38b648f2f6c0628f17/globalwarmingpotentials-0.11.1-py2.py3-none-any.whl
@@ -755,7 +755,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/03/8e228b3df0bc9564e847c53f6d45f68aafce3eeea36d185463cb633b071d/f90nml-1.4.5.tar.gz
       - pypi: https://files.pythonhosted.org/packages/8f/7d/2d6ce181d7a5f51dedb8c06206cbf0ec026a99bf145edd309f9e17c3282f/fastapi-0.115.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/ec/00d68c4ddfedfe64159999e5f8a98fb8442729a63e2077eb9dcd89623d27/filelock-3.17.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/d7/a8f6d64d7c8ca2a6c1a7b02a81f31e7f39246692886f9c32142294442f6f/gcages-0.7.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/5a/f6/95e16e2d1005b75dccdfaaadb8748ea5169e5a06a739cbae2b85d7b77e21/gcages-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1d/9a/4114a9057db2f1462d5c8f8390ab7383925fe1ac012eaa42402ad65c2963/GitPython-3.1.44-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/99/f8ad15b4414489be553f323109fd279ba98f48bc9b38b648f2f6c0628f17/globalwarmingpotentials-0.11.1-py2.py3-none-any.whl
@@ -1151,7 +1151,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/03/8e228b3df0bc9564e847c53f6d45f68aafce3eeea36d185463cb633b071d/f90nml-1.4.5.tar.gz
       - pypi: https://files.pythonhosted.org/packages/8f/7d/2d6ce181d7a5f51dedb8c06206cbf0ec026a99bf145edd309f9e17c3282f/fastapi-0.115.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/ec/00d68c4ddfedfe64159999e5f8a98fb8442729a63e2077eb9dcd89623d27/filelock-3.17.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/d7/a8f6d64d7c8ca2a6c1a7b02a81f31e7f39246692886f9c32142294442f6f/gcages-0.7.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/5a/f6/95e16e2d1005b75dccdfaaadb8748ea5169e5a06a739cbae2b85d7b77e21/gcages-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1d/9a/4114a9057db2f1462d5c8f8390ab7383925fe1ac012eaa42402ad65c2963/GitPython-3.1.44-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/99/f8ad15b4414489be553f323109fd279ba98f48bc9b38b648f2f6c0628f17/globalwarmingpotentials-0.11.1-py2.py3-none-any.whl
@@ -1547,7 +1547,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/03/8e228b3df0bc9564e847c53f6d45f68aafce3eeea36d185463cb633b071d/f90nml-1.4.5.tar.gz
       - pypi: https://files.pythonhosted.org/packages/8f/7d/2d6ce181d7a5f51dedb8c06206cbf0ec026a99bf145edd309f9e17c3282f/fastapi-0.115.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/ec/00d68c4ddfedfe64159999e5f8a98fb8442729a63e2077eb9dcd89623d27/filelock-3.17.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/d7/a8f6d64d7c8ca2a6c1a7b02a81f31e7f39246692886f9c32142294442f6f/gcages-0.7.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/5a/f6/95e16e2d1005b75dccdfaaadb8748ea5169e5a06a739cbae2b85d7b77e21/gcages-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1d/9a/4114a9057db2f1462d5c8f8390ab7383925fe1ac012eaa42402ad65c2963/GitPython-3.1.44-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/99/f8ad15b4414489be553f323109fd279ba98f48bc9b38b648f2f6c0628f17/globalwarmingpotentials-0.11.1-py2.py3-none-any.whl
@@ -1931,7 +1931,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/03/8e228b3df0bc9564e847c53f6d45f68aafce3eeea36d185463cb633b071d/f90nml-1.4.5.tar.gz
       - pypi: https://files.pythonhosted.org/packages/8f/7d/2d6ce181d7a5f51dedb8c06206cbf0ec026a99bf145edd309f9e17c3282f/fastapi-0.115.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/89/ec/00d68c4ddfedfe64159999e5f8a98fb8442729a63e2077eb9dcd89623d27/filelock-3.17.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/d7/a8f6d64d7c8ca2a6c1a7b02a81f31e7f39246692886f9c32142294442f6f/gcages-0.7.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/5a/f6/95e16e2d1005b75dccdfaaadb8748ea5169e5a06a739cbae2b85d7b77e21/gcages-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1d/9a/4114a9057db2f1462d5c8f8390ab7383925fe1ac012eaa42402ad65c2963/GitPython-3.1.44-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/99/f8ad15b4414489be553f323109fd279ba98f48bc9b38b648f2f6c0628f17/globalwarmingpotentials-0.11.1-py2.py3-none-any.whl
@@ -4769,7 +4769,7 @@ packages:
 - pypi: .
   name: emissions-harmonization-historical
   version: 0.1.0
-  sha256: 8de148c4f7613a73214bea146afb5256b0b32b127492ac524d3a70c8e2015992
+  sha256: ec19d9f80a365f6f7b64d94abfcdb9e9c2a356aefe785833dabb4cf0f5878ca8
   requires_dist:
   - pre-commit==3.3.1
   - ptolemy-iamc @ git+https://github.com/gidden/ptolemy.git@015aa843c340bd57464eb7cfd5f3c8e397201266
@@ -4785,7 +4785,7 @@ packages:
   - loguru>=0.7.3,<0.8
   - openscm-zenodo>=0.5.0,<0.6
   - python-dotenv>=1.1.0,<2
-  - gcages>=0.7.0
+  - gcages>=0.8.0
   - ixmp4>=0.9.8,<0.10
   - pandas-openscm>=0.5.0
   requires_python: ==3.11.*
@@ -5169,10 +5169,10 @@ packages:
   - pkg:pypi/fsspec?source=hash-mapping
   size: 138186
   timestamp: 1738501352608
-- pypi: https://files.pythonhosted.org/packages/a2/d7/a8f6d64d7c8ca2a6c1a7b02a81f31e7f39246692886f9c32142294442f6f/gcages-0.7.0-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/5a/f6/95e16e2d1005b75dccdfaaadb8748ea5169e5a06a739cbae2b85d7b77e21/gcages-0.8.0-py3-none-any.whl
   name: gcages
-  version: 0.7.0
-  sha256: c8353fffbecc358fbad4044e69eff84e70761341623a5500ea2322651d5b339d
+  version: 0.8.0
+  sha256: 55995f8dcba2f7fa552b3a2f891a284c9eaad6557546fa4b3688d941a292a0f3
   requires_dist:
   - backports-strenum>=1.3.1 ; python_full_version < '3.11'
   - numpy>=1.25.0
