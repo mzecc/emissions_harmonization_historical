@@ -483,6 +483,21 @@ for i, (variable, src, emissions, show_legend) in tqdm.auto.tqdm(enumerate(varia
 plt.savefig("full-dive.pdf", bbox_inches="tight")
 
 # %%
+erf_nat = pdf_raw_scm_output.loc[pix.isin(variable="Effective Radiative Forcing")].reset_index(
+    "variable", drop=True
+) - pdf_raw_scm_output.loc[pix.isin(variable="Effective Radiative Forcing|Anthropogenic")].reset_index(
+    "variable", drop=True
+)
+erf_nat.openscm.plot_plume_after_calculating_quantiles(
+    quantile_over="run_id",
+    hue_var="scenario",
+    style_var="climate_model",
+    # palette=palette_h,
+    quantiles_plumes=((0.5, 1.0), ((0.33, 0.67), 0.3), ((0.05, 0.95), 0.0)),
+    # ax=ax,
+)
+
+# %%
 multi_index_lookup(categories, scratch_selection).unstack(["metric", "climate_model"]).sort_values(
     ("category", "MAGICCv7.6.0a3")
 ).sort_index(axis="columns")
