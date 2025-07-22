@@ -27,6 +27,7 @@ import re
 from functools import partial
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pandas_indexing as pix
 import pandas_openscm
@@ -56,8 +57,10 @@ logger.disable("gcages")
 # ## General set up
 
 # %%
-base_model = "REMIND-MAgPIE 3.5-4.10"
-base_scenario = "SSP1 - Very Low Emissions"
+# base_model = "REMIND-MAgPIE 3.5-4.10"
+# base_scenario = "SSP1 - Very Low Emissions"
+base_model = "GCAM 7.1 scenarioMIP"
+base_scenario = "SSP3 - High Emissions"
 
 # %%
 base = pd.MultiIndex.from_tuples(
@@ -70,7 +73,8 @@ base
 others = pd.MultiIndex.from_tuples(
     (
         # ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Overshoot"),
-        ("AIM 3.0", "SSP2 - Low Overshoot"),
+        # ("AIM 3.0", "SSP2 - Low Overshoot"),
+        ("WITCH 6.0", "SSP5 - Medium-Low Emissions_a"),
     ),
     name=["model", "scenario"],
 )
@@ -337,7 +341,10 @@ run_scms(
 )
 
 # %%
-gsat_out_runs_raw = db.load(pix.isin(variable="Surface Air Temperature Change"))
+gsat_out_runs_raw = db.load(
+    pix.isin(variable="Surface Air Temperature Change") & pix.isin(model=to_run_openscm_runner.pix.unique("model"))
+    # & pix.isin(scenario=[*base.get_level_values("scenario"), *others.get_level_values("scenario")]),
+)
 gsat_out_runs_raw
 
 
@@ -433,6 +440,8 @@ for (model, scenario), msdf in deltas_all_components_median.groupby(["model", "s
     )
     ax.set_title(f"{model} {scenario}\nrel. to\n{base_model} {base_scenario}")
     ax.axhline(0.0, color="k")
+    ax.set_yticks(np.arange(-1.2, 0.5, 0.1))
+    ax.grid()
     plt.show()
 
 # %%

@@ -65,7 +65,7 @@ scenarios_to_analyse = [
     # ("IMAGE*", "SSP1 - Very Low Emissions"),
     # ("WITCH*", "SSP1 - Low Overshoot"),
     ("AIM*", "SSP2 - Low Overshoot"),
-    ("MESSAGE*", "SSP2 - Low Emissions"),
+    # ("MESSAGE*", "SSP2 - Low Emissions"),
 ]
 
 # %%
@@ -335,3 +335,5 @@ for i, (variable, src, emissions) in tqdm.auto.tqdm(enumerate(variables_src)):
 
     ax.grid()
     # break
+
+# %%
