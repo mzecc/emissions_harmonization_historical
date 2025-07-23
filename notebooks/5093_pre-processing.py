@@ -217,6 +217,26 @@ model_df = model_df.loc[~pix.ismatch(variable="Emissions|C2F6|**")]
 pre_processing_res = pre_processor(model_df)
 
 # %%
+# Hard override the global workflow emissions for CO2 AFOLU
+# to use globally reported numbers,
+# even if they're not consistent with region-sector reporting.
+pre_processing_res.global_workflow_emissions = pix.concat(
+    [
+        pre_processing_res.global_workflow_emissions.loc[~pix.isin(variable="Emissions|CO2|Biosphere")],
+        model_df.loc[pix.isin(variable="Emissions|CO2|AFOLU", region="World")].pix.assign(
+            variable="Emissions|CO2|Biosphere"
+        ),
+    ]
+)
+
+pre_processing_res.global_workflow_emissions_raw_names = pix.concat(
+    [
+        pre_processing_res.global_workflow_emissions_raw_names.loc[~pix.isin(variable="Emissions|CO2|AFOLU")],
+        model_df.loc[pix.isin(variable="Emissions|CO2|AFOLU", region="World")],
+    ]
+)
+
+# %%
 pdf = pre_processing_res.global_workflow_emissions.loc[
     pix.ismatch(
         variable=[
