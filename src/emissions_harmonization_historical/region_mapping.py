@@ -9,20 +9,22 @@ from nomenclature.definition import DataStructureDefinition
 from nomenclature.processor import RegionProcessor
 
 
-def get_latest_commit_hash(repo_owner: str, repo_name: str, fallback_commit: str="cc69ed0a415a63c7ce7372d5a36c088d9cbee055"):
+def get_latest_commit_hash(
+    repo_owner: str, repo_name: str, fallback_commit: str = "cc69ed0a415a63c7ce7372d5a36c088d9cbee055"
+):
     """
     Fetch the latest commit hash from a GitHub repository.
 
     Falls back to a default hash, here for IAMconsortium/common-definitions, if the request fails.
 
     Parameters
-    -----------
+    ----------
     repo_owner
         GitHub user
-        
+
     repo_name
         Repository name
-    
+
     fallback_commit
         Commit hash to use if request fails.
 
@@ -116,13 +118,6 @@ def create_region_mapping(out_file: Path, common_definitions_path: Path) -> Path
             )
             for common_region in ram.common_regions
         ]
-
-        if ram.model[0].startswith("GCAM"):
-            # TODO: remove this when we update to new common-definitions
-            rows_model = [
-                (r[0], r[1], [rr.replace("Australia_NZ", "Australia and New Zealand") for rr in r[2]])
-                for r in rows_model
-            ]
 
         rows.extend(rows_model)
 
