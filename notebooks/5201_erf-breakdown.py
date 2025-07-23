@@ -149,5 +149,3 @@ ax.axhline(0.0, linestyle="--", color="gray")
 ax.set_xticks(np.arange(2000, 2101, 10))
 ax.set_yticks(np.arange(-1.5, 4.01, 0.5))
 ax.grid()
-
-# %%

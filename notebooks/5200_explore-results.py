@@ -583,5 +583,3 @@ ax.axhline(pdf[1750].unique(), linestyle="--", color="gray", label="pre-industri
 ax.annotate("pre-industrial concentration", (2040, pdf[1750].unique()))
 
 ax.set_ylim(ymin=500.0)
-
-# %%

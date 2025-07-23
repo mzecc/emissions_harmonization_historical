@@ -171,25 +171,9 @@ if model.startswith("WITCH"):
     user_overrides_gridding.loc[
         pix.isin(
             variable=[
-                # "Emissions|BC|Agricultural Waste Burning",
-                # "Emissions|BC|Forest Burning",
-                # "Emissions|CO|Agricultural Waste Burning",
-                # "Emissions|CO|Forest Burning",
-                # "Emissions|N2O|Agricultural Waste Burning",
-                # "Emissions|NH3|Agricultural Waste Burning",
-                # "Emissions|NH3|Forest Burning",
-                # "Emissions|NOx|Agricultural Waste Burning",
-                # "Emissions|NOx|Forest Burning",
-                # "Emissions|OC|Agricultural Waste Burning",
-                # "Emissions|OC|Forest Burning",
-                # "Emissions|Sulfur|Agricultural Waste Burning",
-                # "Emissions|Sulfur|Forest Burning",
-                # "Emissions|Sulfur|Grassland Burning",
-                # "Emissions|VOC|Agricultural Waste Burning",
-                ###
                 "Emissions|BC|Agricultural Waste Burning",
                 "Emissions|BC|Forest Burning",
-                "Emissions|BC|Grassland Burning",
+                # "Emissions|BC|Grassland Burning",
                 # 'Emissions|BC|Peat Burning',
                 "Emissions|CH4|Agricultural Waste Burning",
                 # 'Emissions|CH4|Forest Burning',

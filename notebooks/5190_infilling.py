@@ -255,7 +255,7 @@ for wmo_var in infilling_db_wmo.pix.unique("variable"):
 
 # %%
 infilled_wmo = infill(complete_silicone, infillers_wmo)
-complete_wmo = get_complete(complete_silicone, infilled_wmo).sort_index(axis="columns")
+complete_wmo = get_complete(complete_silicone, infilled_wmo)
 complete_wmo
 
 
@@ -433,4 +433,6 @@ for ids, df in (
     ("complete", complete),
 ):
     if df is not None:
-        INFILLED_SCENARIOS_DB.save(df.pix.assign(stage=ids), allow_overwrite=True, progress=True)
+        INFILLED_SCENARIOS_DB.save(
+            df.pix.assign(stage=ids).sort_index(axis="columns"), allow_overwrite=True, progress=True
+        )

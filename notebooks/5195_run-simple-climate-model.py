@@ -81,7 +81,6 @@ output_dir_model
 complete_scenarios = INFILLED_SCENARIOS_DB.load(
     pix.isin(stage="complete") & pix.ismatch(model=f"*{model}*")
 ).reset_index("stage", drop=True)
-complete_scenarios.sort_index(axis="columns")
 
 # %% [markdown]
 # ### History

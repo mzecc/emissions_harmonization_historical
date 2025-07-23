@@ -207,14 +207,6 @@ pre_processor.run_checks = False
 # %%
 # Urgh, GCAM has some unexpected reporting for stuff we've never heard of
 model_df = model_df.loc[~pix.ismatch(variable="Emissions|C2F6|**")]
-# Urgh, GCAM reports zeros for a sub-sector of AFOLU, which breaks things
-model_df = model_df.loc[~pix.ismatch(variable="**CO2|AFOLU|**")]
-
-# %%
-model_df.loc[pix.ismatch(variable="Emissions|CO2|AFOLU**")]
-
-# %%
-model_df.loc[pix.ismatch(variable="**CO2|AFOLU**")]  # .sort_index(axis="columns")#.pix.project("scenario").T.plot()
 
 # %%
 pre_processing_res = pre_processor(model_df)

@@ -402,8 +402,6 @@ complete_emissions_out = pix.concat(
     [
         complete_emissions_annual_incl_co2_total,
         calculate_cumulative_co2s(complete_emissions_annual_incl_co2_total),
-        # calculate_kyoto_ghgs(complete_emissions_annual_incl_co2_total),
-        # calculate_ghgs(complete_emissions_annual_incl_co2_total),
         calculate_kyoto_ghgs(complete_emissions_annual_gcages_incl_co2_total),
         calculate_ghgs(complete_emissions_annual_gcages_incl_co2_total),
     ]
