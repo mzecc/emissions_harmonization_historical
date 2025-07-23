@@ -5170,8 +5170,8 @@ packages:
   timestamp: 1738501352608
 - pypi: ../gcages
   name: gcages
-  version: 0.10.2a1
-  sha256: c2bf8a720011954ee1d42a43f7a4d8c5ac8992f17c2abe7b06bb0e65cfb31d6f
+  version: 0.11.1a1
+  sha256: 325879c4abb9688dfc5c9fd3cdf9d7667bb29446a9bc8d4dd09080dd5235c998
   requires_dist:
   - backports-strenum>=1.3.1 ; python_full_version < '3.11'
   - numpy>=1.26.0 ; python_full_version < '3.13'
@@ -5186,9 +5186,8 @@ packages:
   - pandas-openscm[db]>=0.5.1 ; extra == 'ar6'
   - pymagicc>=2.1.5 ; extra == 'ar6'
   - scipy>=1.13.0 ; extra == 'ar6'
-  - scmdata>=0.17.0,<0.18 ; extra == 'ar6'
+  - scmdata>=0.18.0 ; extra == 'ar6'
   - silicone>=1.3.0 ; extra == 'ar6'
-  - xarray<2025 ; extra == 'ar6'
   - pandas-indexing>=0.6.3 ; extra == 'cmip7scenariomip'
   - tqdm>=4.0.0 ; extra == 'progress'
   - gcages[ar6] ; extra == 'full'
