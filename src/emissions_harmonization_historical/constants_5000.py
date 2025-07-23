@@ -98,6 +98,9 @@ BB4CMIP7_ANNUAL_SECTORAL_COUNTRY_OUTPUT_DIR = BB4CMIP7_INTERIM_OUTPUT_DIR / BB4C
 # BB4CMIP7_FORMATTING_ID = "0001"
 # Moved to portable OpenSCMDB
 BB4CMIP7_FORMATTING_ID = "0002"
+# Update after investigation of Annika in https://github.com/iiasa/emissions_harmonization_historical/pull/110/files
+# ... not because of content changes, but because the current version was produced on that branch
+BB4CMIP7_FORMATTING_ID = "0003"
 
 # Database into which the processed BB4CMIP7 data is saved
 BB4CMIP7_PROCESSED_DIR = DATA_ROOT / "processed" / "bb4cmip7" / BB4CMIP7_FORMATTING_ID
@@ -228,13 +231,10 @@ RCMIP_PROCESSED_DB = OpenSCMDB(
 
 
 # Commit from https://github.com/IAMconsortium/common-definitions
-# to use
 
-# previous: COMMON_DEFINITIONS_COMMIT = "95b5f2c9fb62e32a4d08fe2ffc5b4a6ff246ad2d"
-# previous: COMMON_DEFINITIONS_COMMIT = "f2536b68fd52a81fda792c7d3547b9a60c868041"
-# previous: COMMON_DEFINITIONS_COMMIT = "f2536b68fd52a81fda792c7d3547b9a60c868041"
-# updated to always grab most recent commit hash from repo
-COMMON_DEFINITIONS_COMMIT = get_latest_commit_hash("IAMconsortium", "common-definitions", fallback_commit="cc69ed0a415a63c7ce7372d5a36c088d9cbee055")
+COMMON_DEFINITIONS_COMMIT = get_latest_commit_hash(
+    "IAMconsortium", "common-definitions", fallback_commit="cc69ed0a415a63c7ce7372d5a36c088d9cbee055"
+)
 
 COMMON_DEFINITIONS_PATH = REPO_ROOT / "common-definitions"
 
@@ -297,6 +297,8 @@ DOWNLOAD_SCENARIOS_ID = "0009-zn"
 DOWNLOAD_SCENARIOS_ID = "0010-jk"
 # Run intermediary submission REMIND 20250617
 DOWNLOAD_SCENARIOS_ID = "0011-REMIND-jk"
+# Run 20250710 by Marco (prepared with/by Jarmo)
+DOWNLOAD_SCENARIOS_ID = "0020"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
@@ -309,6 +311,8 @@ RAW_SCENARIO_DB = OpenSCMDB(
 # PRE_PROCESSING_ID = "0001"
 # Moved to portable OpenSCMDB
 PRE_PROCESSING_ID = "0002"
+# Various hacks to deal with issues in the 20250710 run
+PRE_PROCESSING_ID = "0003"
 
 # Database into which pre-processed scenarios are saved
 PRE_PROCESSED_SCENARIO_DB = OpenSCMDB(

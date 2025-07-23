@@ -51,7 +51,7 @@ from emissions_harmonization_historical.constants_5000 import (
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model_search: str = "WITCH"
+model_search: str = "GCAM"
 
 # %%
 output_dir_model = DATA_ROOT / "raw" / "scenarios" / DOWNLOAD_SCENARIOS_ID / model_search
@@ -95,6 +95,7 @@ props = conn_ssp.properties().reset_index()
 
 # %%
 to_download = props[props["model"].str.contains(model_search)]
+# to_download = to_download[to_download["scenario"].str.endswith("- High Emissions")]
 to_download.shape[0]
 
 # %%
@@ -149,7 +150,7 @@ for _, row in tqdm.auto.tqdm(to_download.iterrows(), total=to_download.shape[0])
     model = row.model
     scenario = row.scenario
 
-    df = pyam.read_iiasa("ssp_submission", model=model, scenario=scenario, variable="Emissions|*")
+    df = pyam.read_iiasa("ssp_submission", model=model, scenario=scenario, variable=["Emissions|*", "Carbon Removal|*"])
     if df.empty:
         msg = f"No data for {model=} {scenario=}"
         raise AssertionError(msg)
