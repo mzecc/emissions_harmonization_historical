@@ -9,20 +9,27 @@ from nomenclature.definition import DataStructureDefinition
 from nomenclature.processor import RegionProcessor
 
 
-def get_latest_commit_hash(repo_owner, repo_name, fallback_commit="cc69ed0a415a63c7ce7372d5a36c088d9cbee055"):
+def get_latest_commit_hash(repo_owner: str, repo_name: str, fallback_commit: str="cc69ed0a415a63c7ce7372d5a36c088d9cbee055"):
     """
     Fetch the latest commit hash from a GitHub repository.
 
     Falls back to a default hash, here for IAMconsortium/common-definitions, if the request fails.
 
-    Args:
-        repo_owner (str): GitHub user.
-        repo_name (str): Repository name.
-        fallback_commit (str): Commit hash to use if request fails.
+    Parameters
+    -----------
+    repo_owner
+        GitHub user
+        
+    repo_name
+        Repository name
+    
+    fallback_commit
+        Commit hash to use if request fails.
 
     Returns
     -------
-        str: The latest commit hash or the fallback hash.
+    :
+        The latest commit hash or the fallback hash.
     """
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/commits"
     try:
