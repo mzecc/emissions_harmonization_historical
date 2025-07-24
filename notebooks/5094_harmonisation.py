@@ -296,11 +296,14 @@ if model.startswith("MESSAGE"):
                 pix.ismatch(
                     variable=[
                         # for "NOx, BC, OC, CO, Sulfur
+                        # VOC, NH3 advised on 22 July 2025 by Luca
                         "Emissions|BC|**",
                         "Emissions|NOx|**",
                         "Emissions|OC|**",
                         "Emissions|CO|**",
                         "Emissions|Sulfur|**",
+                        "Emissions|VOC|**",
+                        "Emissions|NH3|**",
                     ]
                 )
             )
@@ -308,11 +311,13 @@ if model.startswith("MESSAGE"):
                 pix.ismatch(
                     variable=[
                         # for all energy sectors (energy, industry, transportation, residential & commercial) and waste
+                        # Aircraft advised on 22 July 2025 by Luca
                         "**Energy**",
                         "**Industr**",
                         "**Transport**",
                         "**Residential**",
                         "**Waste**",
+                        "**Aircraft**",
                     ]
                 )
             )
