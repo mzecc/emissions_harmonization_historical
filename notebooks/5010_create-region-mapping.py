@@ -81,7 +81,7 @@ models = [
     "IMAGE 3.4",
     "WITCH 6.0",
     "COFFEE 1.6",
-    "REMIND-MAgPIE 3.5-4.10",
+    "REMIND-MAgPIE 3.5-4.11",
     "MESSAGEix-GLOBIOM-GAINS 2.1-R12",
     "AIM 3.0",
 ]
