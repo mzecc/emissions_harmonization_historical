@@ -52,7 +52,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "WITCH"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -218,10 +218,10 @@ if model.startswith("WITCH"):
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 if model.startswith("REMIND"):
-    # READING form csv file located in "./data/interim/harmonisation_overrides"
+    # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
 
-    file = DATA_ROOT / "interim/harmonisation_overrides/harmonisation-methods_gridding_REMIND.csv"
-    override_df = pd.read_csv(file)
+    file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_REMIND.csv"
+    override_df = pd.read_csv(file_overrides)
 
     # template
     user_overrides_gridding = pd.Series(

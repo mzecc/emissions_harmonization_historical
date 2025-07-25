@@ -86,7 +86,7 @@ history_for_gridding_harmonisation = HISTORY_HARMONISATION_DB.load(
 
 # %%
 # TODO: check whether we get the same global sum for all IAM region groupings
-model_regions = [r for r in history_for_gridding_harmonisation.pix.unique("region") if "REMIND-MAgPIE 3.5-4.10" in r]
+model_regions = [r for r in history_for_gridding_harmonisation.pix.unique("region") if "REMIND-MAgPIE 3.5-4.11" in r]
 model_regions
 
 # %%

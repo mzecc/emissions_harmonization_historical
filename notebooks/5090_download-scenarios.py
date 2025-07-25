@@ -96,10 +96,11 @@ props = conn_ssp.properties().reset_index()
 # %%
 to_download = props[props["model"].str.contains(model_search)]
 
-if model_search == "REMIND":
-    to_download = to_download[to_download["scenario"].str.endswith("- Very Low Emissions")]
-# if model_search == "AIM":
-#     to_download = to_download[to_download["scenario"].str.endswith("- Low Overshoot")]
+# if model_search == "REMIND":
+#    to_download = to_download[to_download["scenario"].str.endswith("- Very Low Emissions")]
+if model_search == "AIM":
+    to_download = to_download[to_download["scenario"].str.contains("Low Overshoot")]
+    # to_download = to_download[to_download["scenario"].str.endswith("- Low Overshoot")]
 # if model_search == "MESSAGE":
 #     to_download = to_download[to_download["scenario"].str.endswith("- Low Emissions")]
 # if model_search == "IMAGE":
