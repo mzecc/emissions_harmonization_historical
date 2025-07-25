@@ -61,11 +61,11 @@ scenarios_to_analyse = [
     # ("WITCH*", "*- Low*"),
     # ("WITCH*", "*- Very Low*"),
     # ("AIM*", "*Very Low*"),
-    ("REMIND*", "SSP1*Very Low Emissions"),
+    ("REMIND*", "SSP1 - Very Low Emissions"),
     # ("IMAGE*", "SSP1 - Very Low Emissions"),
     # ("WITCH*", "SSP1 - Low Overshoot"),
     ("AIM*", "SSP2 - Low Overshoot"),
-    # ("MESSAGE*", "SSP2 - Low Emissions"),
+    ("MESSAGE*", "SSP2 - Low Emissions"),
 ]
 
 # %%
@@ -245,8 +245,8 @@ amsc = partial(
 
 # %%
 start_year = 2000
-start_year = 1750
-pdf_emissions = amsc(emissions_complete).loc[:, :]
+# start_year = 1750
+pdf_emissions = amsc(emissions_complete).loc[:, start_year:]
 pdf_erfs = amsc(erfs).loc[:, start_year:]
 pdf_temperature = amsc(temperatures_in_line_with_assessment).loc[:, start_year:]
 

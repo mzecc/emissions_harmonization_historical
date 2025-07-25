@@ -51,7 +51,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "WITCH"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -686,8 +686,6 @@ history_gridding_aggregate = to_global_workflow_emissions(
 # history_gridding_aggregate
 
 # %%
-# TODO: fix gcages so `to_global_workflow_emissions`
-# handles the Carbon Removal tree properly
 harmonised_gridding_aggregate = to_global_workflow_emissions(
     res["gridding"].timeseries,
     global_workflow_co2_fossil_sector="Energy and Industrial Processes",

@@ -57,10 +57,10 @@ logger.disable("gcages")
 # ## General set up
 
 # %%
-# base_model = "REMIND-MAgPIE 3.5-4.10"
-# base_scenario = "SSP1 - Very Low Emissions"
-base_model = "GCAM 7.1 scenarioMIP"
-base_scenario = "SSP3 - High Emissions"
+base_model = "REMIND-MAgPIE 3.5-4.11"
+base_scenario = "SSP1 - Very Low Emissions"
+# base_model = "GCAM 7.1 scenarioMIP"
+# base_scenario = "SSP3 - High Emissions"
 
 # %%
 base = pd.MultiIndex.from_tuples(
@@ -72,9 +72,9 @@ base
 # %%
 others = pd.MultiIndex.from_tuples(
     (
-        # ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Overshoot"),
-        # ("AIM 3.0", "SSP2 - Low Overshoot"),
-        ("WITCH 6.0", "SSP5 - Medium-Low Emissions_a"),
+        ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions"),
+        ("AIM 3.0", "SSP2 - Low Overshoot"),
+        # ("WITCH 6.0", "SSP5 - Medium-Low Emissions_a"),
     ),
     name=["model", "scenario"],
 )
@@ -189,7 +189,10 @@ to_attribute = [
     ("BC", ["Emissions|BC"]),
     ("OC", ["Emissions|OC"]),
     ("Sulfur", ["Emissions|Sulfur"]),
-    ("NH3 NOx CO VOCs", ["Emissions|NH3", "Emissions|NOx", "Emissions|CO", "Emissions|VOC"]),
+    ("NH3", ["Emissions|NH3"]),
+    ("NOx", ["Emissions|NOx"]),
+    ("CO", ["Emissions|CO"]),
+    ("NMVOCs", ["Emissions|VOC"]),
     (
         "Montreal gases",
         [
@@ -440,7 +443,7 @@ for (model, scenario), msdf in deltas_all_components_median.groupby(["model", "s
     )
     ax.set_title(f"{model} {scenario}\nrel. to\n{base_model} {base_scenario}")
     ax.axhline(0.0, color="k")
-    ax.set_yticks(np.arange(-1.2, 0.5, 0.1))
+    ax.set_yticks(np.arange(-0.4, 0.6, 0.1))
     ax.grid()
     plt.show()
 
