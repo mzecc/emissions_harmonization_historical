@@ -21,8 +21,6 @@
 # ## Imports
 
 # %%
-import re
-
 import gcages.cmip7_scenariomip.pre_processing.reaggregation.basic
 import pandas as pd
 import pandas_indexing as pix
@@ -59,7 +57,7 @@ if model_raw.empty:
 # sorted(model_raw.pix.unique("variable"))
 
 # %%
-model_raw.loc[pix.ismatch(variable="**CO2|AFOLU", region="World")]
+model_raw.loc[pix.ismatch(variable="**CO2|AFOLU", region="World")].sort_index(axis="columns")
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
 # Extract the model data, keeping:
@@ -75,6 +73,9 @@ if model_df.empty:
 
 model_df.columns.name = "year"
 # model_df
+
+# %%
+# sorted(model_df.pix.unique("variable"))
 
 # %%
 # AIM currently (2025.07.10) accidentally reports zeroes between model years for Carbon Removal,
@@ -98,17 +99,11 @@ if model.startswith("GCAM"):
     model_df = model_df.openscm.update_index_levels({"region": lambda x: x.replace("Australia_and", "Australia and")})
 
 # %%
-# Rename carbon removal to include the species (CO2) in the variable name
-model_df = model_df.rename(
-    lambda x: re.sub(r"^Carbon Removal", r"Carbon Removal|CO2", x) if isinstance(x, str) else x,
-    level="variable",
-)
-
-# %%
 # Interpolate
 # (needs to be done to ensure that the CDR-Emissions correction
 # works even if Carbon Removal data is reported at different time resolutions)
 model_df = model_df.T.interpolate(method="index").T
+# model_df
 
 # %% [markdown]
 # ## Pre-process

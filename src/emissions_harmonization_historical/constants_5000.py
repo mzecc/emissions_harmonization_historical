@@ -299,6 +299,8 @@ DOWNLOAD_SCENARIOS_ID = "0010-jk"
 DOWNLOAD_SCENARIOS_ID = "0011-REMIND-jk"
 # Run 20250710 by Marco (prepared with/by Jarmo)
 DOWNLOAD_SCENARIOS_ID = "0020"
+# Zeb exploring
+DOWNLOAD_SCENARIOS_ID = "2025-07-25-zn-scratch"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
@@ -313,6 +315,8 @@ RAW_SCENARIO_DB = OpenSCMDB(
 PRE_PROCESSING_ID = "0002"
 # Various hacks to deal with issues in the 20250710 run
 PRE_PROCESSING_ID = "0003"
+# Upgrade to gcages which puts CDR in the Emissions tree
+PRE_PROCESSING_ID = "0004"
 
 # Database into which pre-processed scenarios are saved
 PRE_PROCESSED_SCENARIO_DB = OpenSCMDB(

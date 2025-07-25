@@ -168,8 +168,8 @@ cdr_sectors_template.loc[:, :] = 0.0
 history_for_gridding_incl_cdr = pix.concat(
     [
         history_for_gridding,
-        cdr_sectors_template.pix.assign(variable="Carbon Removal|CO2|BECCS"),
-        cdr_sectors_template.pix.assign(variable="Carbon Removal|CO2|Other non-Land CDR"),
+        cdr_sectors_template.pix.assign(variable="Emissions|CO2|BECCS"),
+        cdr_sectors_template.pix.assign(variable="Emissions|CO2|Other non-Land CDR"),
     ]
 )
 
