@@ -51,7 +51,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "GCAM"
+model: str = "WITCH"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -173,19 +173,44 @@ if model.startswith("WITCH"):
             variable=[
                 "Emissions|BC|Agricultural Waste Burning",
                 "Emissions|BC|Forest Burning",
+                # "Emissions|BC|Grassland Burning",
+                # 'Emissions|BC|Peat Burning',
+                "Emissions|CH4|Agricultural Waste Burning",
+                # 'Emissions|CH4|Forest Burning',
+                "Emissions|CH4|Grassland Burning",
+                # 'Emissions|CH4|Peat Burning',
+                # 'Emissions|CO2|Agricultural Waste Burning',  # model zero
+                # 'Emissions|CO2|Forest Burning',
+                # 'Emissions|CO2|Grassland Burning',  # model zero
+                # 'Emissions|CO2|Peat Burning',
                 "Emissions|CO|Agricultural Waste Burning",
                 "Emissions|CO|Forest Burning",
+                "Emissions|CO|Grassland Burning",
+                # 'Emissions|CO|Peat Burning',
                 "Emissions|N2O|Agricultural Waste Burning",
+                # 'Emissions|N2O|Forest Burning',
+                # 'Emissions|N2O|Grassland Burning',  # model zero
+                # 'Emissions|N2O|Peat Burning',
                 "Emissions|NH3|Agricultural Waste Burning",
                 "Emissions|NH3|Forest Burning",
+                "Emissions|NH3|Grassland Burning",
+                # 'Emissions|NH3|Peat Burning',
                 "Emissions|NOx|Agricultural Waste Burning",
                 "Emissions|NOx|Forest Burning",
+                "Emissions|NOx|Grassland Burning",
+                # 'Emissions|NOx|Peat Burning',
                 "Emissions|OC|Agricultural Waste Burning",
                 "Emissions|OC|Forest Burning",
+                "Emissions|OC|Grassland Burning",
+                # 'Emissions|OC|Peat Burning',
                 "Emissions|Sulfur|Agricultural Waste Burning",
                 "Emissions|Sulfur|Forest Burning",
                 "Emissions|Sulfur|Grassland Burning",
+                # 'Emissions|Sulfur|Peat Burning',
                 "Emissions|VOC|Agricultural Waste Burning",
+                # 'Emissions|VOC|Forest Burning',
+                "Emissions|VOC|Grassland Burning",
+                # 'Emissions|VOC|Peat Burning'
             ]
         )
     ] = "constant_ratio"
@@ -391,13 +416,11 @@ user_overrides_gridding_cdr = pd.Series(
 
 # This CANNOT be hist_zero for now [see below].
 # reduce_ratio_2040 may be a good choice for now.
-user_overrides_gridding_cdr.loc[
-    pix.ismatch(
-        variable=[
-            "Carbon Removal**",
-        ]
-    )
-] = "reduce_ratio_2040"
+cdr_var_matcher = [
+    "Emissions|CO2|BECCS",
+    "Emissions|CO2|Other non-Land CDR",
+]
+user_overrides_gridding_cdr.loc[pix.ismatch(variable=cdr_var_matcher)] = "reduce_ratio_2040"
 user_overrides_gridding_cdr = user_overrides_gridding_cdr[
     user_overrides_gridding_cdr != "nan"
 ]  # only keep the specified overrides
@@ -412,7 +435,7 @@ else:
     # from modelling teams implemented above.
     user_overrides_gridding = pd.concat(
         [
-            user_overrides_gridding.loc[~pix.ismatch(variable="Carbon Removal**")],
+            user_overrides_gridding.loc[~pix.ismatch(variable=cdr_var_matcher)],
             user_overrides_gridding_cdr,
         ]
     )
@@ -453,22 +476,6 @@ for key, idf, user_overrides in (
     if user_overrides is not None:
         # Check overrides were passsed through correctly
         pd.testing.assert_series_equal(user_overrides, multi_index_lookup(res[key].overrides, user_overrides.index))
-
-# %%
-# Note TODO: we don't actually end up using the global CDR harmonised timeseries anywhere at the moment.
-# Given that we get the harmonisation we want from the gridding emissions anyway,
-# I'm not sure it's worth the added complication of carrying around Carbon Removal at the global level too
-# like we currently do.
-# Instead, we could just say,
-# "If you want CDR harmonised separately, use the gridding path, "
-# we're not adding a CDR-specific timeseries and harmonisation logic and re-aggregation post harmonisation logic
-# at the global level too."
-# If we did this, we'd need code like the below to do the aggregation of carbon removal into fossil
-
-# variables_sum = {
-#     "Emissions|CO2|Fossil": ["Emissions|CO2|Fossil", "Carbon Removal|CO2"]
-# }
-# res["global"] = res["global"].pix.aggregate(variable=variables_sum)
 
 # %% [markdown]
 # ### Post-harmonization fixes
@@ -574,11 +581,14 @@ combo_gridding.columns = combo_gridding.columns.astype(int)
 # ### Single variable
 
 # %%
+single_variable = "Emissions|CO2|BECCS"
+single_variable = "Emissions|CH4|Grassland Burning"
+# single_variable = "Emissions|CO2|Other non-Land CDR"
 pdf = (
     combo_gridding.loc[
         pix.isin(
-            variable="Emissions|OC|Agricultural Waste Burning",
-            region=model_pre_processed_for_gridding.pix.unique("region")[-1],
+            variable=single_variable,
+            # region=model_pre_processed_for_gridding.pix.unique("region")[-1],
         ),
         1990:2100,
     ]
@@ -600,13 +610,13 @@ fg = sns.relplot(
         "harmonised": "",
         "pre-processed": (3, 3),
     },
-    col="variable",
-    col_wrap=1,
+    col="region",
+    col_wrap=3,
     facet_kws=dict(sharey=False),
     kind="line",
 )
 for ax in fg.axes.flatten():
-    if "CO2" in ax.get_title():
+    if "CO2" in single_variable:
         ax.axhline(0.0, linestyle="--", color="tab:gray")
 
     else:
@@ -695,8 +705,6 @@ history_gridding_aggregate = to_global_workflow_emissions(
 # history_gridding_aggregate
 
 # %%
-# TODO: fix gcages so `to_global_workflow_emissions`
-# handles the Carbon Removal tree properly
 harmonised_gridding_aggregate = to_global_workflow_emissions(
     res["gridding"].timeseries,
     global_workflow_co2_fossil_sector="Energy and Industrial Processes",
@@ -925,17 +933,7 @@ from_gridding = from_gridding.pix.aggregate(variable=variables_sum).sort_index()
 from_gridding
 
 # %%
-# # TODO: check aggregation more carefully to make sure we're not missing something
-# display(model_pre_processed_for_global_workflow.loc[
-#     pix.ismatch(variable=["**Industrial**", "Carbon**"]),
-#     2090:
-# ].openscm.groupby_except("variable").sum())
-# from_gridding.loc[pix.ismatch(variable="**Industrial**"), 2090:]
-
-# %%
-from_global = res["global"].timeseries.loc[
-    ~pix.isin(variable=[*from_gridding.pix.unique("variable"), "Carbon Removal|CO2"])
-]
+from_global = res["global"].timeseries.loc[~pix.isin(variable=from_gridding.pix.unique("variable"))]
 from_global
 
 # %%
