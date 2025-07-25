@@ -37,6 +37,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from pandas_openscm.indexing import multi_index_lookup
 
 from emissions_harmonization_historical.constants_5000 import (
+    DATA_ROOT,
     HARMONISED_OUT_DIR,
     HARMONISED_SCENARIO_DB,
     HISTORY_HARMONISATION_DB,
@@ -51,7 +52,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "WITCH"
+model: str = "REMIND"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -217,7 +218,10 @@ if model.startswith("WITCH"):
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 if model.startswith("REMIND"):
-    # advised on 5 June 2025 by Elmar
+    # READING form csv file located in "./data/interim/harmonisation_overrides"
+
+    file = DATA_ROOT / "interim/harmonisation_overrides/harmonisation-methods_gridding_REMIND.csv"
+    override_df = pd.read_csv(file)
 
     # template
     user_overrides_gridding = pd.Series(
@@ -240,10 +244,23 @@ if model.startswith("REMIND"):
         ]
     )  # only keep indices that are in the template
 
-    # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
-    user_overrides_gridding.loc[~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)] = (
-        "reduce_ratio_2050"
-    )
+    # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
+    for _, row in override_df.iterrows():
+        # Find all entries in user_overrides_gridding with matching variable
+        matching_idx = user_overrides_gridding.index.get_level_values("variable") == row["variable"]
+        valid_overrides_idx = user_overrides_gridding.index[matching_idx]
+
+        if "ratio" in row["method"].lower():
+            # If method is a "ratio" type, exclude combinations where the model is zero in 2023
+            non_zero_idx = ~valid_overrides_idx.isin(combinations_model_zero_in_harmyear_filter)
+            to_override = valid_overrides_idx[non_zero_idx]
+        else:
+            # For non-ratio methods, apply override unconditionally
+            to_override = valid_overrides_idx
+
+        # Apply the method
+        user_overrides_gridding.loc[to_override] = row["method"]
+
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
     ## global (not implemented yet)
