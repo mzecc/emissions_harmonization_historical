@@ -307,42 +307,61 @@ if model.startswith("MESSAGE"):
         ),
         name="method",
     ).astype(str)
-    user_overrides_gridding.loc[
-        (
-            (
-                ~pix.ismatch(
-                    variable=[
-                        # make sure Waste didn't include 'Agricultural Waste Burning'
-                        "**Agricultural Waste Burning**",
-                    ]
-                )
-            )
-            & (
-                pix.ismatch(
-                    variable=[
-                        # for "NOx, BC, OC, CO, Sulfur
-                        "Emissions|BC|**",
-                        "Emissions|NOx|**",
-                        "Emissions|OC|**",
-                        "Emissions|CO|**",
-                        "Emissions|Sulfur|**",
-                    ]
-                )
-            )
-            & (
-                pix.ismatch(
-                    variable=[
-                        # for all energy sectors (energy, industry, transportation, residential & commercial) and waste
-                        "**Energy**",
-                        "**Industr**",
-                        "**Transport**",
-                        "**Residential**",
-                        "**Waste**",
-                    ]
-                )
+
+    # index selector: combinations_model_zero_in_harmyear
+    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
+    combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
+    # combinations_model_zero_in_harmyear
+    combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
+        [
+            level
+            for level in combinations_model_zero_in_harmyear.names
+            if level not in user_overrides_gridding.index.names
+        ]
+    )  # only keep indices that are in the template
+    mask = (
+        (~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter))
+        & (
+            ~pix.ismatch(
+                variable=[
+                    # make sure Waste didn't include 'Agricultural Waste Burning'
+                    "**Agricultural Waste Burning**",
+                ]
             )
         )
-    ] = "reduce_ratio_2080"
+        & (
+            pix.ismatch(
+                variable=[
+                    # for "NOx, BC, OC, CO, Sulfur
+                    # VOC, NH3 advised on 22 July 2025 by Luca
+                    "Emissions|BC|**",
+                    "Emissions|NOx|**",
+                    "Emissions|OC|**",
+                    "Emissions|CO|**",
+                    "Emissions|Sulfur|**",
+                    "Emissions|VOC|**",
+                    "Emissions|NH3|**",
+                ]
+            )
+        )
+        & (
+            pix.ismatch(
+                variable=[
+                    # for all energy sectors (energy, industry, transportation, residential & commercial) and waste
+                    # Aircraft advised on 22 July 2025 by Luca
+                    "**Energy**",
+                    "**Industr**",
+                    "**Transport**",
+                    "**Residential**",
+                    "**Waste**",
+                    "**Aircraft**",
+                ]
+            )
+        )
+    )
+
+    user_overrides_gridding.loc[mask] = "reduce_ratio_2080"
+
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 # additional method tweaks advised by Shinichiro on 17 July 2025
