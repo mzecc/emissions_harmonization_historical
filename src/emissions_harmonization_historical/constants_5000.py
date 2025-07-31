@@ -301,6 +301,8 @@ DOWNLOAD_SCENARIOS_ID = "0011-REMIND-jk"
 DOWNLOAD_SCENARIOS_ID = "0020"
 # Zeb exploring
 DOWNLOAD_SCENARIOS_ID = "2025-07-25-zn-scratch"
+# ZN scratch
+DOWNLOAD_SCENARIOS_ID = "zn-gcam-20250731-scratch"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(
