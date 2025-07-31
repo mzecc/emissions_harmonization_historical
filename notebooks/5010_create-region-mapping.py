@@ -21,6 +21,7 @@
 # %%
 import ast
 
+import nomenclature
 import pandas as pd
 from git import Repo
 
@@ -31,6 +32,9 @@ from emissions_harmonization_historical.constants_5000 import (
     REGION_MAPPING_PATH,
 )
 from emissions_harmonization_historical.region_mapping import create_region_mapping
+
+# %%
+nomenclature.__version__
 
 # %% [markdown]
 # ## Set common definitions to right commit
