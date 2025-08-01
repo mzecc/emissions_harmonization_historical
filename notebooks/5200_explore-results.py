@@ -182,7 +182,7 @@ scratch_selection_l = [
     ("#7f3e3e", ("WITCH 6.0", "SSP5 - Medium-Low Emissions_a")),
     # # # H
     # # # ("#7f3e3e", ("REMIND-MAgPIE 3.5-4.10", "SSP3 - High Emissions")),
-    ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP3 - High Emissions")),
+    ("#7f3e3e", ("GCAM 7.1 scenarioMIP", "SSP3 - High Emissions_a")),
     # # ("#7f3e3e", ("IMAGE 3.4", "SSP3 - High Emissions")),
     # # ("#7f3e3e", ("WITCH 6.0", "SSP5 - High Emissions")),
     # # ("#7f3e3e", ("AIM 3.0", "SSP5 - High Emissions")),

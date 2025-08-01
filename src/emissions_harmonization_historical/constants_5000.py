@@ -299,8 +299,10 @@ DOWNLOAD_SCENARIOS_ID = "0010-jk"
 DOWNLOAD_SCENARIOS_ID = "0011-REMIND-jk"
 # Run 20250710 by Marco (prepared with/by Jarmo)
 DOWNLOAD_SCENARIOS_ID = "0020"
-# AIM-tests
-DOWNLOAD_SCENARIOS_ID = "20250725-AIMtest"
+# Zeb exploring
+DOWNLOAD_SCENARIOS_ID = "2025-07-25-zn-scratch"
+# ZN scratch
+DOWNLOAD_SCENARIOS_ID = "zn-gcam-20250731-scratch"
 
 # Database into which raw scenarios are saved
 RAW_SCENARIO_DB = OpenSCMDB(

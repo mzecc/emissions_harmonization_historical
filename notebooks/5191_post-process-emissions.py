@@ -436,7 +436,7 @@ pdf = (
                 "Emissions|CO2|Energy and Industrial Processes",
                 "Emissions|CO2|AFOLU",
             ],
-            scenario="SSP2*",
+            # scenario="SSP2*",
         )
     ]
     .openscm.to_long_data()

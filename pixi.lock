@@ -365,7 +365,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f0/4c/e10e2c46ea37cab5c471d0ddaaa9a434dc1d28650078ac1b56c2d7b9b2e4/mypy-1.14.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/fc/4c/90add8e62421e841f8ced1a30f33705c74c989e06081fb830aea4b19d1d9/nomenclature_iamc-0.22.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0f/cd/d35b202c630ba76d5f05797f32c73bd2b6bd131dcde73b0e168fddf5d468/nomenclature_iamc-0.26.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/86/76/98b9b37a2117ea8c4daab698b73657115c5fee8a01600923155c60df504b/openscm_runner-0.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
@@ -768,7 +768,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/01/b5/6c8d33bd0f851a7692a8bfe4ee75eb82b6983a3cf39e5e32a5d2a723f0c1/mypy-1.14.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_28_aarch64.whl
       - pypi: https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/fc/4c/90add8e62421e841f8ced1a30f33705c74c989e06081fb830aea4b19d1d9/nomenclature_iamc-0.22.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0f/cd/d35b202c630ba76d5f05797f32c73bd2b6bd131dcde73b0e168fddf5d468/nomenclature_iamc-0.26.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/86/76/98b9b37a2117ea8c4daab698b73657115c5fee8a01600923155c60df504b/openscm_runner-0.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
@@ -1164,7 +1164,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/da/11/a9422850fd506edbcdc7f6090682ecceaf1f87b9dd847f9df79942da8506/mypy-1.14.1-cp311-cp311-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/fc/4c/90add8e62421e841f8ced1a30f33705c74c989e06081fb830aea4b19d1d9/nomenclature_iamc-0.22.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0f/cd/d35b202c630ba76d5f05797f32c73bd2b6bd131dcde73b0e168fddf5d468/nomenclature_iamc-0.26.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/86/76/98b9b37a2117ea8c4daab698b73657115c5fee8a01600923155c60df504b/openscm_runner-0.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
@@ -1559,7 +1559,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b6/9e/47e450fd39078d9c02d620545b2cb37993a8a8bdf7db3652ace2f80521ca/mypy-1.14.1-cp311-cp311-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/fc/4c/90add8e62421e841f8ced1a30f33705c74c989e06081fb830aea4b19d1d9/nomenclature_iamc-0.22.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0f/cd/d35b202c630ba76d5f05797f32c73bd2b6bd131dcde73b0e168fddf5d468/nomenclature_iamc-0.26.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/86/76/98b9b37a2117ea8c4daab698b73657115c5fee8a01600923155c60df504b/openscm_runner-0.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
@@ -1944,7 +1944,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/a2/75/8c93ff7f315c4d086a2dfcde02f713004357d70a163eddb6c56a6a5eff40/mypy-1.14.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/fc/4c/90add8e62421e841f8ced1a30f33705c74c989e06081fb830aea4b19d1d9/nomenclature_iamc-0.22.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0f/cd/d35b202c630ba76d5f05797f32c73bd2b6bd131dcde73b0e168fddf5d468/nomenclature_iamc-0.26.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/86/76/98b9b37a2117ea8c4daab698b73657115c5fee8a01600923155c60df504b/openscm_runner-0.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/9f/f48e406b4f92741f50350abeb054ed960bb2b1265bd4d21c3eb4906600c9/openscm_units-0.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/17/08/97926b870ec546106df82f8554d01208bfa19f17da574af851fd8818761f/openscm_zenodo-0.5.0-py3-none-any.whl
@@ -4769,14 +4769,14 @@ packages:
 - pypi: .
   name: emissions-harmonization-historical
   version: 0.1.0
-  sha256: 90c84c8f54bb3c43aa88b28344bc84f5862c356c808eee54fd612cb1113186f6
+  sha256: b2f593b64c154d848a7f80c0de63dcfc71be2b4607f087d3f4d70d6506b98da6
   requires_dist:
   - pre-commit==3.3.1
   - ptolemy-iamc @ git+https://github.com/gidden/ptolemy.git@015aa843c340bd57464eb7cfd5f3c8e397201266
   - aneris-iamc @ git+https://github.com/iiasa/aneris.git@9e5aa002b523f1d5d0ac32554988816e8c20cb44
   - openscm-units>=0.6.2
   - scmdata>=0.17.0,<0.18
-  - nomenclature-iamc>=0.22.1,<0.23
+  - nomenclature-iamc>=0.26
   - xarray-regrid==0.4.0
   - papermill>=2.6.0,<3
   - silicone>=1.3.0,<2
@@ -12485,18 +12485,18 @@ packages:
   version: 1.9.1
   sha256: ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9
   requires_python: '>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*'
-- pypi: https://files.pythonhosted.org/packages/fc/4c/90add8e62421e841f8ced1a30f33705c74c989e06081fb830aea4b19d1d9/nomenclature_iamc-0.22.1-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/0f/cd/d35b202c630ba76d5f05797f32c73bd2b6bd131dcde73b0e168fddf5d468/nomenclature_iamc-0.26.1-py3-none-any.whl
   name: nomenclature-iamc
-  version: 0.22.1
-  sha256: 3edfaa9181b6012df68b366b742785c007e939f5135a62dbcf106fea8d2a3dde
+  version: 0.26.1
+  sha256: 8fc89ca64299735e72c74f70de1aeaf45a64bb694e517044be65e778a07f0bde
   requires_dist:
-  - pyyaml>=6.0.1,<7.0.0
+  - pyyaml>=6.0.1,<7.0
   - click>=8
-  - gitpython>=3.1.40,<4.0.0
-  - numpy>=1.23.0
-  - openpyxl>=3.1.2,<4.0.0
-  - pandas>=1.5.2
-  - pyam-iamc>=2.1
+  - gitpython>=3.1.40,<4.0
+  - numpy>=1.23.0,<3.0
+  - openpyxl>=3.1.2,<4.0
+  - pandas>=1.5.2,<3.0
+  - pyam-iamc>=2.1,<4.0
   - pycountry==23.12.11
   - pydantic>=2,<3
   - pysquirrel>=1.1,<2.0
