@@ -34,7 +34,7 @@ from gcages.cmip7_scenariomip.gridding_emissions import to_global_workflow_emiss
 from gcages.index_manipulation import split_sectors
 from gcages.testing import compare_close
 from matplotlib.backends.backend_pdf import PdfPages
-from pandas_openscm.indexing import multi_index_lookup
+from pandas_openscm.indexing import multi_index_lookup, multi_index_match
 
 from emissions_harmonization_historical.constants_5000 import (
     DATA_ROOT,
@@ -52,7 +52,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "IMAGE"
+model: str = "WITCH"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -170,19 +170,11 @@ if model.startswith("WITCH"):
         name="method",
     ).astype(str)
 
-    # index selector: combinations_model_zero_in_harmyear
-    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
-    combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
-    # combinations_model_zero_in_harmyear
-    combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
-        [
-            level
-            for level in combinations_model_zero_in_harmyear.names
-            if level not in user_overrides_gridding.index.names
-        ]
-    )  # only keep indices that are in the template
-
-    mask = (~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)) & (
+    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
+    model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
+        model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
+    ).unique()
+    mask = (~multi_index_match(user_overrides_gridding.index, model_zero_in_harmyear_for_overrides)) & (
         pix.ismatch(
             variable=[
                 "**Agricultural Waste Burning**",
