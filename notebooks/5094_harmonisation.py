@@ -34,7 +34,7 @@ from gcages.cmip7_scenariomip.gridding_emissions import to_global_workflow_emiss
 from gcages.index_manipulation import split_sectors
 from gcages.testing import compare_close
 from matplotlib.backends.backend_pdf import PdfPages
-from pandas_openscm.indexing import multi_index_lookup
+from pandas_openscm.indexing import multi_index_lookup, multi_index_match
 
 from emissions_harmonization_historical.constants_5000 import (
     DATA_ROOT,
@@ -52,7 +52,7 @@ from emissions_harmonization_historical.harmonisation import HARMONISATION_YEAR,
 pandas_openscm.register_pandas_accessor()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "IMAGE"
+model: str = "WITCH"
 make_region_sector_plots: bool = False
 output_to_pdf: bool = False
 
@@ -169,52 +169,22 @@ if model.startswith("WITCH"):
         ),
         name="method",
     ).astype(str)
-    user_overrides_gridding.loc[
-        pix.isin(
+
+    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
+    model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
+        model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
+    ).unique()
+    mask = (~multi_index_match(user_overrides_gridding.index, model_zero_in_harmyear_for_overrides)) & (
+        pix.ismatch(
             variable=[
-                "Emissions|BC|Agricultural Waste Burning",
-                "Emissions|BC|Forest Burning",
-                # "Emissions|BC|Grassland Burning",
-                # 'Emissions|BC|Peat Burning',
-                "Emissions|CH4|Agricultural Waste Burning",
-                # 'Emissions|CH4|Forest Burning',
-                "Emissions|CH4|Grassland Burning",
-                # 'Emissions|CH4|Peat Burning',
-                # 'Emissions|CO2|Agricultural Waste Burning',  # model zero
-                # 'Emissions|CO2|Forest Burning',
-                # 'Emissions|CO2|Grassland Burning',  # model zero
-                # 'Emissions|CO2|Peat Burning',
-                "Emissions|CO|Agricultural Waste Burning",
-                "Emissions|CO|Forest Burning",
-                "Emissions|CO|Grassland Burning",
-                # 'Emissions|CO|Peat Burning',
-                "Emissions|N2O|Agricultural Waste Burning",
-                # 'Emissions|N2O|Forest Burning',
-                # 'Emissions|N2O|Grassland Burning',  # model zero
-                # 'Emissions|N2O|Peat Burning',
-                "Emissions|NH3|Agricultural Waste Burning",
-                "Emissions|NH3|Forest Burning",
-                "Emissions|NH3|Grassland Burning",
-                # 'Emissions|NH3|Peat Burning',
-                "Emissions|NOx|Agricultural Waste Burning",
-                "Emissions|NOx|Forest Burning",
-                "Emissions|NOx|Grassland Burning",
-                # 'Emissions|NOx|Peat Burning',
-                "Emissions|OC|Agricultural Waste Burning",
-                "Emissions|OC|Forest Burning",
-                "Emissions|OC|Grassland Burning",
-                # 'Emissions|OC|Peat Burning',
-                "Emissions|Sulfur|Agricultural Waste Burning",
-                "Emissions|Sulfur|Forest Burning",
-                "Emissions|Sulfur|Grassland Burning",
-                # 'Emissions|Sulfur|Peat Burning',
-                "Emissions|VOC|Agricultural Waste Burning",
-                # 'Emissions|VOC|Forest Burning',
-                "Emissions|VOC|Grassland Burning",
-                # 'Emissions|VOC|Peat Burning'
+                "**Agricultural Waste Burning**",
+                "**Forest Burning**",
+                "**Grassland Burning**",
             ]
         )
-    ] = "constant_ratio"
+    )
+
+    user_overrides_gridding.loc[mask] = "constant_ratio"
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 if model.startswith("REMIND"):
