@@ -283,10 +283,11 @@ if model.startswith("REMIND"):
     ] = "constant_ratio"
 
 if model.startswith("MESSAGE"):
-    # advised on 10 July 2025 by Volker. This is expected to be updated later through an excel file provided by Luca.
-    # Guidance: 'reduce_ratio_2080' for
-    # "NOx, BC, OC, CO, Sulfur for all energy sectors
-    # (energy, industry, transportation, residential & commercial) and waste"
+    # 04 August 2025 - Switch to file overrides
+    # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
+    file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_MESSAGE.csv"
+    override_df = pd.read_csv(file_overrides)
+
     user_overrides_gridding = pd.Series(
         np.nan,
         index=model_pre_processed_for_gridding.index.droplevel(
@@ -295,59 +296,30 @@ if model.startswith("MESSAGE"):
         name="method",
     ).astype(str)
 
-    # index selector: combinations_model_zero_in_harmyear
-    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
-    combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
-    # combinations_model_zero_in_harmyear
-    combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
-        [
-            level
-            for level in combinations_model_zero_in_harmyear.names
-            if level not in user_overrides_gridding.index.names
-        ]
-    )  # only keep indices that are in the template
-    mask = (
-        (~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter))
-        & (
-            ~pix.ismatch(
-                variable=[
-                    # make sure Waste didn't include 'Agricultural Waste Burning'
-                    "**Agricultural Waste Burning**",
-                ]
-            )
-        )
-        & (
-            pix.ismatch(
-                variable=[
-                    # for "NOx, BC, OC, CO, Sulfur
-                    # VOC, NH3 advised on 22 July 2025 by Luca
-                    "Emissions|BC|**",
-                    "Emissions|NOx|**",
-                    "Emissions|OC|**",
-                    "Emissions|CO|**",
-                    "Emissions|Sulfur|**",
-                    "Emissions|VOC|**",
-                    "Emissions|NH3|**",
-                ]
-            )
-        )
-        & (
-            pix.ismatch(
-                variable=[
-                    # for all energy sectors (energy, industry, transportation, residential & commercial) and waste
-                    # Aircraft advised on 22 July 2025 by Luca
-                    "**Energy**",
-                    "**Industr**",
-                    "**Transport**",
-                    "**Residential**",
-                    "**Waste**",
-                    "**Aircraft**",
-                ]
-            )
-        )
-    )
+    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
+    model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
+        model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
+    ).unique()
 
-    user_overrides_gridding.loc[mask] = "reduce_ratio_2080"
+    # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
+    for _, row in override_df.iterrows():
+        # Find all entries in user_overrides_gridding with matching variable
+        matching_idx = (user_overrides_gridding.index.get_level_values("variable") == row["variable"]) & (
+            user_overrides_gridding.index.get_level_values("region") == row["region"]
+        )
+
+        valid_overrides_idx = user_overrides_gridding.index[matching_idx]
+
+        if "ratio" in row["method"].lower():
+            # If method is a "ratio" type, exclude combinations where the model is zero in 2023
+            non_zero_idx = ~valid_overrides_idx.isin(model_zero_in_harmyear_for_overrides)
+            to_override = valid_overrides_idx[non_zero_idx]
+        else:
+            # For non-ratio methods, apply override unconditionally
+            to_override = valid_overrides_idx
+
+        # Apply the method
+        user_overrides_gridding.loc[to_override] = row["method"]
 
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
