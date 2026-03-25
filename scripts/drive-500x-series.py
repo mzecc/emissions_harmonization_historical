@@ -39,7 +39,7 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
         "5094_harmonisation.py",
     ]:
         res = {"model": iam, "make_region_sector_plots": True, "output_to_pdf": True}
-        res = {"model": iam, "make_region_sector_plots": False, "output_to_pdf": False}
+        # res = {"model": iam, "make_region_sector_plots": False, "output_to_pdf": False}
 
     elif notebook_name in [
         "5190_infilling.py",
@@ -219,9 +219,9 @@ def main():  # noqa: PLR0912
     # ]
     # All
     iams = [
-        # "WITCH",
+        "WITCH",
         # "REMIND",
-        "MESSAGE",
+        # "MESSAGE",
         # "IMAGE",
         # "GCAM",
         # "COFFEE",
@@ -235,7 +235,7 @@ def main():  # noqa: PLR0912
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093","5094"]
     # # # Downloading and reporting checking
-    # # notebook_prefixes = ["5090", "5091", "5092"]
+    notebook_prefixes = ["5090", "5091", "5092"]
     # Everything up to infilling
     # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
     # # Harmonisation, infilling and post-processing
@@ -243,7 +243,7 @@ def main():  # noqa: PLR0912
     # Infilling and post-processing
     # notebook_prefixes = ["5190", "5191"]
     # # Everything
-    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5190", "5194"]
+    # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5190", "5194"]
     # # Skip this step
     # notebook_prefixes = []
 

@@ -198,6 +198,91 @@ if model.startswith("IMAGE"):
             ]
         )
     )
+    negative_after_harmonisation = [
+        ("SSP1 - Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Medium Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Medium Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Medium Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Medium Emissions_a", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Medium Emissions_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Medium Emissions_a", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|China Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Mexico", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Russia Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Overshoot", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot", "IMAGE 3.4|Middle East", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Overshoot", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Africa", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Central Asia", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|China Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Japan", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Mexico", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Russia Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Africa", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+    ]
+    for scenario, region, variable in negative_after_harmonisation:
+        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+            "reduce_ratio_2080"
+        )
 
     user_overrides_gridding.loc[mask] = "constant_offset"
 
@@ -241,6 +326,28 @@ if model.startswith("WITCH"):
     )
 
     user_overrides_gridding.loc[mask] = "constant_ratio"
+
+    negative_after_harmonisation = [
+        ("SSP1 - Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Overshoot", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Low Overshoot", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Very Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Very Low Emissions", "WITCH 6.0|South East Asia", "Emissions|CO2|Energy Sector"),
+        ("SSP1 - Very Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Overshoot", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Overshoot", "WITCH 6.0|South East Asia", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Overshoot", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+    ]
+    for scenario, region, variable in negative_after_harmonisation:
+        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+            "reduce_ratio_2080"
+        )
+
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 if model.startswith("REMIND"):
@@ -318,26 +425,6 @@ if model.startswith("REMIND"):
     )
     user_overrides_global = user_overrides_global[user_overrides_global != "nan"]
 
-    # additional method tweaks advised by Leon on 25 June 2025
-    user_overrides_gridding.loc[
-        pix.isin(
-            variable=[
-                "Emissions|BC|Energy Sector",
-                "Emissions|BC|Industrial Sector",
-                "Emissions|CO|Energy Sector",
-                "Emissions|CO|Industrial Sector",
-                "Emissions|CO|Transportation Sector",
-                "Emissions|CO2|Waste",
-                "Emissions|N2O|Waste",
-                "Emissions|NH3|Energy Sector",
-                "Emissions|NH3|Industrial Sector",
-                "Emissions|Sulfur|Energy Sector",
-                "Emissions|Sulfur|Industrial Sector",
-                "Emissions|Sulfur|Transportation Sector",
-            ]
-        )
-    ] = "constant_ratio"
-
 if model.startswith("MESSAGE"):
     # 04 August 2025 - Switch to file overrides
     # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
@@ -376,6 +463,63 @@ if model.startswith("MESSAGE"):
 
         # Apply the method
         user_overrides_gridding.loc[to_override] = row["method"]
+
+    negative_after_harmonisation = [
+        (
+            "SSP1 - Low Emissions",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+            "Emissions|CO2|Waste",
+        ),
+        ("SSP1 - Low Emissions", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Western Europe", "Emissions|CO2|Waste"),
+        ("SSP1 - Very Low Emissions", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|North America", "Emissions|CO2|Energy Sector"),
+        (
+            "SSP2 - Low Emissions_a",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+            "Emissions|CO2|Energy Sector",
+        ),
+        ("SSP2 - Low Emissions_b", "World", "Emissions|CO2|International Shipping"),
+        ("SSP2 - Low Emissions_c", "World", "Emissions|CO2|International Shipping"),
+        ("SSP2 - Low Emissions_d", "World", "Emissions|CO2|International Shipping"),
+        (
+            "SSP2 - Low Emissions_d",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+            "Emissions|CO2|Waste",
+        ),
+        ("SSP2 - Low Emissions_e", "World", "Emissions|CO2|International Shipping"),
+        (
+            "SSP2 - Low Emissions_e",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+            "Emissions|CO2|Energy Sector",
+        ),
+        ("SSP2 - Low Emissions_f", "World", "Emissions|CO2|International Shipping"),
+        (
+            "SSP2 - Low Overshoot",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+            "Emissions|CO2|Energy Sector",
+        ),
+        (
+            "SSP2 - Low Overshoot_a",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Middle East and North Africa",
+            "Emissions|CO2|Energy Sector",
+        ),
+        (
+            "SSP2 - Low Overshoot_a",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+            "Emissions|CO2|Transportation Sector",
+        ),
+        ("SSP2 - Low Overshoot_a", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|South Asia", "Emissions|CO2|Energy Sector"),
+        (
+            "SSP2 - Medium Emissions_a",
+            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+            "Emissions|CO2|Transportation Sector",
+        ),
+        ("SSP4 - Low Overshoot", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|South Asia", "Emissions|CO2|Energy Sector"),
+        ("SSP5 - Low Overshoot", "World", "Emissions|CO2|International Shipping"),
+    ]
+    for scenario, region, variable in negative_after_harmonisation:
+        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+            "reduce_ratio_2080"
+        )
 
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
@@ -536,6 +680,20 @@ if model.startswith("COFFEE"):
         .str.contains("United States", regex=False)
     )
     user_overrides_gridding.loc[mask] = "constant_ratio"
+
+    negative_after_harmonisation = [
+        ("SSP2 - Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Low Overshoot", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Low Overshoot", "COFFEE 1.6|South Africa", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
+        ("SSP2 - Very Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Residential Commercial Other"),
+        ("SSP2 - Very Low Emissions", "COFFEE 1.6|South Korea", "Emissions|CO2|Energy Sector"),
+    ]
+    for scenario, region, variable in negative_after_harmonisation:
+        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+            "reduce_ratio_2080"
+        )
 
     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
