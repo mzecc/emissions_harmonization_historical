@@ -25,8 +25,8 @@ def get_notebook_parameters(notebook_name: str, iam: str, scm: str | None = None
     and I can't see a better solution (maybe someone else can).
     """
     if notebook_name == "5090_download-scenarios.py":
-        res = {"model_search": iam, "markers_only": True}
-        # res = {"model_search": iam, "markers_only": False}
+        # res = {"model_search": iam, "markers_only": True}
+        res = {"model_search": iam, "markers_only": False}
 
     elif notebook_name in [
         "5091_check-reporting.py",
@@ -219,8 +219,8 @@ def main():  # noqa: PLR0912
     # ]
     # All
     iams = [
-        "WITCH",
-        # "REMIND",
+        # "WITCH",
+        "REMIND",
         # "MESSAGE",
         # "IMAGE",
         # "GCAM",
@@ -230,12 +230,12 @@ def main():  # noqa: PLR0912
 
     #### Emissions downloading, pre-processing, harmonisation, infilling and post-processing
     # # Single notebook
-    # notebook_prefixes = ["5094"]
+    notebook_prefixes = ["5090"]
     # notebook_prefixes = ["5093", "5094"]
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093","5094"]
     # # # Downloading and reporting checking
-    notebook_prefixes = ["5090", "5091", "5092"]
+    # notebook_prefixes = ["5090", "5091", "5092"]
     # Everything up to infilling
     # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094"]
     # # Harmonisation, infilling and post-processing

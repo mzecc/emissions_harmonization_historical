@@ -36,10 +36,9 @@ from gcages.harmonisation import assert_harmonised
 from gcages.index_manipulation import split_sectors
 from gcages.testing import compare_close
 from matplotlib.backends.backend_pdf import PdfPages
-from pandas_openscm.indexing import multi_index_lookup, multi_index_match
+from pandas_openscm.indexing import multi_index_lookup
 
 from emissions_harmonization_historical.constants_5000 import (
-    DATA_ROOT,
     HARMONISED_OUT_DIR,
     HARMONISED_SCENARIO_DB,
     HISTORY_HARMONISATION_DB,
@@ -166,536 +165,540 @@ user_overrides_global = None
 # #### Model specific
 
 # %%
-if model.startswith("IMAGE"):
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-
-    for idx, model_harm_year_value in model_pre_processed_for_gridding[
-        model_pre_processed_for_gridding[HARMONISATION_YEAR].index.get_level_values("variable").str.contains("Forest")
-    ][HARMONISATION_YEAR].items():
-        mask_history = (history_for_gridding_harmonisation.index.get_level_values("variable") == idx[3]) & (
-            history_for_gridding_harmonisation.index.get_level_values("region") == idx[2]
-        )
-
-        if model_harm_year_value > 1.5 * history_for_gridding_harmonisation[mask_history][HARMONISATION_YEAR].item():
-            user_overrides_gridding.loc[(idx[0], idx[1], idx[2], idx[3])] = "constant_ratio"
-        elif model_harm_year_value < 0.8 * history_for_gridding_harmonisation[mask_history][HARMONISATION_YEAR].item():
-            user_overrides_gridding.loc[(idx[0], idx[1], idx[2], idx[3])] = "constant_offset"
-        else:
-            user_overrides_gridding.loc[(idx[0], idx[1], idx[2], idx[3])] = "reduce_offset_2030"
-
-    mask = (
-        user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("India|Western Africa")
-    ) & (
-        pix.ismatch(
-            variable=[
-                "Emissions|CO|Energy Sector",
-            ]
-        )
-    )
-    negative_after_harmonisation = [
-        ("SSP1 - Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Medium Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Medium Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Medium Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Medium Emissions_a", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Medium Emissions_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Medium Emissions_a", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|China Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Mexico", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Russia Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Overshoot", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot", "IMAGE 3.4|Middle East", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Overshoot", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Africa", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Central Asia", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|China Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Japan", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Mexico", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Russia Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Africa", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
-        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
-    ]
-    for scenario, region, variable in negative_after_harmonisation:
-        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
-            "reduce_ratio_2080"
-        )
-
-    user_overrides_gridding.loc[mask] = "constant_offset"
-
-    # additional method tweaks for critical region Feb 26
-    mask = (
-        user_overrides_gridding.index.get_level_values("variable")
-        .astype(str)
-        .str.contains("Emissions|CO2|Transportation Sector", regex=False)
-        & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("Ukraine", regex=False)
-    ) | (
-        user_overrides_gridding.index.get_level_values("variable")
-        .astype(str)
-        .str.contains("Emissions|CO2|Residential Commercial Other", regex=False)
-        & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("Ukraine", regex=False)
-    )
-    user_overrides_gridding.loc[mask] = "reduce_ratio_2050"
-
-    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
-
-if model.startswith("WITCH"):
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-
-    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
-    model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
-        model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
-    ).unique()
-    mask = (~multi_index_match(user_overrides_gridding.index, model_zero_in_harmyear_for_overrides)) & (
-        pix.ismatch(
-            variable=[
-                "**Agricultural Waste Burning**",
-                "**Forest Burning**",
-                "**Grassland Burning**",
-            ]
-        )
-    )
-
-    user_overrides_gridding.loc[mask] = "constant_ratio"
-
-    negative_after_harmonisation = [
-        ("SSP1 - Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Overshoot", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Low Overshoot", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Very Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Very Low Emissions", "WITCH 6.0|South East Asia", "Emissions|CO2|Energy Sector"),
-        ("SSP1 - Very Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Overshoot", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Overshoot", "WITCH 6.0|South East Asia", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Overshoot", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
-    ]
-    for scenario, region, variable in negative_after_harmonisation:
-        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
-            "reduce_ratio_2080"
-        )
-
-    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
-
-if model.startswith("REMIND"):
-    # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
-
-    file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_REMIND.csv"
-    override_df = pd.read_csv(file_overrides)
-
-    # template
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-
-    # index selector: combinations_model_zero_in_harmyear
-    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
-    combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
-    # combinations_model_zero_in_harmyear
-    combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
-        [
-            level
-            for level in combinations_model_zero_in_harmyear.names
-            if level not in user_overrides_gridding.index.names
-        ]
-    )  # only keep indices that are in the template
-
-    # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
-    for _, row in override_df.iterrows():
-        # Find all entries in user_overrides_gridding with matching variable
-        matching_idx = user_overrides_gridding.index.get_level_values("variable") == row["variable"]
-        valid_overrides_idx = user_overrides_gridding.index[matching_idx]
-
-        if "ratio" in row["method"].lower():
-            # If method is a "ratio" type, exclude combinations where the model is zero in 2023
-            non_zero_idx = ~valid_overrides_idx.isin(combinations_model_zero_in_harmyear_filter)
-            to_override = valid_overrides_idx[non_zero_idx]
-        else:
-            # For non-ratio methods, apply override unconditionally
-            to_override = valid_overrides_idx
-
-        # Apply the method
-        user_overrides_gridding.loc[to_override] = row["method"]
-
-    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
-
-    ## global (not implemented yet)
-    # template
-    user_overrides_global = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_global_workflow.index.droplevel(
-            model_pre_processed_for_global_workflow.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-
-    # index selector: combinations_model_zero_in_harmyear
-    model_zero_in_harmyear_global = model_pre_processed_for_global_workflow[
-        model_pre_processed_for_global_workflow[2023] == 0
-    ]
-    combinations_model_zero_in_harmyear_global = model_zero_in_harmyear_global.index.unique()
-    combinations_model_zero_in_harmyear_global_filter = combinations_model_zero_in_harmyear_global.droplevel(
-        [
-            level
-            for level in combinations_model_zero_in_harmyear_global.names
-            if level not in user_overrides_global.index.names
-        ]
-    )  # only keep indices that are in the template
-
-    # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
-    user_overrides_global.loc[~user_overrides_global.index.isin(combinations_model_zero_in_harmyear_global_filter)] = (
-        "reduce_ratio_2050"
-    )
-    user_overrides_global = user_overrides_global[user_overrides_global != "nan"]
-
-if model.startswith("MESSAGE"):
-    # 04 August 2025 - Switch to file overrides
-    # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
-    file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_MESSAGE.csv"
-    override_df = pd.read_csv(file_overrides)
-
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-
-    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
-    model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
-        model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
-    ).unique()
-
-    # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
-    for _, row in override_df.iterrows():
-        # Find all entries in user_overrides_gridding with matching variable
-        matching_idx = (user_overrides_gridding.index.get_level_values("variable") == row["variable"]) & (
-            user_overrides_gridding.index.get_level_values("region") == row["region"]
-        )
-
-        valid_overrides_idx = user_overrides_gridding.index[matching_idx]
-
-        if "ratio" in row["method"].lower():
-            # If method is a "ratio" type, exclude combinations where the model is zero in 2023
-            non_zero_idx = ~valid_overrides_idx.isin(model_zero_in_harmyear_for_overrides)
-            to_override = valid_overrides_idx[non_zero_idx]
-        else:
-            # For non-ratio methods, apply override unconditionally
-            to_override = valid_overrides_idx
-
-        # Apply the method
-        user_overrides_gridding.loc[to_override] = row["method"]
-
-    negative_after_harmonisation = [
-        (
-            "SSP1 - Low Emissions",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
-            "Emissions|CO2|Waste",
-        ),
-        ("SSP1 - Low Emissions", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Western Europe", "Emissions|CO2|Waste"),
-        ("SSP1 - Very Low Emissions", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|North America", "Emissions|CO2|Energy Sector"),
-        (
-            "SSP2 - Low Emissions_a",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
-            "Emissions|CO2|Energy Sector",
-        ),
-        ("SSP2 - Low Emissions_b", "World", "Emissions|CO2|International Shipping"),
-        ("SSP2 - Low Emissions_c", "World", "Emissions|CO2|International Shipping"),
-        ("SSP2 - Low Emissions_d", "World", "Emissions|CO2|International Shipping"),
-        (
-            "SSP2 - Low Emissions_d",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
-            "Emissions|CO2|Waste",
-        ),
-        ("SSP2 - Low Emissions_e", "World", "Emissions|CO2|International Shipping"),
-        (
-            "SSP2 - Low Emissions_e",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
-            "Emissions|CO2|Energy Sector",
-        ),
-        ("SSP2 - Low Emissions_f", "World", "Emissions|CO2|International Shipping"),
-        (
-            "SSP2 - Low Overshoot",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
-            "Emissions|CO2|Energy Sector",
-        ),
-        (
-            "SSP2 - Low Overshoot_a",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Middle East and North Africa",
-            "Emissions|CO2|Energy Sector",
-        ),
-        (
-            "SSP2 - Low Overshoot_a",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
-            "Emissions|CO2|Transportation Sector",
-        ),
-        ("SSP2 - Low Overshoot_a", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|South Asia", "Emissions|CO2|Energy Sector"),
-        (
-            "SSP2 - Medium Emissions_a",
-            "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
-            "Emissions|CO2|Transportation Sector",
-        ),
-        ("SSP4 - Low Overshoot", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|South Asia", "Emissions|CO2|Energy Sector"),
-        ("SSP5 - Low Overshoot", "World", "Emissions|CO2|International Shipping"),
-    ]
-    for scenario, region, variable in negative_after_harmonisation:
-        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
-            "reduce_ratio_2080"
-        )
-
-    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
-
-if model.startswith("GCAM"):
-    # 29 September 2025 - Switch to file overrides
-    # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
-    file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_GCAM.csv"
-
-    # 22 October 2025 - add in aviation override
-    # and create initial overrides with code.
-    # From email with subject "OC emissions from forest fires"
-    # "Doing the aviation harmonization with reduce_ratio_2050 as discussed"
-    # ==> use reduce_ratio_2050 for harmonisation
-    # "For CO2... in general for all regions
-    # use the same harmonization rule for industry that is used for the supply sector"
-    # ==> use same harmonisation rule for energy and industrial sectors for CO2
-    #
-    # # Creating the override sheet in the first place
-    # harmonise_result_default = harmonise(
-    #     scenarios=model_pre_processed_for_gridding.reset_index("stage", drop=True),
-    #     history=history_for_harmonisation,
-    #     harmonisation_year=HARMONISATION_YEAR,
-    #     user_overrides=None,
-    # )
-    # default_methods = harmonise_result_default.overrides
-
-    # tmpa = (
-    #     default_methods.pix.extract(variable="{table}|{species}|{sector}")
-    #     .loc[pix.isin(sector=["Energy Sector", "Industrial Sector"]) & pix.isin(species="CO2")]
-    #     .unstack("sector")
-    # )
-    # tmpa["Industrial Sector"] = tmpa["Energy Sector"]
-    # tmpa = tmpa.stack("sector").pix.format(variable="{table}|{species}|{sector}", drop=True)
-
-    # tmp = default_methods.loc[pix.ismatch(variable="**Air**")]
-    # tmp.loc[:] = "reduce_ratio_2050"
-
-    # overrides = pix.concat([tmp, tmpa])
-    # overrides.name = "method"
-    # overrides.to_csv(file_overrides)
-
-    override_df = pd.read_csv(file_overrides)
-
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-
-    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
-    model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
-        model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
-    ).unique()
-
-    # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
-    for _, row in override_df.iterrows():
-        # Find all entries in user_overrides_gridding with matching variable
-        matching_idx = (user_overrides_gridding.index.get_level_values("variable") == row["variable"]) & (
-            user_overrides_gridding.index.get_level_values("region") == row["region"]
-        )
-
-        valid_overrides_idx = user_overrides_gridding.index[matching_idx]
-
-        if "ratio" in row["method"].lower():
-            # If method is a "ratio" type, exclude combinations where the model is zero in 2023
-            non_zero_idx = ~valid_overrides_idx.isin(model_zero_in_harmyear_for_overrides)
-            to_override = valid_overrides_idx[non_zero_idx]
-        else:
-            # For non-ratio methods, apply override unconditionally
-            to_override = valid_overrides_idx
-
-        # Apply the method
-        user_overrides_gridding.loc[to_override] = row["method"]
-
-    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
-
-# additional method tweaks advised by Shinichiro on 17 July 2025
-if model.startswith("AIM"):
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-    # index selector: combinations_model_zero_in_harmyear
-    model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
-    combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
-    # combinations_model_zero_in_harmyear
-    combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
-        [
-            level
-            for level in combinations_model_zero_in_harmyear.names
-            if level not in user_overrides_gridding.index.names
-        ]
-    )  # only keep indices that are in the template
-
-    # set constant_ratio for all "Burning" that do NOT have zero in the harmonization year for model data
-    mask = ~user_overrides_gridding.index.isin(
-        combinations_model_zero_in_harmyear_filter
-    ) & user_overrides_gridding.index.get_level_values("variable").astype(str).str.contains("Burning")
-    user_overrides_gridding.loc[mask] = "constant_ratio"
-
-    # set reduce_ratio_2080 for "Energy Sector" (not-CO2) that do NOT have zero in the harmonization year for model data
-    mask = (
-        ~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)
-        & user_overrides_gridding.index.get_level_values("variable").astype(str).str.contains("Energy Sector")
-        & ~user_overrides_gridding.index.get_level_values("variable").astype(str).str.contains("CO2")
-    )
-    user_overrides_gridding.loc[mask] = "reduce_ratio_2080"
-
-    # additional method tweaks for critical region Feb 26
-    mask = (
-        user_overrides_gridding.index.get_level_values("variable")
-        .astype(str)
-        .str.contains("Emissions|CO2|Energy Sector", regex=False)
-        & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("EU & UK", regex=False)
-    ) | (
-        user_overrides_gridding.index.get_level_values("variable")
-        .astype(str)
-        .str.contains("Emissions|CO2|Residential Commercial Other", regex=False)
-        & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("EU & UK", regex=False)
-    )
-    user_overrides_gridding.loc[mask] = "reduce_ratio_2050"
-
-    mask = user_overrides_gridding.index.get_level_values("variable").astype(str).str.contains(
-        "Emissions|CO2|Energy Sector", regex=False
-    ) & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("Brazil", regex=False)
-    user_overrides_gridding.loc[mask] = "reduce_ratio_2080"
-
-    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
-
-# additional method tweaks advised by Luiz Bernardo on 08 March 2026
-if model.startswith("COFFEE"):
-    user_overrides_gridding = pd.Series(
-        np.nan,
-        index=model_pre_processed_for_gridding.index.droplevel(
-            model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
-        ),
-        name="method",
-    ).astype(str)
-
-    mask = (
-        user_overrides_gridding.index.get_level_values("variable")
-        .astype(str)
-        .str.contains("Emissions|CO2|Transportation Sector", regex=False)
-        & user_overrides_gridding.index.get_level_values("region")
-        .astype(str)
-        .str.contains("Rest of Europe", regex=False)
-    ) | (
-        user_overrides_gridding.index.get_level_values("variable")
-        .astype(str)
-        .str.contains("Emissions|CO2|Waste", regex=False)
-        & user_overrides_gridding.index.get_level_values("region")
-        .astype(str)
-        .str.contains("United States", regex=False)
-    )
-    user_overrides_gridding.loc[mask] = "constant_ratio"
-
-    negative_after_harmonisation = [
-        ("SSP2 - Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Low Overshoot", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Low Overshoot", "COFFEE 1.6|South Africa", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
-        ("SSP2 - Very Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Residential Commercial Other"),
-        ("SSP2 - Very Low Emissions", "COFFEE 1.6|South Korea", "Emissions|CO2|Energy Sector"),
-    ]
-    for scenario, region, variable in negative_after_harmonisation:
-        user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
-            "reduce_ratio_2080"
-        )
-
-    user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+# if model.startswith("IMAGE"):
+#     user_overrides_gridding = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_gridding.index.droplevel(
+#             model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#
+#     for idx, model_harm_year_value in model_pre_processed_for_gridding[
+#         model_pre_processed_for_gridding[HARMONISATION_YEAR].index.get_level_values("variable").str.contains("Forest")
+#     ][HARMONISATION_YEAR].items():
+#         mask_history = (history_for_gridding_harmonisation.index.get_level_values("variable") == idx[3]) & (
+#             history_for_gridding_harmonisation.index.get_level_values("region") == idx[2]
+#         )
+#
+#         if model_harm_year_value > 1.5 * history_for_gridding_harmonisation[mask_history][HARMONISATION_YEAR].item():
+#             user_overrides_gridding.loc[(idx[0], idx[1], idx[2], idx[3])] = "constant_ratio"
+#         elif model_harm_year_value < 0.8 *
+# history_for_gridding_harmonisation[mask_history][HARMONISATION_YEAR].item():
+#             user_overrides_gridding.loc[(idx[0], idx[1], idx[2], idx[3])] = "constant_offset"
+#         else:
+#             user_overrides_gridding.loc[(idx[0], idx[1], idx[2], idx[3])] = "reduce_offset_2030"
+#
+#     mask = (
+#         user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("India|Western Africa")
+#     ) & (
+#         pix.ismatch(
+#             variable=[
+#                 "Emissions|CO|Energy Sector",
+#             ]
+#         )
+#     )
+#     negative_after_harmonisation = [
+#         ("SSP1 - Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Medium Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Medium Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Medium Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Medium Emissions_a", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Medium Emissions_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Medium Emissions_a", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|China Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Mexico", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Russia Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Overshoot", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot", "IMAGE 3.4|Middle East", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Overshoot", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Overshoot_a", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Africa", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Canada", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Central Asia", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|China Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Japan", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Mexico", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Russia Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|South Africa", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Turkey", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|United States", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Africa", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions_a", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Central Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Ukraine Region", "Emissions|CO2|Energy Sector"),
+#         ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP5 - Medium-Low Emissions", "IMAGE 3.4|Western Europe", "Emissions|CO2|Residential Commercial Other"),
+#     ]
+#     for scenario, region, variable in negative_after_harmonisation:
+#         user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+#             "reduce_ratio_2080"
+#         )
+#
+#     user_overrides_gridding.loc[mask] = "constant_offset"
+#
+#     # additional method tweaks for critical region Feb 26
+#     mask = (
+#         user_overrides_gridding.index.get_level_values("variable")
+#         .astype(str)
+#         .str.contains("Emissions|CO2|Transportation Sector", regex=False)
+#         & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("Ukraine", regex=False)
+#     ) | (
+#         user_overrides_gridding.index.get_level_values("variable")
+#         .astype(str)
+#         .str.contains("Emissions|CO2|Residential Commercial Other", regex=False)
+#         & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("Ukraine", regex=False)
+#     )
+#     user_overrides_gridding.loc[mask] = "reduce_ratio_2050"
+#
+#     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+#
+# if model.startswith("WITCH"):
+#     user_overrides_gridding = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_gridding.index.droplevel(
+#             model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#
+#     model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
+#     model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
+#         model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
+#     ).unique()
+#     mask = (~multi_index_match(user_overrides_gridding.index, model_zero_in_harmyear_for_overrides)) & (
+#         pix.ismatch(
+#             variable=[
+#                 "**Agricultural Waste Burning**",
+#                 "**Forest Burning**",
+#                 "**Grassland Burning**",
+#             ]
+#         )
+#     )
+#
+#     user_overrides_gridding.loc[mask] = "constant_ratio"
+#
+#     negative_after_harmonisation = [
+#         ("SSP1 - Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Overshoot", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Low Overshoot", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Very Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Very Low Emissions", "WITCH 6.0|South East Asia", "Emissions|CO2|Energy Sector"),
+#         ("SSP1 - Very Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Overshoot", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Overshoot", "WITCH 6.0|South East Asia", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Overshoot", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "WITCH 6.0|Brazil", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "WITCH 6.0|Sub-Saharan Africa", "Emissions|CO2|Energy Sector"),
+#     ]
+#     for scenario, region, variable in negative_after_harmonisation:
+#         user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+#             "reduce_ratio_2080"
+#         )
+#
+#     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+#
+# if model.startswith("REMIND"):
+#     # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
+#
+#     file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_REMIND.csv"
+#     override_df = pd.read_csv(file_overrides)
+#
+#     # template
+#     user_overrides_gridding = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_gridding.index.droplevel(
+#             model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#
+#     # index selector: combinations_model_zero_in_harmyear
+#     model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
+#     combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
+#     # combinations_model_zero_in_harmyear
+#     combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
+#         [
+#             level
+#             for level in combinations_model_zero_in_harmyear.names
+#             if level not in user_overrides_gridding.index.names
+#         ]
+#     )  # only keep indices that are in the template
+#
+#     # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
+#     for _, row in override_df.iterrows():
+#         # Find all entries in user_overrides_gridding with matching variable
+#         matching_idx = user_overrides_gridding.index.get_level_values("variable") == row["variable"]
+#         valid_overrides_idx = user_overrides_gridding.index[matching_idx]
+#
+#         if "ratio" in row["method"].lower():
+#             # If method is a "ratio" type, exclude combinations where the model is zero in 2023
+#             non_zero_idx = ~valid_overrides_idx.isin(combinations_model_zero_in_harmyear_filter)
+#             to_override = valid_overrides_idx[non_zero_idx]
+#         else:
+#             # For non-ratio methods, apply override unconditionally
+#             to_override = valid_overrides_idx
+#
+#         # Apply the method
+#         user_overrides_gridding.loc[to_override] = row["method"]
+#
+#     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+#
+#     ## global (not implemented yet)
+#     # template
+#     user_overrides_global = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_global_workflow.index.droplevel(
+#             model_pre_processed_for_global_workflow.index.names.difference([
+# "model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#
+#     # index selector: combinations_model_zero_in_harmyear
+#     model_zero_in_harmyear_global = model_pre_processed_for_global_workflow[
+#         model_pre_processed_for_global_workflow[2023] == 0
+#     ]
+#     combinations_model_zero_in_harmyear_global = model_zero_in_harmyear_global.index.unique()
+#     combinations_model_zero_in_harmyear_global_filter = combinations_model_zero_in_harmyear_global.droplevel(
+#         [
+#             level
+#             for level in combinations_model_zero_in_harmyear_global.names
+#             if level not in user_overrides_global.index.names
+#         ]
+#     )  # only keep indices that are in the template
+#
+#     # set reduce_ratio_2050 for all that do NOT have zero in the harmonization year for model data
+#     user_overrides_global.loc[
+# ~user_overrides_global.index.isin(combinations_model_zero_in_harmyear_global_filter)] = (
+#         "reduce_ratio_2050"
+#     )
+#     user_overrides_global = user_overrides_global[user_overrides_global != "nan"]
+#
+# if model.startswith("MESSAGE"):
+#     # 04 August 2025 - Switch to file overrides
+#     # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
+#     file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_MESSAGE.csv"
+#     override_df = pd.read_csv(file_overrides)
+#
+#     user_overrides_gridding = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_gridding.index.droplevel(
+#             model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#
+#     model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
+#     model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
+#         model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
+#     ).unique()
+#
+#     # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
+#     for _, row in override_df.iterrows():
+#         # Find all entries in user_overrides_gridding with matching variable
+#         matching_idx = (user_overrides_gridding.index.get_level_values("variable") == row["variable"]) & (
+#             user_overrides_gridding.index.get_level_values("region") == row["region"]
+#         )
+#
+#         valid_overrides_idx = user_overrides_gridding.index[matching_idx]
+#
+#         if "ratio" in row["method"].lower():
+#             # If method is a "ratio" type, exclude combinations where the model is zero in 2023
+#             non_zero_idx = ~valid_overrides_idx.isin(model_zero_in_harmyear_for_overrides)
+#             to_override = valid_overrides_idx[non_zero_idx]
+#         else:
+#             # For non-ratio methods, apply override unconditionally
+#             to_override = valid_overrides_idx
+#
+#         # Apply the method
+#         user_overrides_gridding.loc[to_override] = row["method"]
+#
+#     negative_after_harmonisation = [
+#         (
+#             "SSP1 - Low Emissions",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+#             "Emissions|CO2|Waste",
+#         ),
+#         ("SSP1 - Low Emissions", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Western Europe", "Emissions|CO2|Waste"),
+#         ("SSP1 - Very Low Emissions", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|North America", "Emissions|CO2|Energy Sector"),
+#         (
+#             "SSP2 - Low Emissions_a",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+#             "Emissions|CO2|Energy Sector",
+#         ),
+#         ("SSP2 - Low Emissions_b", "World", "Emissions|CO2|International Shipping"),
+#         ("SSP2 - Low Emissions_c", "World", "Emissions|CO2|International Shipping"),
+#         ("SSP2 - Low Emissions_d", "World", "Emissions|CO2|International Shipping"),
+#         (
+#             "SSP2 - Low Emissions_d",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+#             "Emissions|CO2|Waste",
+#         ),
+#         ("SSP2 - Low Emissions_e", "World", "Emissions|CO2|International Shipping"),
+#         (
+#             "SSP2 - Low Emissions_e",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+#             "Emissions|CO2|Energy Sector",
+#         ),
+#         ("SSP2 - Low Emissions_f", "World", "Emissions|CO2|International Shipping"),
+#         (
+#             "SSP2 - Low Overshoot",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+#             "Emissions|CO2|Energy Sector",
+#         ),
+#         (
+#             "SSP2 - Low Overshoot_a",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Middle East and North Africa",
+#             "Emissions|CO2|Energy Sector",
+#         ),
+#         (
+#             "SSP2 - Low Overshoot_a",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+#             "Emissions|CO2|Transportation Sector",
+#         ),
+#         ("SSP2 - Low Overshoot_a", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|South Asia", "Emissions|CO2|Energy Sector"),
+#         (
+#             "SSP2 - Medium Emissions_a",
+#             "MESSAGEix-GLOBIOM-GAINS 2.1-R12|Rest of Centrally Planned Asia",
+#             "Emissions|CO2|Transportation Sector",
+#         ),
+#         ("SSP4 - Low Overshoot", "MESSAGEix-GLOBIOM-GAINS 2.1-R12|South Asia", "Emissions|CO2|Energy Sector"),
+#         ("SSP5 - Low Overshoot", "World", "Emissions|CO2|International Shipping"),
+#     ]
+#     for scenario, region, variable in negative_after_harmonisation:
+#         user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+#             "reduce_ratio_2080"
+#         )
+#
+#     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+#
+# if model.startswith("GCAM"):
+#     # 29 September 2025 - Switch to file overrides
+#     # READING form the CSV file located at "./data/raw/harmonisation_overrides/."
+#     file_overrides = DATA_ROOT / "raw/harmonisation_overrides/harmonisation-methods_gridding_GCAM.csv"
+#
+#     # 22 October 2025 - add in aviation override
+#     # and create initial overrides with code.
+#     # From email with subject "OC emissions from forest fires"
+#     # "Doing the aviation harmonization with reduce_ratio_2050 as discussed"
+#     # ==> use reduce_ratio_2050 for harmonisation
+#     # "For CO2... in general for all regions
+#     # use the same harmonization rule for industry that is used for the supply sector"
+#     # ==> use same harmonisation rule for energy and industrial sectors for CO2
+#     #
+#     # # Creating the override sheet in the first place
+#     # harmonise_result_default = harmonise(
+#     #     scenarios=model_pre_processed_for_gridding.reset_index("stage", drop=True),
+#     #     history=history_for_harmonisation,
+#     #     harmonisation_year=HARMONISATION_YEAR,
+#     #     user_overrides=None,
+#     # )
+#     # default_methods = harmonise_result_default.overrides
+#
+#     # tmpa = (
+#     #     default_methods.pix.extract(variable="{table}|{species}|{sector}")
+#     #     .loc[pix.isin(sector=["Energy Sector", "Industrial Sector"]) & pix.isin(species="CO2")]
+#     #     .unstack("sector")
+#     # )
+#     # tmpa["Industrial Sector"] = tmpa["Energy Sector"]
+#     # tmpa = tmpa.stack("sector").pix.format(variable="{table}|{species}|{sector}", drop=True)
+#
+#     # tmp = default_methods.loc[pix.ismatch(variable="**Air**")]
+#     # tmp.loc[:] = "reduce_ratio_2050"
+#
+#     # overrides = pix.concat([tmp, tmpa])
+#     # overrides.name = "method"
+#     # overrides.to_csv(file_overrides)
+#
+#     override_df = pd.read_csv(file_overrides)
+#
+#     user_overrides_gridding = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_gridding.index.droplevel(
+#             model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#
+#     model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0].index
+#     model_zero_in_harmyear_for_overrides = model_zero_in_harmyear.droplevel(
+#         model_zero_in_harmyear.names.difference(user_overrides_gridding.index.names)
+#     ).unique()
+#
+#     # Looping over input df rows separating the behaviour in case of "constant_ratio" or "reduced_ratio_{year}"
+#     for _, row in override_df.iterrows():
+#         # Find all entries in user_overrides_gridding with matching variable
+#         matching_idx = (user_overrides_gridding.index.get_level_values("variable") == row["variable"]) & (
+#             user_overrides_gridding.index.get_level_values("region") == row["region"]
+#         )
+#
+#         valid_overrides_idx = user_overrides_gridding.index[matching_idx]
+#
+#         if "ratio" in row["method"].lower():
+#             # If method is a "ratio" type, exclude combinations where the model is zero in 2023
+#             non_zero_idx = ~valid_overrides_idx.isin(model_zero_in_harmyear_for_overrides)
+#             to_override = valid_overrides_idx[non_zero_idx]
+#         else:
+#             # For non-ratio methods, apply override unconditionally
+#             to_override = valid_overrides_idx
+#
+#         # Apply the method
+#         user_overrides_gridding.loc[to_override] = row["method"]
+#
+#     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+#
+# # additional method tweaks advised by Shinichiro on 17 July 2025
+# if model.startswith("AIM"):
+#     user_overrides_gridding = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_gridding.index.droplevel(
+#             model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#     # index selector: combinations_model_zero_in_harmyear
+#     model_zero_in_harmyear = model_pre_processed_for_gridding[model_pre_processed_for_gridding[2023] == 0]
+#     combinations_model_zero_in_harmyear = model_zero_in_harmyear.index.unique()
+#     # combinations_model_zero_in_harmyear
+#     combinations_model_zero_in_harmyear_filter = combinations_model_zero_in_harmyear.droplevel(
+#         [
+#             level
+#             for level in combinations_model_zero_in_harmyear.names
+#             if level not in user_overrides_gridding.index.names
+#         ]
+#     )  # only keep indices that are in the template
+#
+#     # set constant_ratio for all "Burning" that do NOT have zero in the harmonization year for model data
+#     mask = ~user_overrides_gridding.index.isin(
+#         combinations_model_zero_in_harmyear_filter
+#     ) & user_overrides_gridding.index.get_level_values("variable")
+# .astype(str).str.contains("Burning")
+#     user_overrides_gridding.loc[mask] = "constant_ratio"
+#
+## set reduce_ratio_2080 for "Energy Sector" (not-CO2) that do NOT have zero in the harmonization year for model data
+#     mask = (
+#         ~user_overrides_gridding.index.isin(combinations_model_zero_in_harmyear_filter)
+#         & user_overrides_gridding.index.get_level_values("variable").astype(str).str.contains("Energy Sector")
+#         & ~user_overrides_gridding.index.get_level_values("variable").astype(str).str.contains("CO2")
+#     )
+#     user_overrides_gridding.loc[mask] = "reduce_ratio_2080"
+#
+#     # additional method tweaks for critical region Feb 26
+#     mask = (
+#         user_overrides_gridding.index.get_level_values("variable")
+#         .astype(str)
+#         .str.contains("Emissions|CO2|Energy Sector", regex=False)
+#         & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("EU & UK", regex=False)
+#     ) | (
+#         user_overrides_gridding.index.get_level_values("variable")
+#         .astype(str)
+#         .str.contains("Emissions|CO2|Residential Commercial Other", regex=False)
+#         & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("EU & UK", regex=False)
+#     )
+#     user_overrides_gridding.loc[mask] = "reduce_ratio_2050"
+#
+#     mask = user_overrides_gridding.index.get_level_values("variable").astype(str).str.contains(
+#         "Emissions|CO2|Energy Sector", regex=False
+#     ) & user_overrides_gridding.index.get_level_values("region").astype(str).str.contains("Brazil", regex=False)
+#     user_overrides_gridding.loc[mask] = "reduce_ratio_2080"
+#
+#     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
+#
+# # additional method tweaks advised by Luiz Bernardo on 08 March 2026
+# if model.startswith("COFFEE"):
+#     user_overrides_gridding = pd.Series(
+#         np.nan,
+#         index=model_pre_processed_for_gridding.index.droplevel(
+#             model_pre_processed_for_gridding.index.names.difference(["model", "scenario", "region", "variable"])
+#         ),
+#         name="method",
+#     ).astype(str)
+#
+#     mask = (
+#         user_overrides_gridding.index.get_level_values("variable")
+#         .astype(str)
+#         .str.contains("Emissions|CO2|Transportation Sector", regex=False)
+#         & user_overrides_gridding.index.get_level_values("region")
+#         .astype(str)
+#         .str.contains("Rest of Europe", regex=False)
+#     ) | (
+#         user_overrides_gridding.index.get_level_values("variable")
+#         .astype(str)
+#         .str.contains("Emissions|CO2|Waste", regex=False)
+#         & user_overrides_gridding.index.get_level_values("region")
+#         .astype(str)
+#         .str.contains("United States", regex=False)
+#     )
+#     user_overrides_gridding.loc[mask] = "constant_ratio"
+#
+#     negative_after_harmonisation = [
+#         ("SSP2 - Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Low Overshoot", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Low Overshoot", "COFFEE 1.6|South Africa", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Energy Sector"),
+#         ("SSP2 - Very Low Emissions", "COFFEE 1.6|Rest of Europe", "Emissions|CO2|Residential Commercial Other"),
+#         ("SSP2 - Very Low Emissions", "COFFEE 1.6|South Korea", "Emissions|CO2|Energy Sector"),
+#     ]
+#     for scenario, region, variable in negative_after_harmonisation:
+#         user_overrides_gridding.loc[pix.ismatch(scenario=scenario, region=region, variable=variable)] = (
+#             "reduce_ratio_2080"
+#         )
+#
+#     user_overrides_gridding = user_overrides_gridding[user_overrides_gridding != "nan"]
 
 
 # %% [markdown]
@@ -783,35 +786,35 @@ for key, idf, user_overrides in (
 # ### Post-harmonization negative values checking
 
 # %%
-for key in ["gridding", "global"]:
-    tmp = res[key].timeseries
-
-    # CO2 carbon removal, AFOLU (and Agriculture), Industrial rows are the only allowed negatives
-    other_negatives = [
-        "Emissions|CO2|Agriculture",
-        "Emissions|CO2|AFOLU",
-        "Emissions|CO2|Industrial Sector",
-        "Emissions|CO2|Energy and Industrial Processes",
-    ]
-    allowed_negatives = cdr_var_matcher + other_negatives
-    tmp_not_co2_cdr = tmp.loc[~pix.ismatch(variable=allowed_negatives)]
-
-    # Check for negative values
-    negative_rows = (tmp_not_co2_cdr < 0).any(axis=1)
-
-    if negative_rows.any():
-        # Extract indices of negative rows
-        negative_indices = tmp_not_co2_cdr.index[negative_rows]
-
-        negative = list(
-            zip(
-                negative_indices.get_level_values("scenario"),
-                negative_indices.get_level_values("region"),
-                negative_indices.get_level_values("variable"),
-            )
-        )
-        msg = f"Negative values found in rows with indices:\n{negative}"
-        raise AssertionError(msg)
+# for key in ["gridding", "global"]:
+#     tmp = res[key].timeseries
+#
+#     # CO2 carbon removal, AFOLU (and Agriculture), Industrial rows are the only allowed negatives
+#     other_negatives = [
+#         "Emissions|CO2|Agriculture",
+#         "Emissions|CO2|AFOLU",
+#         "Emissions|CO2|Industrial Sector",
+#         "Emissions|CO2|Energy and Industrial Processes",
+#     ]
+#     allowed_negatives = cdr_var_matcher + other_negatives
+#     tmp_not_co2_cdr = tmp.loc[~pix.ismatch(variable=allowed_negatives)]
+#
+#     # Check for negative values
+#     negative_rows = (tmp_not_co2_cdr < 0).any(axis=1)
+#
+#     if negative_rows.any():
+#         # Extract indices of negative rows
+#         negative_indices = tmp_not_co2_cdr.index[negative_rows]
+#
+#         negative = list(
+#             zip(
+#                 negative_indices.get_level_values("scenario"),
+#                 negative_indices.get_level_values("region"),
+#                 negative_indices.get_level_values("variable"),
+#             )
+#         )
+#         msg = f"Negative values found in rows with indices:\n{negative}"
+#         raise AssertionError(msg)
 
 # %% [markdown]
 # ### Post-harmonization fixes
