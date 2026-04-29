@@ -220,12 +220,12 @@ def main():  # noqa: PLR0912
     # All
     iams = [
         "WITCH",
-        "REMIND",
-        "MESSAGE",
-        "IMAGE",
-        "GCAM",
-        "COFFEE",
-        "AIM",
+        # "REMIND",
+        # "MESSAGE",
+        # "IMAGE",
+        # "GCAM",
+        # "COFFEE",
+        # "AIM",
     ]
 
     #### Emissions downloading, pre-processing, harmonisation, infilling and post-processing
@@ -243,9 +243,10 @@ def main():  # noqa: PLR0912
     # Infilling and post-processing
     # notebook_prefixes = ["5190", "5191"]
     # # Everything
-    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5190", "5194"]
+    # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5190", "5194"]
+    notebook_prefixes = ["5094", "5190", "5194"]
     # # Skip this step
-    notebook_prefixes = []
+    # notebook_prefixes = []
 
     for iam in tqdm.tqdm(iams, desc="IAMs up to emissions post-processing"):
         for notebook in all_notebooks:
@@ -264,7 +265,7 @@ def main():  # noqa: PLR0912
     # so this shouldn't make such a big impact.
     # Run the notebook
     notebook_prefixes = ["5095"]
-    # # Skip this step
+    # Skip this step
     notebook_prefixes = []
     for notebook in all_notebooks:
         if any(notebook.name.startswith(np) for np in notebook_prefixes):

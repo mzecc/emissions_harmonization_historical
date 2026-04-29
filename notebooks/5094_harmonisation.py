@@ -799,35 +799,35 @@ for key, idf, user_overrides in (
 # ### Post-harmonization negative values checking
 
 # %%
-# for key in ["gridding", "global"]:
-#     tmp = res[key].timeseries
-#
-#     # CO2 carbon removal, AFOLU (and Agriculture), Industrial rows are the only allowed negatives
-#     other_negatives = [
-#         "Emissions|CO2|Agriculture",
-#         "Emissions|CO2|AFOLU",
-#         "Emissions|CO2|Industrial Sector",
-#         "Emissions|CO2|Energy and Industrial Processes",
-#     ]
-#     allowed_negatives = cdr_var_matcher + other_negatives
-#     tmp_not_co2_cdr = tmp.loc[~pix.ismatch(variable=allowed_negatives)]
-#
-#     # Check for negative values
-#     negative_rows = (tmp_not_co2_cdr < 0).any(axis=1)
-#
-#     if negative_rows.any():
-#         # Extract indices of negative rows
-#         negative_indices = tmp_not_co2_cdr.index[negative_rows]
-#
-#         negative = list(
-#             zip(
-#                 negative_indices.get_level_values("scenario"),
-#                 negative_indices.get_level_values("region"),
-#                 negative_indices.get_level_values("variable"),
-#             )
-#         )
-#         msg = f"Negative values found in rows with indices:\n{negative}"
-#         raise AssertionError(msg)
+for key in ["gridding", "global"]:
+    tmp = res[key].timeseries
+
+    # CO2 carbon removal, AFOLU (and Agriculture), Industrial rows are the only allowed negatives
+    other_negatives = [
+        "Emissions|CO2|Agriculture",
+        "Emissions|CO2|AFOLU",
+        "Emissions|CO2|Industrial Sector",
+        "Emissions|CO2|Energy and Industrial Processes",
+    ]
+    allowed_negatives = cdr_var_matcher + other_negatives
+    tmp_not_co2_cdr = tmp.loc[~pix.ismatch(variable=allowed_negatives)]
+
+    # Check for negative values
+    negative_rows = (tmp_not_co2_cdr < 0).any(axis=1)
+
+    if negative_rows.any():
+        # Extract indices of negative rows
+        negative_indices = tmp_not_co2_cdr.index[negative_rows]
+
+        negative = list(
+            zip(
+                negative_indices.get_level_values("scenario"),
+                negative_indices.get_level_values("region"),
+                negative_indices.get_level_values("variable"),
+            )
+        )
+        msg = f"Negative values found in rows with indices:\n{negative}"
+        raise AssertionError(msg)
 
 # %% [markdown]
 # ### Post-harmonization fixes
