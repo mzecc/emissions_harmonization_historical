@@ -49,7 +49,7 @@ pandas_openscm.register_pandas_accessor()
 pix.set_openscm_registry_as_default()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "REMIND"
+model: str = "MESSAGE"
 output_to_pdf: bool = False
 
 # %% [markdown]
@@ -255,6 +255,61 @@ def calculate_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):  # noqa: D103
     return res
 
 
+def calculate_additional_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100") -> pd.DataFrame:  # noqa: D103
+    if "Emissions|CO2" not in indf.pix.unique("variable"):
+        raise AssertionError(indf.pix.unique("variable"))
+
+    in_emissions = set(indf.pix.unique("variable"))
+    not_handled = in_emissions - set(ALL_GHGS)
+    not_handled_problematic = not_handled - {
+        "Emissions|OC",
+        "Emissions|SOx",
+        "Emissions|CO2|Biosphere",
+        "Emissions|CO",
+        "Emissions|NMVOC",
+        "Emissions|BC",
+        "Emissions|CO2|Fossil",
+        "Emissions|NOx",
+        "Emissions|NH3",
+    }
+    if not_handled_problematic:
+        raise AssertionError(not_handled_problematic)
+
+    additional_ghg = {
+        "N2O": ["Emissions|N2O"],
+        "CH4": ["Emissions|CH4"],
+        "F-Gases": [
+            v
+            for v in KYOTO_GHGS
+            if v
+            not in [
+                "Emissions|N2O",
+                "Emissions|CH4",
+                "Emissions|CO2",
+            ]
+        ],
+    }
+    res_l = []
+    for gas, variable in additional_ghg.items():
+        available_emissions = [v for v in variable if v in in_emissions]
+        if not available_emissions:
+            msg = f"No sources for Emissions|{gas} {gwp}, skipping"
+            raise AssertionError(msg)
+        if set(available_emissions) != set(variable):
+            print(f"Emissions|{gas} {gwp} only uses {available_emissions}")
+
+        with pint.get_application_registry().context(gwp):
+            res_l.append(
+                indf.loc[pix.isin(variable=available_emissions)]
+                .pix.convert_unit("MtCO2 / yr")
+                .openscm.groupby_except("variable")
+                .sum(min_count=len(available_emissions))
+                .pix.assign(variable=f"Emissions|{gas} {gwp}")
+            )
+
+    return pix.concat(res_l)
+
+
 # %%
 to_gcages = partial(
     convert_variable_name,
@@ -289,6 +344,7 @@ pre_processed_emms_scms_out = pix.concat(
         calculate_cumulative_co2s(pre_processed_emms_scms_annual_incl_co2_total),
         calculate_kyoto_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
         calculate_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
+        calculate_additional_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
     ]
 )
 # pre_processed_emms_scms_out
@@ -406,6 +462,7 @@ complete_emissions_out = pix.concat(
         calculate_cumulative_co2s(complete_emissions_annual_incl_co2_total),
         calculate_kyoto_ghgs(complete_emissions_annual_gcages_incl_co2_total),
         calculate_ghgs(complete_emissions_annual_gcages_incl_co2_total),
+        calculate_additional_ghgs(complete_emissions_annual_gcages_incl_co2_total),
     ]
 )
 # complete_emissions_out
@@ -489,6 +546,7 @@ if not extended_emissions_raw.empty:
             calculate_cumulative_co2s(extended_emissions_annual_incl_co2_total),
             calculate_kyoto_ghgs(extended_emissions_annual_gcages_incl_co2_total),
             calculate_ghgs(extended_emissions_annual_gcages_incl_co2_total),
+            calculate_additional_ghgs(extended_emissions_annual_gcages_incl_co2_total),
         ]
     )
 else:
