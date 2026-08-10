@@ -49,7 +49,7 @@ pandas_openscm.register_pandas_accessor()
 pix.set_openscm_registry_as_default()
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model: str = "MESSAGE"
+model: str = "REMIND"
 output_to_pdf: bool = False
 
 # %% [markdown]
@@ -256,24 +256,7 @@ def calculate_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100"):  # noqa: D103
 
 
 def calculate_additional_ghgs(indf: pd.DataFrame, gwp: str = "AR6GWP100") -> pd.DataFrame:  # noqa: D103
-    if "Emissions|CO2" not in indf.pix.unique("variable"):
-        raise AssertionError(indf.pix.unique("variable"))
-
     in_emissions = set(indf.pix.unique("variable"))
-    not_handled = in_emissions - set(ALL_GHGS)
-    not_handled_problematic = not_handled - {
-        "Emissions|OC",
-        "Emissions|SOx",
-        "Emissions|CO2|Biosphere",
-        "Emissions|CO",
-        "Emissions|NMVOC",
-        "Emissions|BC",
-        "Emissions|CO2|Fossil",
-        "Emissions|NOx",
-        "Emissions|NH3",
-    }
-    if not_handled_problematic:
-        raise AssertionError(not_handled_problematic)
 
     additional_ghg = {
         "N2O": ["Emissions|N2O"],
@@ -344,7 +327,6 @@ pre_processed_emms_scms_out = pix.concat(
         calculate_cumulative_co2s(pre_processed_emms_scms_annual_incl_co2_total),
         calculate_kyoto_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
         calculate_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
-        calculate_additional_ghgs(pre_processed_emms_scms_gcages_annual_incl_co2_total),
     ]
 )
 # pre_processed_emms_scms_out
@@ -411,6 +393,7 @@ harmonised_emms_scms_out = pix.concat(
         calculate_cumulative_co2s(harmonised_emms_scms_annual_incl_co2_total),
         calculate_kyoto_ghgs(harmonised_emms_scms_annual_gcages_incl_co2_total),
         calculate_ghgs(harmonised_emms_scms_annual_gcages_incl_co2_total),
+        calculate_additional_ghgs(harmonised_emms_scms_annual_gcages_incl_co2_total),
     ]
 )
 # harmonised_emms_scms_gcages_out
