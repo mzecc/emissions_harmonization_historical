@@ -217,7 +217,7 @@ def main():  # noqa: PLR0912
     # iams = [
     #     "GCAM",
     # ]
-    # All
+    # All (required to run extensions)
     iams = [
         "WITCH",
         "REMIND",
@@ -242,10 +242,19 @@ def main():  # noqa: PLR0912
     # Infilling and post-processing
     # notebook_prefixes = ["5190", "5191"]
     # # Everything
-    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5190", "5194"]
-    # notebook_prefixes = ["5094", "5190", "5194"]
-    # # Skip this step
-    # notebook_prefixes = []
+    notebook_prefixes = [
+        "5090",
+        "5091",
+        "5092",
+        "5093",
+        "5094",
+        "5190",
+        # # If you run extensions, you have to run this notebook later
+        # # because the extensions only work if all the scenarios are there.
+        # "5194",
+    ]
+    # Skip this step
+    notebook_prefixes = []
 
     for iam in tqdm.tqdm(iams, desc="IAMs up to emissions post-processing"):
         for notebook in all_notebooks:
@@ -300,7 +309,9 @@ def main():  # noqa: PLR0912
                 iam="all_iams",
             )
 
-    # Step 3: Post-processing per IAM (reads final DB)
+    # Step 3: Post-processing per IAM after running the extensions too
+    # (The extensions only run on all scenarios at once,
+    # so we can't use the workflow above to make this work)
     notebook_prefixes = ["5194"]
     # Skip this step
     notebook_prefixes = []

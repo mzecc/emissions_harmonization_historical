@@ -26,10 +26,10 @@ from pandas_openscm.db import (
 MARKERS = (
     # (model, scenario, ScenarioMIP name, final_version)
     ("REMIND-MAgPIE 3.5-4.11", "SSP1 - Very Low Emissions", "vl", 5),
-    ("AIM 3.0", "SSP2 - Low Overshoot_a", "ln", 23),
+    ("AIM 3.0", "SSP2 - Low Overshoot_a", "ln", 25),
     ("MESSAGEix-GLOBIOM-GAINS 2.1-M-R12", "SSP2 - Low Emissions", "l", 24),
     ("COFFEE 1.6", "SSP2 - Medium-Low Emissions", "ml", 14),
-    ("IMAGE 3.4", "SSP2 - Medium Emissions", "m", 25),
+    ("IMAGE 3.4", "SSP2 - Medium Emissions", "m", 29),
     ("WITCH 6.0", "SSP5 - Medium-Low Emissions_a", "hl", 34),
     ("GCAM 8s", "SSP3 - High Emissions", "h", 3),
 )
@@ -589,6 +589,19 @@ POST_PROCESSED_TIMESERIES_QUANTILE_DB = OpenSCMDB(
 
 POST_PROCESSED_TIMESERIES_RUN_ID_DB = OpenSCMDB(
     db_dir=POST_PROCESSING_DIR / "db-timeseries-run-id",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+
+AR6_LIKE_RUN_ID = "0001"
+AR6_LIKE_DIR = DATA_ROOT / "processed" / "ar6-like" / AR6_LIKE_RUN_ID
+AR6_LIKE_EMISSIONS_DB = OpenSCMDB(
+    db_dir=AR6_LIKE_DIR / "emissions",
+    backend_data=FeatherDataBackend(),
+    backend_index=FeatherIndexBackend(),
+)
+AR6_LIKE_SCM_OUTPUT_DB = OpenSCMDB(
+    db_dir=AR6_LIKE_DIR / "scm-output",
     backend_data=FeatherDataBackend(),
     backend_index=FeatherIndexBackend(),
 )

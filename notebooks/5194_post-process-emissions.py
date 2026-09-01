@@ -393,6 +393,7 @@ harmonised_emms_scms_out = pix.concat(
         calculate_cumulative_co2s(harmonised_emms_scms_annual_incl_co2_total),
         calculate_kyoto_ghgs(harmonised_emms_scms_annual_gcages_incl_co2_total),
         calculate_ghgs(harmonised_emms_scms_annual_gcages_incl_co2_total),
+        calculate_additional_ghgs(harmonised_emms_scms_annual_gcages_incl_co2_total),
     ]
 )
 # harmonised_emms_scms_gcages_out
