@@ -220,17 +220,16 @@ def main():  # noqa: PLR0912
     # All
     iams = [
         "WITCH",
-        # "REMIND",
-        # "MESSAGE",
-        # "IMAGE",
-        # "GCAM",
-        # "COFFEE",
-        # "AIM",
+        "REMIND",
+        "MESSAGE",
+        "IMAGE",
+        "GCAM",
+        "COFFEE",
+        "AIM",
     ]
 
     #### Emissions downloading, pre-processing, harmonisation, infilling and post-processing
     # # Single notebook
-    # notebook_prefixes = ["5090"]
     # notebook_prefixes = ["5093", "5094"]
     # # Everything except downloads and reporting checking
     # notebook_prefixes = ["5093","5094"]
@@ -243,8 +242,8 @@ def main():  # noqa: PLR0912
     # Infilling and post-processing
     # notebook_prefixes = ["5190", "5191"]
     # # Everything
-    # notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5190", "5194"]
-    notebook_prefixes = ["5094", "5190", "5194"]
+    notebook_prefixes = ["5090", "5091", "5092", "5093", "5094", "5190", "5194"]
+    # notebook_prefixes = ["5094", "5190", "5194"]
     # # Skip this step
     # notebook_prefixes = []
 

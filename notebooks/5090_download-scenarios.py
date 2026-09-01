@@ -54,7 +54,7 @@ from emissions_harmonization_historical.constants_5000 import (
 # ## Set up
 
 # %% editable=true slideshow={"slide_type": ""} tags=["parameters"]
-model_search: str = "AIM"
+model_search: str = "WITCH"
 markers_only: bool = True
 
 # %%
@@ -132,9 +132,11 @@ else:
         to_download = to_download[~to_download["scenario"].str.endswith(ssp)]
     if model_search == "AIM":
         to_download = to_download[
-            # No CO2 AFOLU for some reason
             ~to_download["scenario"].isin(
-                ["SSP1 - Very Low Emissions_a", "SSP2 - Low Emissions_a", "SSP2 - Low Overshoot_a"]
+                [
+                    "SSP2 - Low Overshoot_a",  # marker
+                    "SSP1 - Very Low Emissions_a",  # No CO2 AFOLU for some reason
+                ]
             )
         ]
 
@@ -151,19 +153,16 @@ else:
                     "SSP2 - Low Emissions_e",
                     "SSP2 - Low Emissions_f",
                     "SSP2 - Low Overshoot_a",
+                    "SSP3 - Medium-Low Emissions_a",  # 2026.08.06 - Negative N2O - Oliver said to exclude
                 ]
             )
         ]
-    #     to_download = to_download[to_download["scenario"].str.endswith("SSP2 - Low Emissions")]
     if model_search == "IMAGE":
-        #     # skip = (
-        #     #     "SSP1 - Very Low Emissions",
-        #     #     "SSP2 - Low Emissions",
-        #     #     "SSP2 - Medium-Low Emissions",
-        #     #     "SSP2 - Very Low Emissions",
-        #     #     "SSP2 - Very Low Emissions_a",
-        #     # )
-        #     # to_download = to_download[~to_download["scenario"].str.endswith(skip)]
+        skip = (
+            "SSP1 - Low Overshoot_a",
+            "SSP2 - Low Overshoot_a",
+        )
+        to_download = to_download[~to_download["scenario"].str.endswith(skip)]
         to_download = to_download[~to_download["scenario"].str.endswith("SSP2 - Medium Emissions")]
     if model_search == "COFFEE":
         to_download = to_download[~to_download["scenario"].str.endswith("SSP2 - Medium-Low Emissions")]
@@ -251,7 +250,7 @@ def check_negatives(df):  # noqa : D103
         warnings.warn(msg)
 
         for idx, row in tmp_not_co2[negative_rows].iterrows():
-            minimum_allowed = -0.50
+            minimum_allowed = 0.0
             neg_rows = row.where(row < minimum_allowed).dropna()
 
             if not neg_rows.empty:
